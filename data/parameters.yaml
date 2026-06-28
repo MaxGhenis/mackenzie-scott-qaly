@@ -65,21 +65,43 @@ conversions:
       ($3,340 per life saved); top-charity range ~$50-150 per QALY/DALY.
 
 # ---------------------------------------------------------------------------
-# Realization factor: GiveWell-style adjustment applied to ALL archetypes.
-# Captures the gap between a clean study/program estimate and the marginal
-# real-world dollar Scott actually granted: external validity, leakage to
-# overhead, counterfactual funging — NET of the documented capacity benefits
-# of large unrestricted gifts (which can push it toward / above 1).
+# TWO ORTHOGONAL ADJUSTMENTS (GiveWell-style), kept deliberately separate:
+#
+#   causal_credibility (per archetype, below) — IS THE EFFECT REAL?  How well
+#     is the cited estimate causally identified? Drawn from the evidence tier
+#     of its study design. Linearly shrinks QALYs/dollar toward the skeptical
+#     null (zero health effect) with weight = credibility. This is the axis the
+#     analysis was missing: a lottery RCT and an SNAP correlation are not equal.
+#
+#   realization_factor (global, here) — DOES SCOTT'S DOLLAR DELIVER IT?  Given
+#     a real effect, the fraction a marginal unrestricted grant actually buys:
+#     external validity to her grantees, leakage to overhead, counterfactual
+#     funging — net of the capacity benefits of large unrestricted gifts.
+#
+# Credibility now carries the "evidence might be overstated" discount, so
+# realization is recentered upward (it no longer double-counts that).
 # ---------------------------------------------------------------------------
 realization_factor:
   dist: triangular
-  low: 0.40
-  mode: 0.75
+  low: 0.55
+  mode: 0.80
   high: 1.10
   source: >-
-    Author adjustment. Downward: GiveWell-style internal/external-validity and
-    funging discounts. Upward: Center for Effective Philanthropy (2023) finds
-    large unrestricted gifts materially expand recipient capacity/reach.
+    Implementation/attribution only (evidence quality now lives in
+    causal_credibility). Center for Effective Philanthropy (2023): large
+    unrestricted gifts materially expand recipient capacity/reach.
+
+# Evidence tiers by causal-identification design. `mean` is the central
+# credibility weight (1 = take the estimate at face value; 0 = shrink fully to
+# the null of no health effect); `concentration` sets the spread (lower = more
+# uncertain). Weaker designs get a lower mean AND a wider distribution.
+evidence_tiers:
+  randomized:     {mean: 0.85, concentration: 22, design: "RCT / clean natural randomization (e.g., lottery)"}
+  strong_quasi:   {mean: 0.65, concentration: 13, design: "Credible quasi-experiment (DD/IV) with admin data and checks"}
+  moderate_quasi: {mean: 0.45, concentration: 8,  design: "Quasi-experiment with notable concerns or a contested literature"}
+  observational:  {mean: 0.22, concentration: 6,  design: "Associational; confounding-prone"}
+  projection:     {mean: 0.15, concentration: 6,  design: "Model/IAM projection; no direct causal estimate for this lever"}
+  assumption:     {mean: 0.07, concentration: 9,  design: "No causal health evidence; skeptical expert prior"}
 
 # ---------------------------------------------------------------------------
 # Dirichlet concentration governing uncertainty in the dollar allocation
@@ -96,7 +118,12 @@ archetypes:
   health_coverage:
     label: "Health - insurance & access"
     allocation_share: 0.06
-    method: cost_per_life            # cost_per_qaly = cost_per_life / qaly_per_death
+    method: cost_per_life
+    causal_credibility: strong_quasi
+    identification: >-
+      DD across staggered state Medicaid expansions with linked administrative
+      mortality (Miller et al. 2021). Strong; Oregon HIE RCT (null on 2-yr
+      physical health) tempers it, hence not the top tier.            # cost_per_qaly = cost_per_life / qaly_per_death
     cost_per_life_usd: {dist: loguniform, low: 327000, high: 867000}
     source: >-
       Miller, Johnson & Wherry (2021), QJE 136(3): Medicaid expansion saved
@@ -106,7 +133,12 @@ archetypes:
   health_chc:
     label: "Health - community health centers"
     allocation_share: 0.05
-    method: cost_per_qaly_derived_chc  # = medicare_cost_per_lifeyear * chc_fraction
+    method: cost_per_qaly_derived_chc
+    causal_credibility: moderate_quasi
+    identification: >-
+      Event-study/DD on CHC rollout (Bailey & Goodman-Bacon 2015). Credible but
+      1960s-70s rollout with documented spatial-spillover concerns in later
+      re-analyses; external validity to today's CHCs uncertain.  # = medicare_cost_per_lifeyear * chc_fraction
     medicare_cost_per_lifeyear_usd: {dist: loguniform, low: 100000, high: 300000}
     chc_fraction_of_medicare: {dist: uniform, low: 0.125, high: 0.333}
     source: >-
@@ -118,6 +150,11 @@ archetypes:
     label: "Health - mental & behavioral"
     allocation_share: 0.04
     method: cost_per_qaly
+    causal_credibility: randomized
+    identification: >-
+      ICERs come from RCTs of collaborative care for depression (high internal
+      validity). Discount here is mostly attribution (does Scott's grant fund
+      this exact model), handled by realization, not identification.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 15000, high: 90000}
     source: >-
       Collaborative-care depression systematic reviews (e.g., Jacob et al.;
@@ -128,6 +165,11 @@ archetypes:
     label: "Economic security - cash & financial"
     allocation_share: 0.08
     method: cost_per_qaly
+    causal_credibility: randomized
+    identification: >-
+      Lottery randomization (Cesarini et al. 2016) credibly estimates a ~null
+      adult-mortality effect of income. High credibility for a SMALL effect:
+      we trust the estimate, and the estimate is that there is little here.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 80000, high: 2000000}
     source: >-
       Cesarini et al. (2016, QJE) lottery study finds ~zero causal effect of
@@ -139,6 +181,12 @@ archetypes:
     label: "Economic security - food security"
     allocation_share: 0.07
     method: cost_per_qaly
+    causal_credibility: observational
+    identification: >-
+      SNAP/health links are largely associational with endogenous take-up
+      (sicker or poorer households select in/out); strong confounding risk.
+      The cost-per-QALY assumes the effect is real; credibility says it may
+      not be causal.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 20000, high: 200000}
     source: >-
       CBPP evidence syntheses; food-is-medicine RCTs. SNAP associated with
@@ -149,6 +197,11 @@ archetypes:
     label: "Economic security - housing & homelessness"
     allocation_share: 0.08
     method: cost_per_qaly
+    causal_credibility: moderate_quasi
+    identification: >-
+      NASEM (2018) judged the PSH health evidence MIXED: few RCTs, mostly
+      pre/post and quasi-experimental, contested cost-savings. Real signal for
+      high-need subgroups, weak identification overall.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 20000, high: 150000}
     source: >-
       NASEM (2018) Permanent Supportive Housing review; Housing & Health Study
@@ -159,6 +212,11 @@ archetypes:
     label: "Economic security - workforce & mobility"
     allocation_share: 0.08
     method: cost_per_qaly
+    causal_credibility: observational
+    identification: >-
+      Health effect inferred from the income-health gradient with a causal
+      discount; little direct experimental evidence that workforce grants move
+      health. Consistent with the credible ~null income-mortality result.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 40000, high: 600000}
     source: >-
       Indirect health via earnings (income-health gradient with a causal
@@ -169,6 +227,11 @@ archetypes:
     label: "Education (HBCUs, comm. college, scholarships)"
     allocation_share: 0.18
     method: cost_per_qaly
+    causal_credibility: moderate_quasi
+    identification: >-
+      Compulsory-schooling IV/quasi-experiments (Lleras-Muney; Lager &
+      Torssander; Dutch reform) are credible but the literature is genuinely
+      contested — Clark & Royer (2013) find ~null mortality effects. Wide.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 40000, high: 600000}
     source: >-
       van Kippersluis et al. (2011, J. Health Econ., Dutch reform): +1 yr
@@ -179,6 +242,11 @@ archetypes:
     label: "Equity & justice"
     allocation_share: 0.22
     method: cost_per_qaly
+    causal_credibility: assumption
+    identification: >-
+      No credible causal estimate links Scott's equity/justice grants to QALYs.
+      Plausible indirect pathways (e.g., incarceration-mortality) exist but
+      attribution is speculative; value is overwhelmingly non-health.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 50000, high: 2000000}
     source: >-
       Racial equity, criminal-justice reform, immigration, gender. Health
@@ -189,6 +257,8 @@ archetypes:
     label: "Civic / democracy / philanthropy infra"
     allocation_share: 0.04
     method: cost_per_qaly
+    causal_credibility: assumption
+    identification: "No causal health evidence; value is civic/institutional."
     cost_per_qaly_usd: {dist: lognormal_ci, low: 100000, high: 5000000}
     source: >-
       Negligible direct health pathway; value is civic and institutional.
@@ -197,6 +267,11 @@ archetypes:
     label: "Arts & culture"
     allocation_share: 0.03
     method: cost_per_qaly
+    causal_credibility: assumption
+    identification: >-
+      Arts-and-health literature exists (WHO 2019; Bygren et al.) but is
+      observational and about participation programs, not institutional grants.
+      Treated as a skeptical near-zero prior.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 200000, high: 10000000}
     source: >-
       Negligible direct health pathway; wellbeing value not captured by QALYs.
@@ -205,6 +280,11 @@ archetypes:
     label: "Environment / climate"
     allocation_share: 0.04
     method: cost_per_qaly
+    causal_credibility: projection
+    identification: >-
+      Mortality cost of carbon is an integrated-assessment-model projection
+      (Bressler 2021), not a causal estimate of a gift's effect; abatement
+      attribution of diffuse climate philanthropy is speculative.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 25000, high: 2000000}
     source: >-
       Bressler (2021, Nature Communications) mortality cost of carbon:
@@ -215,5 +295,7 @@ archetypes:
     label: "Other / general community"
     allocation_share: 0.03
     method: cost_per_qaly
+    causal_credibility: observational
+    identification: "Blended social-services proxy; no single identified estimate."
     cost_per_qaly_usd: {dist: lognormal_ci, low: 30000, high: 400000}
     source: "Blended social-services proxy for unclassified giving."

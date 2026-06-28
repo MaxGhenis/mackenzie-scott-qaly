@@ -52,6 +52,7 @@ class Results:
     total_qalys: np.ndarray                       # (n,)
     per_archetype: dict                           # label -> (n,) QALYs
     cost_per_qaly: dict                           # label -> (n,) $/QALY
+    credibility: dict                             # label -> (n,) causal-credibility weight
     qaly_per_death: np.ndarray                    # (n,)
     value_usd: np.ndarray                         # (n,) QALYs monetized at VSLY
     bc_ratio: np.ndarray                          # (n,) value / giving
@@ -116,9 +117,11 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
     conc = float(params.get("allocation_concentration", 50))
     shares = rng.dirichlet(central * conc, size=n)        # (n, k)
 
-    # 4-5. Per-archetype cost-per-QALY and QALYs
+    # 4-5. Per-archetype cost-per-QALY, causal credibility, and QALYs
+    tiers = params.get("evidence_tiers", {})
     per_archetype: dict = {}
     cost_per_qaly: dict = {}
+    credibility: dict = {}
     total = np.zeros(n)
     for j, (key, a) in enumerate(arche.items()):
         method = a.get("method", "cost_per_qaly")
@@ -135,10 +138,29 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
             raise ValueError(f"Unknown method {method!r} for archetype {key!r}")
 
         cpq = np.maximum(cpq, cpq_floor)
+
+        # Causal-credibility shrinkage toward the null (zero health effect),
+        # weight drawn from the archetype's evidence tier. A higher-credibility
+        # design keeps more of the literature effect; a weak/observational one
+        # is shrunk hard.
+        tier_name = a.get("causal_credibility")
+        if tier_name:
+            if tier_name not in tiers:
+                raise ValueError(f"Archetype {key!r} cites unknown tier {tier_name!r}")
+            t = tiers[tier_name]
+            cred = sample(
+                {"dist": "beta", "mean": t["mean"], "concentration": t["concentration"]},
+                n, rng,
+            )
+        else:
+            cred = np.ones(n)
+        cred = np.clip(cred, 0.0, 1.0)
+
         dollars = giving * shares[:, j]
-        q = dollars * realization / cpq
+        q = dollars * realization * cred / cpq
         per_archetype[a["label"]] = q
         cost_per_qaly[a["label"]] = cpq
+        credibility[a["label"]] = cred
         total += q
 
     # 6. Monetize and frontier comparison
@@ -152,9 +174,9 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
     return Results(
         n=n, seed=seed, total_giving=giving,
         total_qalys=total, per_archetype=per_archetype, cost_per_qaly=cost_per_qaly,
-        qaly_per_death=qaly_per_death, value_usd=value_usd, bc_ratio=bc_ratio,
-        frontier_qalys=frontier_qalys, blended_cost_per_qaly=blended, order=labels,
-        realization=realization, shares=shares, share_labels=labels,
+        credibility=credibility, qaly_per_death=qaly_per_death, value_usd=value_usd,
+        bc_ratio=bc_ratio, frontier_qalys=frontier_qalys, blended_cost_per_qaly=blended,
+        order=labels, realization=realization, shares=shares, share_labels=labels,
     )
 
 
@@ -178,6 +200,7 @@ def driver_sensitivity(res: Results) -> list[tuple[str, float]]:
     ]
     for j, label in enumerate(res.share_labels):
         rows.append((f"$/QALY · {label}", _spearman(res.cost_per_qaly[label], total)))
+        rows.append((f"Credibility · {label}", _spearman(res.credibility[label], total)))
         rows.append((f"Allocation · {label}", _spearman(res.shares[:, j], total)))
     rows.sort(key=lambda t: abs(t[1]), reverse=True)
     return rows

@@ -50,6 +50,14 @@ def sample(spec, n: int, rng: np.random.Generator) -> np.ndarray:
             draws = np.clip(draws, spec.get("min", -np.inf), spec.get("max", np.inf))
         return draws
 
+    if kind == "beta":
+        # Parameterized by mean in (0,1) and concentration k = a + b.
+        # Higher k = tighter. Used for causal-credibility ratings.
+        mean, k = float(spec["mean"]), float(spec["concentration"])
+        if not 0 < mean < 1 or k <= 0:
+            raise ValueError("beta needs 0 < mean < 1 and concentration > 0")
+        return rng.beta(mean * k, (1.0 - mean) * k, n)
+
     if kind == "lognormal_ci":
         # Interpret {low, high} as the 5th and 95th percentiles of a lognormal.
         lo, hi = float(spec["low"]), float(spec["high"])
@@ -79,4 +87,6 @@ def implied_median(spec) -> float:
         return float(spec["mean"])
     if kind == "lognormal_ci":
         return float(np.sqrt(spec["low"] * spec["high"]))
+    if kind == "beta":
+        return float(spec["mean"])
     raise ValueError(f"Unknown distribution: {kind!r}")

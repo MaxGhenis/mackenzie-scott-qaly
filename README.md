@@ -7,9 +7,10 @@ in lifetime philanthropy (2019–2025, >1,600 organizations).
 It replaces hand-waved "$/QALY by sector" guesses with cost-effectiveness ratios
 that are, wherever possible, **derived from published causal estimates** (Medicaid
 mortality, community health centers, supportive housing, collaborative-care
-depression, education→mortality), then propagated through uncertainty with an
-explicit, separately-documented "realization" discount for the gap between a
-clean study and a marginal philanthropic dollar.
+depression, education→mortality). Each effect is then **shrunk toward the null in
+proportion to how credibly it is causally identified** — a lottery RCT is trusted,
+an associational correlation is not — and separately discounted for the gap
+between a clean study and a marginal philanthropic dollar.
 
 > **What QALYs do and don't capture.** A QALY is a *health* metric. Most of
 > Scott's giving targets economic mobility, education, and equity, whose value is
@@ -55,15 +56,28 @@ seeded → reproducible). All inputs live in
      equity, civic, arts, climate), a deliberately wide distribution anchored to
      the relevant causal study.
 
-4. **Realization factor.** One global multiplier (triangular, mode 0.75, range
-   0.40–1.10) for the gap between study estimate and marginal real-world dollar:
-   external validity, overhead leakage, and counterfactual funging — net of the
-   capacity benefits of large unrestricted gifts (CEP 2023).
+4. **Causal credibility (the evidence-quality axis).** Each archetype is rated by
+   the identification design of its evidence — `randomized` (RCT/lottery),
+   `strong_quasi`, `moderate_quasi`, `observational`, `projection`, or
+   `assumption` — and a credibility weight is drawn from that tier's Beta
+   distribution (mean 0.85 → 0.07; weaker designs are also wider). It linearly
+   shrinks QALYs/dollar toward the null of *no health effect*. This is what keeps
+   an associational SNAP correlation or an assumption-only bucket from counting
+   the same as a difference-in-differences on linked mortality records. Note the
+   axis is about *trust in the estimate*, not its size: the income→mortality
+   lottery RCT is high-credibility precisely because it credibly shows a *small*
+   effect.
 
-5. **QALYs** = dollars × share × realization ÷ cost-per-QALY, summed across
-   archetypes.
+5. **Realization factor.** One global multiplier (triangular, mode 0.80, range
+   0.55–1.10) for the *implementation/attribution* gap — does Scott's marginal
+   unrestricted dollar deliver the studied intervention — net of the capacity
+   benefits of large unrestricted gifts (CEP 2023). Kept orthogonal to
+   credibility, which now carries the "evidence may be overstated" discount.
 
-6. **Monetize & benchmark.** QALYs × VSLY (HHS 2026 central $611k) gives a
+6. **QALYs** = dollars × share × realization × credibility ÷ cost-per-QALY,
+   summed across archetypes.
+
+7. **Monetize & benchmark.** QALYs × VSLY (HHS 2026 central $611k) gives a
    benefit/cost ratio; the same dollars at the global-health frontier (~$80/QALY)
    give the counterfactual ceiling.
 
@@ -74,7 +88,7 @@ Headline figures are reproduced there rather than hard-coded here, so the README
 never drifts from the model. As of the committed run:
 
 <!-- RESULTS:START -->
-**Median ≈ 230k QALYs** (mean 245k; 90% interval 130k–407k), a blended **$114k/QALY**. Monetized at VSLY that is **$139.9B** of health value — a **5.3× benefit/cost ratio**. The same $26.3B at the global-health frontier (~$80/QALY) would buy ~304.14M QALYs — about **1323× more health per dollar**, the price of funding a rich country's social fabric rather than the global frontier.
+**Median ≈ 106k QALYs** (mean 113k; 90% interval 59k–192k), a blended **$248k/QALY**. Monetized at VSLY that is **$64.6B** of health value — a **2.5× benefit/cost ratio**. The same $26.3B at the global-health frontier (~$80/QALY) would buy ~304.05M QALYs — about **2863× more health per dollar**, the price of funding a rich country's social fabric rather than the global frontier.
 
 ![Estimated QALYs](results/figure.png)
 
@@ -87,9 +101,17 @@ _Full table: [results/summary.md](results/summary.md). Numbers regenerate on eve
 
 ## Interpretation
 
-- **The estimate is dominated by the cost-per-QALY assumptions, not the dollar
-  total.** Grounding those ratios in causal estimates (rather than a US
-  cost-effectiveness threshold) is the whole point of this repo.
+- **The estimate is dominated by the cost-per-QALY *and credibility* assumptions,
+  not the dollar total.** Grounding the ratios in causal estimates and then
+  weighting by identification quality (rather than a flat US cost-effectiveness
+  threshold) is the whole point of this repo.
+- **Causal skepticism roughly halves the headline.** Taking evidence quality
+  seriously drops the central estimate from ~230k QALYs (trust every cited effect)
+  to ~106k. The buckets that survive are the ones with the strongest designs
+  (collaborative-care RCTs, the Medicaid difference-in-differences); the largest
+  *dollar* buckets (equity & justice, education) contribute little health because
+  no credible study ties those grants to QALYs — their value is real but largely
+  non-health.
 - **US ≠ global-health frontier.** Preventing a death costs orders of magnitude
   more in a rich country than via bed nets abroad; the frontier comparison
   quantifies that gap, and is not a criticism of her choices.

@@ -71,28 +71,45 @@ def summary_markdown(res, params) -> str:
         f"≈ {s['frontier_multiple_median']:.0f}× the estimate above\n"
     )
 
-    lines.append("## QALYs by archetype\n")
-    lines.append("| Archetype | Median QALYs | Mean QALYs | Median $/QALY | Allocation |")
-    lines.append("|---|---:|---:|---:|---:|")
+    tier_short = {
+        "randomized": "RCT/lottery",
+        "strong_quasi": "strong quasi-exp",
+        "moderate_quasi": "quasi-exp (contested)",
+        "observational": "observational",
+        "projection": "model projection",
+        "assumption": "assumption",
+    }
     arche = params["archetypes"]
     label_to_share = {a["label"]: a["allocation_share"] for a in arche.values()}
+    label_to_tier = {a["label"]: a.get("causal_credibility", "—") for a in arche.values()}
+
+    lines.append("## QALYs by archetype\n")
+    lines.append(
+        "| Archetype | Median QALYs | Median $/QALY | Evidence | Credibility | Allocation |"
+    )
+    lines.append("|---|---:|---:|---|---:|---:|")
     ordered = sorted(
         s["per_archetype_mean"].items(), key=lambda kv: kv[1], reverse=True
     )
-    for label, mean_q in ordered:
+    for label, _mean_q in ordered:
         med_q = float(np.median(res.per_archetype[label]))
         cpq_med = float(np.median(res.cost_per_qaly[label]))
+        cred_med = float(np.median(res.credibility[label]))
+        tier = label_to_tier.get(label, "—")
         share = label_to_share.get(label, float("nan"))
         lines.append(
-            f"| {label} | {_fmt(med_q)} | {_fmt(mean_q)} | {_dollar(cpq_med)} | "
-            f"{share*100:.0f}% |"
+            f"| {label} | {_fmt(med_q)} | {_dollar(cpq_med)} | "
+            f"{tier_short.get(tier, tier)} | {cred_med:.2f} | {share*100:.0f}% |"
         )
     lines.append("")
     lines.append(
-        "_Cost-per-QALY for the two health-access archetypes is derived from "
-        "causal mortality estimates (Miller et al. 2021; Bailey & Goodman-Bacon "
-        "2015); the rest are drawn from the cited cost-effectiveness literature. "
-        "See data/parameters.yaml and SOURCES.md._\n"
+        "_Each effect is shrunk toward the null in proportion to its "
+        "causal-identification credibility (Evidence column): a lottery RCT "
+        "(Cesarini) and a difference-in-differences on linked mortality records "
+        "(Miller et al. 2021) keep most of their effect; an associational SNAP "
+        "correlation or an assumption-only bucket is shrunk hard. Health-access "
+        "cost-per-QALY is additionally derived from causal mortality estimates. "
+        "See data/parameters.yaml (`identification:` per archetype) and SOURCES.md._\n"
     )
 
     lines.append("## What drives the uncertainty (Spearman tornado)\n")

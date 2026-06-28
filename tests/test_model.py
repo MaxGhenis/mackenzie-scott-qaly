@@ -29,6 +29,21 @@ def test_methods_are_known():
         assert a["method"] in known
 
 
+def test_every_archetype_has_a_valid_evidence_tier():
+    tiers = PARAMS["evidence_tiers"]
+    for key, a in PARAMS["archetypes"].items():
+        assert "causal_credibility" in a, f"{key} missing causal_credibility"
+        assert a["causal_credibility"] in tiers, f"{key} cites unknown tier"
+        assert a.get("identification"), f"{key} missing identification note"
+
+
+def test_evidence_tiers_are_ordered_by_credibility():
+    t = PARAMS["evidence_tiers"]
+    assert (t["randomized"]["mean"] > t["strong_quasi"]["mean"]
+            > t["moderate_quasi"]["mean"] > t["observational"]["mean"]
+            > t["assumption"]["mean"])
+
+
 # --- distribution sampling ---------------------------------------------------
 
 def test_lognormal_ci_recovers_percentiles():
@@ -52,6 +67,13 @@ def test_scalar_spec_is_fixed():
 
 def test_implied_median_loguniform_is_geometric_mean():
     assert implied_median({"dist": "loguniform", "low": 100, "high": 400}) == pytest.approx(200.0)
+
+
+def test_beta_sampling_bounds_and_mean():
+    rng = np.random.default_rng(6)
+    draws = sample({"dist": "beta", "mean": 0.22, "concentration": 6}, 200_000, rng)
+    assert draws.min() >= 0.0 and draws.max() <= 1.0
+    assert draws.mean() == pytest.approx(0.22, abs=0.01)
 
 
 # --- discounted QALE ---------------------------------------------------------
@@ -134,8 +156,36 @@ def test_spearman_perfect_monotonic():
 def test_sensitivity_signs_are_intuitive():
     res = run(PARAMS, n=60_000, seed=8)
     drivers = dict(driver_sensitivity(res))
-    # Realization scales everything up -> strong positive driver.
-    assert drivers["Realization factor (global)"] > 0.2
+    # Realization scales everything up -> positive driver.
+    assert drivers["Realization factor (global)"] > 0.05
     # A higher $/QALY means less cost-effective -> negative correlation.
     neg = [v for k, v in drivers.items() if k.startswith("$/QALY")]
     assert min(neg) < 0 and max(neg) <= 0.05
+    # Higher credibility keeps more of the effect -> positive correlation.
+    pos = [v for k, v in drivers.items() if k.startswith("Credibility")]
+    assert max(pos) > 0.05 and min(pos) >= -0.05
+
+
+# --- causal credibility ------------------------------------------------------
+
+def test_credibility_in_unit_interval():
+    res = run(PARAMS, n=20_000, seed=2)
+    for cred in res.credibility.values():
+        assert cred.min() >= 0.0 and cred.max() <= 1.0
+
+
+def test_weak_evidence_is_shrunk_below_strong():
+    res = run(PARAMS, n=60_000, seed=1)
+    arts = np.median(res.credibility["Arts & culture"])          # assumption tier
+    mental = np.median(res.credibility["Health - mental & behavioral"])  # randomized
+    assert arts < 0.2 < mental
+
+
+def test_credibility_reduces_the_estimate():
+    # If every tier were near-certain, the total would be strictly larger.
+    base = run(PARAMS, n=40_000, seed=0)
+    certain_tiers = {k: {"mean": 0.99, "concentration": 400}
+                     for k in PARAMS["evidence_tiers"]}
+    p2 = {**PARAMS, "evidence_tiers": certain_tiers}
+    high = run(p2, n=40_000, seed=0)
+    assert np.median(high.total_qalys) > 1.3 * np.median(base.total_qalys)
