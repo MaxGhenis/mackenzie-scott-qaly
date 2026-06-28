@@ -71,7 +71,8 @@ def summary_markdown(res, params) -> str:
         f"(90% {s['bc_ratio']['p05']:.1f}–{s['bc_ratio']['p95']:.1f}×)"
     )
     lines.append(
-        f"- Global-health frontier counterfactual (median): "
+        f"- Global-health frontier (median, handicapped like-for-like with the "
+        f"same realization + RCT-grade credibility): "
         f"{_fmt(s['frontier_qalys_median'])} QALYs "
         f"≈ {s['frontier_multiple_median']:.0f}× the estimate above\n"
     )

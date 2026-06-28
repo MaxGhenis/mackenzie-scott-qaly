@@ -61,7 +61,11 @@ seeded → reproducible). All inputs live in
      *skeptical prior* where none does (equity & justice, civic, arts). Each
      `cost_per_qaly` is the cost-effectiveness **conditional on the effect being
      real** — all causal doubt lives in the credibility axis (step 4), not here,
-     so the two never double-count.
+     so the two never double-count. Concretely, the ranges are the *as-if-causal*
+     cost-effectiveness and are deliberately **not** also widened for confounding
+     (that is the credibility weight's job). This is an explicit modeling
+     assertion — the data alone cannot enforce it — and it biases mildly *down*
+     (a real effect is discounted once via credibility) rather than up.
 
 4. **Causal credibility (the evidence-quality axis).** Each archetype is rated by
    the identification design of its evidence — `randomized` (RCT/lottery),

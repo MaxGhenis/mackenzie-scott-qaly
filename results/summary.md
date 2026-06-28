@@ -9,7 +9,7 @@ _100,000 draws, seed 0. Total giving $26.3B (2026 base)._
 - 90% interval: 60k – 191k QALYs
 - Blended cost-effectiveness (median of giving ÷ QALYs): $248k/QALY
 - Monetized at VSLY (median): $64.6B → benefit/cost ratio 2.5× (90% 1.1–5.0×)
-- Global-health frontier counterfactual (median): 207.91M QALYs ≈ 1955× the estimate above
+- Global-health frontier (median, handicapped like-for-like with the same realization + RCT-grade credibility): 207.91M QALYs ≈ 1955× the estimate above
 
 ## QALYs by archetype
 
