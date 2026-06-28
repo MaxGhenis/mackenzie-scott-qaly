@@ -130,7 +130,8 @@ def test_total_qalys_positive_and_plausible():
 
 def test_doubling_giving_doubles_qalys():
     base = run(PARAMS, n=40_000, seed=11)
-    p2 = {**PARAMS, "meta": {**PARAMS["meta"], "total_giving_usd": 2 * PARAMS["meta"]["total_giving_usd"]}}
+    meta2 = {**PARAMS["meta"], "total_giving_usd": 2 * PARAMS["meta"]["total_giving_usd"]}
+    p2 = {**PARAMS, "meta": meta2}
     dbl = run(p2, n=40_000, seed=11)
     ratio = np.mean(dbl.total_qalys) / np.mean(base.total_qalys)
     assert ratio == pytest.approx(2.0, rel=0.02)

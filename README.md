@@ -1,5 +1,9 @@
 # MacKenzie Scott giving — QALY cost-effectiveness model
 
+[![CI](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml)
+
+**▶ Interactive version: [maxghenis.com/mackenzie-scott-qaly](https://maxghenis.com/mackenzie-scott-qaly)** — drag the assumptions and watch the model rerun in your browser (a TypeScript port of this package, reading the same `parameters.yaml`).
+
 A GiveWell-style, fully-parameterized Monte Carlo estimate of the health impact
 — in quality-adjusted life-years (QALYs) — of MacKenzie Scott's ~**$26.3 billion**
 in lifetime philanthropy (2019–2025, >1,600 organizations).
