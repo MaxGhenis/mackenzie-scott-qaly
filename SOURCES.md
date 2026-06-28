@@ -44,10 +44,16 @@ and where it comes from. Accessed June 2026.
 
 - **Collaborative care for depression: ICER ~$17k–$49.5k/QALY (healthcare
   perspective), adolescents $18,239/QALY; program cost $104–$639/person/yr.**
-  Jacob et al., systematic review, *PLOS ONE* (2078) — open copy:
-  https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123078
-  · Gilbody et al., *BMC Health Services Research* 10:19.
-  https://link.springer.com/article/10.1186/1472-6963-10-19
+  The $17k–$49.5k headline range is from the Community Preventive Services Task
+  Force (Jacob et al., Community Guide) and Gilbody et al., *BMC Health Services
+  Research* 10:19 (https://link.springer.com/article/10.1186/1472-6963-10-19).
+  A broader systematic review — Grochtdreis, Brettschneider, Wegener et al.,
+  *PLOS ONE* 10(5):e0123078 (2015),
+  https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123078 —
+  reports ICERs ranging from dominance up to ~$153k/QALY (healthcare) and
+  ~$874k/QALY (societal); the model's `lognormal_ci {15000, 90000}` brackets the
+  cost-effective-case range with an upper tail toward that wider evidence.
+  Adolescent figure: Wright et al. (2016), PMID 27654449.
 
 ## Economic security — housing & homelessness
 

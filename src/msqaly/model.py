@@ -36,12 +36,18 @@ def load_params(path: str | Path | None = None) -> dict:
 
 
 def discounted_qale(years: np.ndarray, utility: np.ndarray, rate: float) -> np.ndarray:
-    """Present value of `utility` QALYs per year for `years` years, discounted
-    annually at `rate`. Closed-form annuity:  u * (1 - (1+r)^-L) / r."""
+    """Present value of `utility` QALYs per year over `years` years, discounted
+    at `rate`, with the standard health-economics half-cycle correction: a death
+    averted "now" begins accruing life-years immediately, so the ordinary
+    (end-of-year) annuity is shifted by half a year via the ``(1+r)**0.5`` factor.
+
+        u * (1 - (1+r)^-L) / r * (1+r)^0.5
+    """
     years = np.maximum(years, 0.0)
     if rate <= 0:
         return utility * years
-    return utility * (1.0 - (1.0 + rate) ** (-years)) / rate
+    annuity = (1.0 - (1.0 + rate) ** (-years)) / rate
+    return utility * annuity * (1.0 + rate) ** 0.5
 
 
 @dataclass
@@ -58,7 +64,6 @@ class Results:
     bc_ratio: np.ndarray                          # (n,) value / giving
     frontier_qalys: np.ndarray                    # (n,) same $ at global frontier
     blended_cost_per_qaly: np.ndarray             # (n,) giving / total_qalys
-    order: list = field(default_factory=list)     # archetype labels, allocation order
     realization: np.ndarray | None = None         # (n,) global realization factor
     shares: np.ndarray | None = None              # (n, k) sampled allocation
     share_labels: list = field(default_factory=list)
@@ -89,7 +94,9 @@ class Results:
                 "p95": self._pct(self.bc_ratio, 95),
             },
             "frontier_qalys_median": self._pct(self.frontier_qalys, 50),
-            "frontier_multiple_median": self._pct(self.frontier_qalys / tq, 50),
+            "frontier_multiple_median": self._pct(
+                self.frontier_qalys / np.maximum(tq, 1e-9), 50
+            ),
             "per_archetype_mean": contrib,
         }
 
@@ -98,7 +105,7 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
     rng = np.random.default_rng(seed)
     giving = float(params["meta"]["total_giving_usd"])
     rate = float(params["meta"]["discount_rate"])
-    cpq_floor = float(params["meta"].get("cost_per_qaly_floor_usd", 1.0))
+    cpq_floor = float(params["meta"].get("cost_per_qaly_floor_usd", 5000.0))
 
     # 1. QALYs per premature death averted (shared across mortality-based archetypes)
     qd = params["conversions"]["qaly_per_death_averted"]
@@ -168,7 +175,17 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
     value_usd = total * vsly
     bc_ratio = value_usd / giving
     frontier_cpq = sample(params["conversions"]["frontier_cost_per_qaly_usd"], n, rng)
-    frontier_qalys = giving / frontier_cpq
+    # Like-for-like: handicap the frontier with the SAME realization draws and a
+    # high (RCT-grade) credibility, so we compare all-in vs all-in rather than a
+    # discounted Scott estimate against a raw frontier. Conservative — GiveWell's
+    # ~$80/QALY already embeds its own delivery/evidence discounts, so the true
+    # gap is if anything larger than what this reports.
+    ft = tiers.get("randomized", {"mean": 0.85, "concentration": 22})
+    frontier_cred = sample(
+        {"dist": "beta", "mean": ft["mean"], "concentration": ft["concentration"]},
+        n, rng,
+    )
+    frontier_qalys = giving * realization * frontier_cred / frontier_cpq
     blended = giving / np.maximum(total, 1e-9)
 
     return Results(
@@ -176,7 +193,7 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
         total_qalys=total, per_archetype=per_archetype, cost_per_qaly=cost_per_qaly,
         credibility=credibility, qaly_per_death=qaly_per_death, value_usd=value_usd,
         bc_ratio=bc_ratio, frontier_qalys=frontier_qalys, blended_cost_per_qaly=blended,
-        order=labels, realization=realization, shares=shares, share_labels=labels,
+        realization=realization, shares=shares, share_labels=labels,
     )
 
 

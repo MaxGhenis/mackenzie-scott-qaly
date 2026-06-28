@@ -1,10 +1,12 @@
 """Command-line entry point.
 
-    uv run msqaly                 # 100k draws, seed 0, writes results/
-    uv run msqaly --n 500000      # more draws
-    uv run msqaly --no-figure     # skip matplotlib
+    uv run msqaly                 # 100k draws, seed 0 — print only (no file writes)
+    uv run msqaly --write         # also regenerate results/ + figures + README block
+    uv run msqaly --n 500000 --write
+    uv run msqaly --no-figure --write
 
-Prints a summary table and writes results/summary.md plus results/figure.png.
+Prints a summary table. Only `--write` mutates committed artifacts, so casual
+runs (any --n/--seed) never dirty the repo.
 """
 from __future__ import annotations
 
@@ -14,6 +16,7 @@ from pathlib import Path
 
 import numpy as np
 
+from .distributions import implied_median
 from .model import driver_sensitivity, load_params, run
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,9 +25,10 @@ README = ROOT / "README.md"
 
 
 def _fmt(x: float) -> str:
-    """Human-readable count: 197000 -> '197k', 1.85e6 -> '1.85M'."""
+    """Human-readable count: 197000 -> '197k', 1.85e6 -> '1.85M'.
+    Thresholds account for rounding so 999_999 -> '1.00M', not '1000k'."""
     ax = abs(x)
-    if ax >= 1e6:
+    if ax >= 999_500:            # rounds to >= 1.0M at the 'k' precision
         return f"{x/1e6:.2f}M"
     if ax >= 1e3:
         return f"{x/1e3:.0f}k"
@@ -32,10 +36,11 @@ def _fmt(x: float) -> str:
 
 
 def _dollar(x: float) -> str:
+    """Human-readable dollars with rounding-safe thresholds."""
     ax = abs(x)
-    if ax >= 1e9:
+    if ax >= 999_500_000:        # rounds to >= $1.0B
         return f"${x/1e9:.1f}B"
-    if ax >= 1e6:
+    if ax >= 999_500:            # rounds to >= $1.0M
         return f"${x/1e6:.1f}M"
     if ax >= 1e3:
         return f"${x/1e3:.0f}k"
@@ -57,7 +62,7 @@ def summary_markdown(res, params) -> str:
     lines.append(f"- Mean: {_fmt(tq['mean'])} QALYs")
     lines.append(f"- 90% interval: {_fmt(tq['p05'])} – {_fmt(tq['p95'])} QALYs")
     lines.append(
-        f"- Blended cost-effectiveness (median): "
+        f"- Blended cost-effectiveness (median of giving ÷ QALYs): "
         f"{_dollar(s['blended_cost_per_qaly_median'])}/QALY"
     )
     lines.append(
@@ -125,41 +130,52 @@ def summary_markdown(res, params) -> str:
     return "\n".join(lines)
 
 
-def readme_block(res) -> str:
-    """Compact headline block injected between the README RESULTS markers."""
+def readme_block(res, params) -> str:
+    """Compact headline block injected between the README RESULTS markers.
+    All figures (giving total, frontier central) are derived, never hardcoded."""
     s = res.summary()
     tq = s["total_qalys"]
+    giving = _dollar(res.total_giving)
+    frontier = implied_median(params["conversions"]["frontier_cost_per_qaly_usd"])
     return (
         f"**Median ≈ {_fmt(tq['median'])} QALYs** "
         f"(mean {_fmt(tq['mean'])}; 90% interval {_fmt(tq['p05'])}–{_fmt(tq['p95'])}), "
         f"a blended **{_dollar(s['blended_cost_per_qaly_median'])}/QALY**. "
         f"Monetized at VSLY that is **{_dollar(s['value_usd']['median'])}** of health "
         f"value — a **{s['bc_ratio']['median']:.1f}× benefit/cost ratio**. "
-        f"The same $26.3B at the global-health frontier (~$80/QALY) would buy "
-        f"~{_fmt(s['frontier_qalys_median'])} QALYs — about "
+        f"The same {giving} at the global-health frontier (~{_dollar(frontier)}/QALY), "
+        f"handicapped with the same realization and evidence discounts, would still "
+        f"buy ~{_fmt(s['frontier_qalys_median'])} QALYs — about "
         f"**{s['frontier_multiple_median']:.0f}× more health per dollar**, the "
         f"price of funding a rich country's social fabric rather than the global "
         f"frontier.\n\n"
         f"![Estimated QALYs](results/figure.png)\n\n"
-        f"The spread is driven mostly by the global realization factor and the "
-        f"cost-per-QALY of the largest, least-health-anchored buckets (education, "
-        f"equity & justice):\n\n"
+        f"The spread is driven mostly by the global realization factor, the "
+        f"causal-credibility weights, and the cost-per-QALY of the largest buckets "
+        f"(education, equity & justice):\n\n"
         f"![Sensitivity](results/sensitivity.png)\n\n"
-        f"_Full table: [results/summary.md](results/summary.md). Numbers regenerate "
-        f"on every `uv run msqaly`._"
+        f"_Full table: [results/summary.md](results/summary.md). Regenerate with "
+        f"`uv run msqaly --write`._"
     )
 
 
-def update_readme(res) -> bool:
-    if not README.exists():
-        return False
-    text = README.read_text()
+def inject_results(text: str, block: str) -> str | None:
+    """Pure marker-replacement (testable without IO). Returns None if the
+    RESULTS markers are absent."""
     start, end = "<!-- RESULTS:START -->", "<!-- RESULTS:END -->"
     if start not in text or end not in text:
+        return None
+    pre, post = text.split(start)[0], text.split(end)[1]
+    return f"{pre}{start}\n{block}\n{end}{post}"
+
+
+def update_readme(res, params) -> bool:
+    if not README.exists():
         return False
-    pre = text.split(start)[0]
-    post = text.split(end)[1]
-    README.write_text(f"{pre}{start}\n{readme_block(res)}\n{end}{post}")
+    new = inject_results(README.read_text(), readme_block(res, params))
+    if new is None:
+        return False
+    README.write_text(new)
     return True
 
 
@@ -252,13 +268,23 @@ def main(argv=None) -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--params", type=str, default=None, help="parameters.yaml path")
     ap.add_argument("--no-figure", action="store_true")
+    ap.add_argument(
+        "--write", action="store_true",
+        help="regenerate committed artifacts (results/, figures, README block). "
+             "Without it, the run only prints — so casual/CI runs never dirty git.",
+    )
     args = ap.parse_args(argv)
 
     params = load_params(args.params)
     res = run(params, n=args.n, seed=args.seed)
+    md = summary_markdown(res, params)
+    print(md)
+
+    if not args.write:
+        print("\n(dry run — pass --write to regenerate results/ and the README block)")
+        return 0
 
     RESULTS.mkdir(exist_ok=True)
-    md = summary_markdown(res, params)
     (RESULTS / "summary.md").write_text(md)
     (RESULTS / "summary.json").write_text(json.dumps(res.summary(), indent=2))
     if not args.no_figure:
@@ -267,11 +293,10 @@ def main(argv=None) -> int:
             make_sensitivity_figure(res, RESULTS / "sensitivity.png")
         except Exception as exc:  # pragma: no cover - figure is optional
             print(f"(figure skipped: {exc})")
-    update_readme(res)
-
-    print(md)
+    wrote_readme = update_readme(res, params)
     print(f"\nWrote {RESULTS/'summary.md'}, summary.json"
-          + ("" if args.no_figure else ", figure.png"))
+          + ("" if args.no_figure else ", figure.png, sensitivity.png")
+          + (", README block" if wrote_readme else ""))
     return 0
 
 

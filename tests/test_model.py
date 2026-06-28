@@ -4,6 +4,14 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from msqaly.cli import (
+    _dollar,
+    _fmt,
+    inject_results,
+    make_figure,
+    readme_block,
+    summary_markdown,
+)
 from msqaly.distributions import implied_median, sample
 from msqaly.model import _spearman, discounted_qale, driver_sensitivity, load_params, run
 
@@ -42,6 +50,8 @@ def test_evidence_tiers_are_ordered_by_credibility():
     assert (t["randomized"]["mean"] > t["strong_quasi"]["mean"]
             > t["moderate_quasi"]["mean"] > t["observational"]["mean"]
             > t["assumption"]["mean"])
+    # projection sits between assumption and observational, not on the main chain
+    assert t["assumption"]["mean"] < t["projection"]["mean"] < t["observational"]["mean"]
 
 
 # --- distribution sampling ---------------------------------------------------
@@ -89,9 +99,16 @@ def test_discounted_qale_is_below_undiscounted():
 
 
 def test_discounted_qale_known_value():
-    # u*(1-(1.03)^-25)/0.03 with u=0.75 -> ~13.06
+    # u*(1-(1.03)^-25)/0.03 * (1.03)^0.5 with u=0.75 -> ~13.25 (half-cycle)
     out = discounted_qale(np.array([25.0]), np.array([0.75]), 0.03)
-    assert out[0] == pytest.approx(13.06, abs=0.1)
+    assert out[0] == pytest.approx(13.25, abs=0.1)
+
+
+def test_half_cycle_correction_raises_ordinary_annuity():
+    yrs, util = np.array([25.0]), np.array([0.75])
+    half = discounted_qale(yrs, util, 0.03)[0]
+    ordinary = util[0] * (1 - 1.03 ** -25) / 0.03
+    assert half == pytest.approx(ordinary * 1.03 ** 0.5, rel=1e-9)
 
 
 # --- end-to-end model --------------------------------------------------------
@@ -129,6 +146,16 @@ def test_frontier_is_far_above_estimate():
     res = run(PARAMS, n=20_000, seed=5)
     # Global-health frontier should be orders of magnitude more QALYs/dollar.
     assert np.median(res.frontier_qalys) > 50 * np.median(res.total_qalys)
+
+
+def test_frontier_is_handicapped_not_raw():
+    # The frontier counterfactual is discounted by realization * (RCT-grade)
+    # credibility, so it must sit below the raw giving / frontier_cpq value.
+    res = run(PARAMS, n=40_000, seed=5)
+    raw = res.total_giving / implied_median(
+        PARAMS["conversions"]["frontier_cost_per_qaly_usd"]
+    )
+    assert np.median(res.frontier_qalys) < raw
 
 
 def test_health_access_cost_per_qaly_is_reasonable():
@@ -189,3 +216,52 @@ def test_credibility_reduces_the_estimate():
     p2 = {**PARAMS, "evidence_tiers": certain_tiers}
     high = run(p2, n=40_000, seed=0)
     assert np.median(high.total_qalys) > 1.3 * np.median(base.total_qalys)
+
+
+# --- formatting & output layer ----------------------------------------------
+
+def test_fmt_rounds_across_unit_boundaries():
+    assert _fmt(197_000) == "197k"
+    assert _fmt(999_400) == "999k"
+    assert _fmt(999_999) == "1.00M"      # regression: must not be '1000k'
+    assert _fmt(1_850_000) == "1.85M"
+
+
+def test_dollar_rounds_across_unit_boundaries():
+    assert _dollar(999_400) == "$999k"
+    assert _dollar(999_999) == "$1.0M"   # not '$1000k'
+    assert _dollar(999_999_999) == "$1.0B"  # not '$1000M'
+    assert _dollar(26_300_000_000) == "$26.3B"
+
+
+def test_readme_block_uses_dynamic_figures_not_hardcoded():
+    res = run(PARAMS, n=5_000, seed=0)
+    block = readme_block(res, PARAMS)
+    assert _dollar(res.total_giving) in block          # giving derived from params
+    assert "$80/QALY" not in block                     # stale literal removed
+    fc = implied_median(PARAMS["conversions"]["frontier_cost_per_qaly_usd"])
+    assert _dollar(fc) in block                         # frontier derived from params
+
+
+def test_summary_markdown_has_all_archetypes_and_credibility():
+    res = run(PARAMS, n=3_000, seed=0)
+    md = summary_markdown(res, PARAMS)
+    assert "QALYs" in md and "Credibility" in md and "Evidence" in md
+    for a in PARAMS["archetypes"].values():
+        assert a["label"] in md
+
+
+def test_inject_results_roundtrips_and_handles_missing_markers():
+    text = "head\n<!-- RESULTS:START -->\nOLD\n<!-- RESULTS:END -->\ntail"
+    out = inject_results(text, "NEW BLOCK")
+    assert out is not None
+    assert "NEW BLOCK" in out and "OLD" not in out
+    assert out.startswith("head") and out.endswith("tail")
+    assert inject_results("no markers here", "X") is None
+
+
+def test_make_figure_writes_a_file(tmp_path):
+    res = run(PARAMS, n=2_000, seed=0)
+    p = tmp_path / "fig.png"
+    make_figure(res, PARAMS, p)
+    assert p.exists() and p.stat().st_size > 0

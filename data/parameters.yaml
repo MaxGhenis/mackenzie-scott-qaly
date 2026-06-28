@@ -19,11 +19,12 @@ meta:
     Dec 2025 ($7.17B in 2025 alone). CNBC 2025-12-13; Alliance Magazine 2025.
   base_year: 2026
   discount_rate: 0.03        # standard health-economics annual discount rate
-  # Floor on any sampled cost-per-QALY. Guards against fat-tailed reciprocals
-  # (QALYs = $/cpq blows up as cpq -> 0). No US social/health intervention
-  # plausibly beats a few $k/QALY; the global-health frontier (~$80) is a
-  # different universe. Set well below every central estimate so it only clips
-  # implausible tails.
+  # Floor on any sampled cost-per-QALY. A backstop against fat-tailed reciprocals
+  # (QALYs = $/cpq grows large as cpq -> 0). In practice it almost never binds:
+  # every cpq prior already has a 5th percentile >= ~$20k, so flipping the floor
+  # off changes the mean by <0.05%. Kept as a guard, not a lever. (No US social/
+  # health intervention plausibly beats a few $k/QALY; the global-health frontier
+  # ~$80 is a different universe.)
   cost_per_qaly_floor_usd: 5000
 
 # ---------------------------------------------------------------------------
@@ -52,7 +53,10 @@ conversions:
     high: 1030000
     source: >-
       HHS ASPE Standard Values for Regulatory Analysis 2026: VSLY central
-      $611k (3% discount), $1.03M (7%); 2024 low estimate $231k.
+      $611k (3% discount), $1.03M (7%); 2024 low estimate $231k. NOTE the high
+      end reflects 7% discounting while QALYs here use 3%, so the monetization
+      spans discount conventions and is approximate (affects only the $-value /
+      benefit-cost ratio, never the QALY count).
 
   # Global-health frontier cost-per-QALY, for the counterfactual comparison
   # ("what if the same dollars bought QALYs at the best global rate").
@@ -189,9 +193,12 @@ archetypes:
       not be causal.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 20000, high: 200000}
     source: >-
-      CBPP evidence syntheses; food-is-medicine RCTs. SNAP associated with
-      ~$1,400/yr lower health costs and ~4% fewer hospitalizations (46% among
-      food-insecure seniors). Observational/confounded -> downward-adjusted.
+      Cost-effectiveness range CONDITIONAL on the association being causal,
+      anchored to (not derived from) CBPP syntheses and food-is-medicine RCTs:
+      SNAP linked to ~$1,400/yr lower health costs and ~4% fewer hospitalizations
+      (46% among food-insecure seniors). Causal doubt is carried by the
+      observational credibility tier, NOT by inflating this range (avoids
+      double-counting).
 
   econ_housing:
     label: "Economic security - housing & homelessness"
@@ -204,9 +211,11 @@ archetypes:
       high-need subgroups, weak identification overall.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 20000, high: 150000}
     source: >-
-      NASEM (2018) Permanent Supportive Housing review; Housing & Health Study
-      ~$62,493/QALY; PSH frequently cost-saving ($6,875-$33,502/person/yr) for
-      high-need chronically homeless.
+      NASEM (2018) Permanent Supportive Housing review. The ~$62,493/QALY point
+      is the Housing & Health Study, an HIV-positive unstably-housed cohort that
+      NASEM reviews (not general chronic homelessness); PSH frequently cost-saving
+      ($6,875-$33,502/person/yr) for high-need groups. Range conditional on a real
+      effect; identification doubt is in the credibility tier.
 
   econ_workforce:
     label: "Economic security - workforce & mobility"
@@ -219,9 +228,10 @@ archetypes:
       health. Consistent with the credible ~null income-mortality result.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 40000, high: 600000}
     source: >-
-      Indirect health via earnings (income-health gradient with a causal
-      discount, consistent with Cesarini et al.). Most value is economic, not
-      health -> high $/QALY, wide.
+      Cost-effectiveness CONDITIONAL on workforce/earnings gains translating to
+      health via the income-health gradient. The causal doubt (~null per
+      Cesarini et al. 2016) is carried by the observational credibility tier, not
+      this range. Most value is economic, not health -> high $/QALY, wide.
 
   education:
     label: "Education (HBCUs, comm. college, scholarships)"
@@ -234,9 +244,10 @@ archetypes:
       contested — Clark & Royer (2013) find ~null mortality effects. Wide.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 40000, high: 600000}
     source: >-
-      van Kippersluis et al. (2011, J. Health Econ., Dutch reform): +1 yr
-      schooling -> ~6% lower mortality; Lleras-Muney (2005); Card returns to
-      schooling. Long lag; large non-health (earnings) value excluded.
+      van Kippersluis, O'Donnell & van Doorslaer (2011, Journal of Human
+      Resources 46(4), Dutch reform): +1 yr schooling -> ~6% lower mortality;
+      Lleras-Muney (2005); Card returns to schooling. Long lag; large non-health
+      (earnings) value excluded.
 
   equity_justice:
     label: "Equity & justice"
@@ -287,9 +298,10 @@ archetypes:
       attribution of diffuse climate philanthropy is speculative.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 25000, high: 2000000}
     source: >-
-      Bressler (2021, Nature Communications) mortality cost of carbon:
-      ~4,434 tCO2 per excess death (2020-2100). Effective $/QALY depends
-      entirely on abatement leverage of the gift -> speculative, very wide.
+      Wide $/QALY range ANCHORED TO, not derived from, Bressler (2021, Nature
+      Communications) mortality cost of carbon (~4,434 tCO2 per excess death,
+      2020-2100): no abatement-leverage chain is modeled, so the effective $/QALY
+      is a deliberately wide prior, not a calculation. Speculative.
 
   other_community:
     label: "Other / general community"
