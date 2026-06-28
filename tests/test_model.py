@@ -54,6 +54,13 @@ def test_evidence_tiers_are_ordered_by_credibility():
     assert t["assumption"]["mean"] < t["projection"]["mean"] < t["observational"]["mean"]
 
 
+def test_frontier_is_single_qaly_equivalent_parameter():
+    conversions = PARAMS["conversions"]
+    assert "frontier_cost_per_qaly_usd" in conversions
+    assert "frontier_cost_per_daly_usd" not in conversions
+    assert "daly_to_qaly_factor" not in conversions
+
+
 # --- distribution sampling ---------------------------------------------------
 
 def test_lognormal_ci_recovers_percentiles():
@@ -154,7 +161,7 @@ def test_frontier_is_handicapped_not_raw():
     # credibility, so it must sit below the raw giving / frontier_cpq value.
     res = run(PARAMS, n=40_000, seed=5)
     raw = res.total_giving / implied_median(
-        PARAMS["conversions"]["frontier_cost_per_daly_usd"]
+        PARAMS["conversions"]["frontier_cost_per_qaly_usd"]
     )
     assert np.median(res.frontier_qalys) < raw
 
@@ -240,7 +247,7 @@ def test_readme_block_uses_dynamic_figures_not_hardcoded():
     block = readme_block(res, PARAMS)
     assert _dollar(res.total_giving) in block          # giving derived from params
     assert "$80/QALY" not in block                     # stale literal removed
-    fc = implied_median(PARAMS["conversions"]["frontier_cost_per_daly_usd"])
+    fc = implied_median(PARAMS["conversions"]["frontier_cost_per_qaly_usd"])
     assert _dollar(fc) in block                         # frontier derived from params
 
 

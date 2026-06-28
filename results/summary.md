@@ -4,21 +4,21 @@ _100,000 draws, seed 0. Total giving $26.3B (2026 base)._
 
 ## Headline
 
-- **Median: 106k QALYs**
-- Mean: 114k QALYs
-- 90% interval: 60k – 191k QALYs
-- Blended cost-effectiveness (median of giving ÷ QALYs): $248k/QALY
-- Monetized at VSLY (median): $64.6B → benefit/cost ratio 2.5× (90% 1.1–5.0×)
-- Global-health frontier (median, handicapped like-for-like with the same realization + RCT-grade credibility): 207.91M QALYs ≈ 1955× the estimate above
+- **Median: 98k QALYs**
+- Mean: 105k QALYs
+- 90% interval: 54k – 180k QALYs
+- Blended cost-effectiveness (median of giving ÷ QALYs): $270k/QALY
+- Monetized at VSLY (median): $59.4B → benefit/cost ratio 2.3× (90% 1.0–4.7×)
+- Global-health frontier (median, handicapped like-for-like with the same realization + RCT-grade credibility): 207.91M QALYs ≈ 2126× the estimate above
 
 ## QALYs by archetype
 
 | Archetype | Median QALYs | Median $/QALY | Evidence | Credibility | Allocation |
 |---|---:|---:|---|---:|---:|
 | Health - mental & behavioral | 17k | $37k | RCT/lottery | 0.86 | 4% |
-| Health - insurance & access | 19k | $39k | strong quasi-exp | 0.66 | 6% |
 | Economic security - housing & homelessness | 12k | $55k | quasi-exp (contested) | 0.45 | 8% |
 | Education (HBCUs, comm. college, scholarships) | 10k | $154k | quasi-exp (contested) | 0.45 | 18% |
+| Health - insurance & access | 12k | $63k | strong quasi-exp | 0.66 | 6% |
 | Health - community health centers | 10k | $38k | quasi-exp (contested) | 0.45 | 5% |
 | Economic security - food security | 4k | $63k | observational | 0.19 | 7% |
 | Economic security - cash & financial | 3k | $402k | RCT/lottery | 0.86 | 8% |
@@ -35,17 +35,17 @@ _Each effect is shrunk toward the null in proportion to its causal-identificatio
 
 | Input | Rank correlation with total QALYs |
 |---|---:|
-| Realization factor (global) | +0.39 |
-| $/QALY · Education (HBCUs, comm. college, scholarships) | -0.29 |
-| $/QALY · Health - mental & behavioral | -0.28 |
-| Allocation · Health - mental & behavioral | +0.27 |
-| $/QALY · Economic security - housing & homelessness | -0.25 |
-| Allocation · Health - insurance & access | +0.22 |
-| $/QALY · Health - insurance & access | -0.18 |
-| Allocation · Equity & justice | -0.18 |
-| Credibility · Economic security - housing & homelessness | +0.16 |
+| Realization factor (global) | +0.38 |
+| $/QALY · Education (HBCUs, comm. college, scholarships) | -0.30 |
+| $/QALY · Health - mental & behavioral | -0.30 |
+| Allocation · Health - mental & behavioral | +0.29 |
+| $/QALY · Economic security - housing & homelessness | -0.26 |
+| Allocation · Equity & justice | -0.17 |
+| Credibility · Economic security - housing & homelessness | +0.17 |
 | $/QALY · Health - community health centers | -0.15 |
-| Credibility · Education (HBCUs, comm. college, scholarships) | +0.13 |
-| $/QALY · Economic security - cash & financial | -0.13 |
+| Credibility · Education (HBCUs, comm. college, scholarships) | +0.14 |
+| $/QALY · Economic security - cash & financial | -0.14 |
+| Allocation · Health - community health centers | +0.14 |
+| Credibility · Health - community health centers | +0.13 |
 
 _Positive: larger input → more QALYs (allocations, realization). Negative: larger input → fewer QALYs (a higher $/QALY is less cost-effective)._

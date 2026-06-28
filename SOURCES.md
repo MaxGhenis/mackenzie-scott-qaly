@@ -6,11 +6,9 @@ and where it comes from. Accessed June 2026.
 
 ## Giving total and allocation
 
-- **Total giving — $26.3B since 2019, >1,600 orgs ($7.17B in 2025).**
-  CNBC, "MacKenzie Scott revealed her total charitable donations for 2025"
-  (2025-12-13). https://www.cnbc.com/2025/12/13/mackenzie-scott-revealed-her-total-charitable-donations-for-2025.html
-  · Alliance Magazine (2025). https://www.alliancemagazine.org/blog/mackenzie-scott-gave-7-billion-in-2025-nears-bill-gates-total-lifetime-philanthropy/
-  · Wikipedia, "MacKenzie Scott" / "Yield Giving."
+- **Total giving — model uses $26.3B; official Yield Giving copy says over
+  $26B in 2,700+ gifts since 2019.**
+  Yield Giving homepage: https://yieldgiving.com/
 - **Cause-area mix (top areas: economic security & opportunity, equity &
   justice, education, health; ~$5M average grant; ~90%+ US-focused).**
   Harvard Business School Working Knowledge, "$15 Billion in Five Years: What
@@ -23,12 +21,20 @@ and where it comes from. Accessed June 2026.
 
 ## Health — insurance & access (derived cost-per-life)
 
-- **Medicaid expansion: ~1 life saved/yr per 239–316 adults covered; $327k–$867k
-  per life saved (0.132 pp annual mortality decline, 9.4% reduction).**
+- **Medicaid expansion mortality: 0.132 percentage-point annual mortality
+  decline (9.4%). Cost-per-life: Sommers, Baicker & Epstein's $327k–$867k per
+  life saved in 2007 dollars, inflated to $529k–$1.40M in 2026 dollars.**
   Miller, Johnson & Wherry, "Medicaid and Mortality: New Evidence from Linked
   Survey and Administrative Data," *Quarterly Journal of Economics* 136(3), 2021.
   https://academic.oup.com/qje/article-abstract/136/3/1783/6124639
   · NBER WP 26081: https://www.nber.org/papers/w26081
+  · Sommers, Baicker & Epstein, "Mortality and Access to Care among Adults after
+  State Medicaid Expansions," *New England Journal of Medicine* 367:1025, 2012,
+  DOI 10.1056/NEJMsa1202099:
+  https://www.nejm.org/doi/full/10.1056/NEJMsa1202099
+  · CPI-U source for inflation: FRED CPIAUCNS
+  https://fred.stlouisfed.org/series/CPIAUCNS. 2007 annual average 207.342;
+  May 2026 335.123; multiplier 1.616.
 
 ## Health — community health centers (derived as fraction of Medicare)
 
@@ -113,11 +119,14 @@ and where it comes from. Accessed June 2026.
   HHS ASPE, "Standard Values for Regulatory Analysis, 2026."
   https://aspe.hhs.gov/sites/default/files/documents/2d83af5823915d81871334ee08ad03d9/Standard-RIA-Values-2026.pdf
   · Methodology: https://aspe.hhs.gov/reports/updating-vsl-estimates
-- **Global-health frontier: ~$78 per DALY averted / ~$3,340 per life saved**
-  (insecticide-treated nets) — the counterfactual ceiling.
-  GiveWell, Against Malaria Foundation. https://www.givewell.org/charities/amf
-  · "Long-lasting insecticide treated nets: $3,340 per life saved, $100 per
-  DALY averted," EA Forum.
+- **Global-health frontier: single $50–$150/QALY-equivalent parameter.**
+  GiveWell reports lives saved and DALYs, not QALYs: its current impact estimates
+  put malaria nets around $5,500 per life saved, while an older AMF/GiveWell
+  summary reports about $3,340 per life saved and about $78–$100 per DALY
+  averted. The model treats one DALY averted as approximately one QALY gained
+  under the standard one-year-of-full-health convention.
+  GiveWell current impact estimates: https://www.givewell.org/impact-estimates
+  · Older AMF/GiveWell summary:
   https://forum.effectivealtruism.org/posts/HbunzTyFPRwcYihg6/long-lasting-insecticide-treated-nets-usd3-340-per-life
 
 ---

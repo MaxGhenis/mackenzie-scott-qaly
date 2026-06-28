@@ -1,24 +1,24 @@
 {
   "total_qalys": {
-    "mean": 113509.71746005508,
-    "median": 106135.48156876418,
-    "p05": 59547.31349725489,
-    "p95": 191469.8198877992
+    "mean": 104874.41686354458,
+    "median": 97527.46864300728,
+    "p05": 54266.452112427076,
+    "p95": 179865.48965977787
   },
-  "blended_cost_per_qaly_median": 247796.49191104237,
+  "blended_cost_per_qaly_median": 269667.6163750086,
   "value_usd": {
-    "mean": 70770603931.07301,
-    "median": 64589191419.70174
+    "mean": 65390589225.85432,
+    "median": 59369199490.73422
   },
   "bc_ratio": {
-    "median": 2.45586279162364,
-    "p05": 1.1368328543674815,
-    "p95": 5.030503405619969
+    "median": 2.2573840110545333,
+    "p05": 1.037189908776191,
+    "p95": 4.702694644729059
   },
   "frontier_qalys_median": 207912339.8288856,
-  "frontier_multiple_median": 1955.3851631120783,
+  "frontier_multiple_median": 2126.355339806183,
   "per_archetype_mean": {
-    "Health - insurance & access": 22642.57860124799,
+    "Health - insurance & access": 14007.278004737498,
     "Health - community health centers": 13782.106337532976,
     "Health - mental & behavioral": 22944.18193785728,
     "Economic security - cash & financial": 5884.1526426284245,

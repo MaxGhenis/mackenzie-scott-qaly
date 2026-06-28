@@ -137,16 +137,15 @@ def readme_block(res, params) -> str:
     s = res.summary()
     tq = s["total_qalys"]
     giving = _dollar(res.total_giving)
-    frontier = implied_median(params["conversions"]["frontier_cost_per_daly_usd"])
+    frontier = implied_median(params["conversions"]["frontier_cost_per_qaly_usd"])
     return (
         f"**Median ≈ {_fmt(tq['median'])} QALYs** "
         f"(mean {_fmt(tq['mean'])}; 90% interval {_fmt(tq['p05'])}–{_fmt(tq['p95'])}), "
         f"a blended **{_dollar(s['blended_cost_per_qaly_median'])}/QALY**. "
         f"Monetized at VSLY that is **{_dollar(s['value_usd']['median'])}** of health "
         f"value — a **{s['bc_ratio']['median']:.1f}× benefit/cost ratio**. "
-        f"The same {giving} at the global-health frontier (~{_dollar(frontier)} per DALY "
-        f"averted, treated as ≈1 QALY), handicapped with the same realization and "
-        f"evidence discounts, would still "
+        f"The same {giving} at the global-health frontier (~{_dollar(frontier)}/QALY-equivalent), "
+        f"handicapped with the same realization and evidence discounts, would still "
         f"buy ~{_fmt(s['frontier_qalys_median'])} QALYs — about "
         f"**{s['frontier_multiple_median']:.0f}× more health per dollar**, the "
         f"price of funding a rich country's social fabric rather than the global "
