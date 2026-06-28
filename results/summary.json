@@ -1,0 +1,35 @@
+{
+  "total_qalys": {
+    "mean": 244772.74762843957,
+    "median": 229867.24207968288,
+    "p05": 130332.88581361547,
+    "p95": 407493.0134978724
+  },
+  "blended_cost_per_qaly_median": 114413.86672656506,
+  "value_usd": {
+    "mean": 152765876663.9432,
+    "median": 139879040264.67154
+  },
+  "bc_ratio": {
+    "median": 5.31859468686964,
+    "p05": 2.4790471437129113,
+    "p95": 10.754147219706349
+  },
+  "frontier_qalys_median": 304143318.5084655,
+  "frontier_multiple_median": 1322.8401619875558,
+  "per_archetype_mean": {
+    "Health - insurance & access": 31483.40323820764,
+    "Health - community health centers": 28234.07250328868,
+    "Health - mental & behavioral": 24862.59178580994,
+    "Economic security - cash & financial": 6365.294407211237,
+    "Economic security - food security": 27907.013542106804,
+    "Economic security - housing & homelessness": 34823.030538166764,
+    "Economic security - workforce & mobility": 14299.702275223606,
+    "Education (HBCUs, comm. college, scholarships)": 32272.26306034452,
+    "Equity & justice": 25681.29634248855,
+    "Civic / democracy / philanthropy infra": 2247.7543423878287,
+    "Arts & culture": 849.9756970129199,
+    "Environment / climate": 8379.662730624106,
+    "Other / general community": 7366.687165566989
+  }
+}
