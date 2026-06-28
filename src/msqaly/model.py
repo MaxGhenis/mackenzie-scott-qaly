@@ -174,18 +174,21 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
     vsly = sample(params["conversions"]["vsly_usd"], n, rng)
     value_usd = total * vsly
     bc_ratio = value_usd / giving
-    frontier_cpq = sample(params["conversions"]["frontier_cost_per_qaly_usd"], n, rng)
+    # The frontier is denominated in DALYs averted (GiveWell's unit); convert to
+    # QALY-equivalents via daly_to_qaly_factor (an explicit assumption, default 1).
+    frontier_daly_cpq = sample(params["conversions"]["frontier_cost_per_daly_usd"], n, rng)
+    daly_to_qaly = float(params["conversions"].get("daly_to_qaly_factor", 1.0))
     # Like-for-like: handicap the frontier with the SAME realization draws and a
     # high (RCT-grade) credibility, so we compare all-in vs all-in rather than a
     # discounted Scott estimate against a raw frontier. Conservative — GiveWell's
-    # ~$80/QALY already embeds its own delivery/evidence discounts, so the true
+    # ~$78/DALY already embeds its own delivery/evidence discounts, so the true
     # gap is if anything larger than what this reports.
     ft = tiers.get("randomized", {"mean": 0.85, "concentration": 22})
     frontier_cred = sample(
         {"dist": "beta", "mean": ft["mean"], "concentration": ft["concentration"]},
         n, rng,
     )
-    frontier_qalys = giving * realization * frontier_cred / frontier_cpq
+    frontier_qalys = giving * realization * frontier_cred * daly_to_qaly / frontier_daly_cpq
     blended = giving / np.maximum(total, 1e-9)
 
     return Results(

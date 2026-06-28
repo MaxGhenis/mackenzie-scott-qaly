@@ -58,15 +58,24 @@ conversions:
       spans discount conventions and is approximate (affects only the $-value /
       benefit-cost ratio, never the QALY count).
 
-  # Global-health frontier cost-per-QALY, for the counterfactual comparison
-  # ("what if the same dollars bought QALYs at the best global rate").
-  frontier_cost_per_qaly_usd:
+  # Global-health frontier cost, for the counterfactual comparison ("what if the
+  # same dollars bought health at the best global rate"). GiveWell's figure is
+  # per DALY AVERTED, not per QALY — so this is denominated in DALYs and
+  # converted into Scott's QALY accounting via daly_to_qaly_factor below.
+  frontier_cost_per_daly_usd:
     dist: loguniform
     low: 50
     high: 150
     source: >-
       GiveWell long-lasting insecticide-treated nets ~$78 per DALY averted
-      ($3,340 per life saved); top-charity range ~$50-150 per QALY/DALY.
+      ($3,340 per life saved); top-charity range ~$50-150 per DALY.
+
+  # DALY averted -> QALY gained. 1.0 is the standard convention (both anchored to
+  # one year of full health), but DALYs (disease burden) and QALYs (health
+  # utility) are constructed differently, so this is an EXPLICIT, adjustable
+  # assumption, not a measured equivalence. Kept at 1.0 rather than inventing a
+  # spread we can't source.
+  daly_to_qaly_factor: 1.0
 
 # ---------------------------------------------------------------------------
 # TWO ORTHOGONAL ADJUSTMENTS (GiveWell-style), kept deliberately separate:

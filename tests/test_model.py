@@ -154,7 +154,7 @@ def test_frontier_is_handicapped_not_raw():
     # credibility, so it must sit below the raw giving / frontier_cpq value.
     res = run(PARAMS, n=40_000, seed=5)
     raw = res.total_giving / implied_median(
-        PARAMS["conversions"]["frontier_cost_per_qaly_usd"]
+        PARAMS["conversions"]["frontier_cost_per_daly_usd"]
     )
     assert np.median(res.frontier_qalys) < raw
 
@@ -240,7 +240,7 @@ def test_readme_block_uses_dynamic_figures_not_hardcoded():
     block = readme_block(res, PARAMS)
     assert _dollar(res.total_giving) in block          # giving derived from params
     assert "$80/QALY" not in block                     # stale literal removed
-    fc = implied_median(PARAMS["conversions"]["frontier_cost_per_qaly_usd"])
+    fc = implied_median(PARAMS["conversions"]["frontier_cost_per_daly_usd"])
     assert _dollar(fc) in block                         # frontier derived from params
 
 
