@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from msqaly.distributions import implied_median, sample
-from msqaly.model import discounted_qale, load_params, run
+from msqaly.model import _spearman, discounted_qale, driver_sensitivity, load_params, run
 
 PARAMS = load_params()
 
@@ -114,3 +114,28 @@ def test_health_access_cost_per_qaly_is_reasonable():
     res = run(PARAMS, n=50_000, seed=9)
     cpq = res.cost_per_qaly["Health - insurance & access"]
     assert 5_000 < np.median(cpq) < 150_000
+
+
+def test_cost_per_qaly_floor_is_respected():
+    res = run(PARAMS, n=20_000, seed=4)
+    floor = PARAMS["meta"]["cost_per_qaly_floor_usd"]
+    for cpq in res.cost_per_qaly.values():
+        assert cpq.min() >= floor - 1e-6
+
+
+# --- sensitivity -------------------------------------------------------------
+
+def test_spearman_perfect_monotonic():
+    x = np.linspace(0, 1, 500)
+    assert _spearman(x, x ** 3) == pytest.approx(1.0, abs=1e-6)
+    assert _spearman(x, -x ** 3) == pytest.approx(-1.0, abs=1e-6)
+
+
+def test_sensitivity_signs_are_intuitive():
+    res = run(PARAMS, n=60_000, seed=8)
+    drivers = dict(driver_sensitivity(res))
+    # Realization scales everything up -> strong positive driver.
+    assert drivers["Realization factor (global)"] > 0.2
+    # A higher $/QALY means less cost-effective -> negative correlation.
+    neg = [v for k, v in drivers.items() if k.startswith("$/QALY")]
+    assert min(neg) < 0 and max(neg) <= 0.05

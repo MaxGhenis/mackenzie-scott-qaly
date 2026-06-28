@@ -30,3 +30,22 @@ _500,000 draws, seed 0. Total giving $26.3B (2026 base)._
 | Arts & culture | 317 | 850 | $1.4M | 3% |
 
 _Cost-per-QALY for the two health-access archetypes is derived from causal mortality estimates (Miller et al. 2021; Bailey & Goodman-Bacon 2015); the rest are drawn from the cited cost-effectiveness literature. See data/parameters.yaml and SOURCES.md._
+
+## What drives the uncertainty (Spearman tornado)
+
+| Input | Rank correlation with total QALYs |
+|---|---:|
+| Realization factor (global) | +0.56 |
+| $/QALY · Education (HBCUs, comm. college, scholarships) | -0.28 |
+| $/QALY · Equity & justice | -0.27 |
+| $/QALY · Economic security - housing & homelessness | -0.24 |
+| $/QALY · Economic security - food security | -0.22 |
+| $/QALY · Health - mental & behavioral | -0.15 |
+| $/QALY · Health - community health centers | -0.14 |
+| $/QALY · Economic security - workforce & mobility | -0.13 |
+| $/QALY · Health - insurance & access | -0.12 |
+| Allocation · Health - mental & behavioral | +0.12 |
+| Allocation · Health - community health centers | +0.11 |
+| Allocation · Health - insurance & access | +0.11 |
+
+_Positive: larger input → more QALYs (allocations, realization). Negative: larger input → fewer QALYs (a higher $/QALY is less cost-effective)._

@@ -58,6 +58,9 @@ class Results:
     frontier_qalys: np.ndarray                    # (n,) same $ at global frontier
     blended_cost_per_qaly: np.ndarray             # (n,) giving / total_qalys
     order: list = field(default_factory=list)     # archetype labels, allocation order
+    realization: np.ndarray | None = None         # (n,) global realization factor
+    shares: np.ndarray | None = None              # (n, k) sampled allocation
+    share_labels: list = field(default_factory=list)
 
     # -- convenience summaries -------------------------------------------------
     @staticmethod
@@ -151,4 +154,30 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
         total_qalys=total, per_archetype=per_archetype, cost_per_qaly=cost_per_qaly,
         qaly_per_death=qaly_per_death, value_usd=value_usd, bc_ratio=bc_ratio,
         frontier_qalys=frontier_qalys, blended_cost_per_qaly=blended, order=labels,
+        realization=realization, shares=shares, share_labels=labels,
     )
+
+
+def _spearman(x: np.ndarray, y: np.ndarray) -> float:
+    """Spearman rank correlation (no scipy dependency)."""
+    rx = np.argsort(np.argsort(x)).astype(float)
+    ry = np.argsort(np.argsort(y)).astype(float)
+    rx -= rx.mean()
+    ry -= ry.mean()
+    denom = np.sqrt((rx @ rx) * (ry @ ry))
+    return float(rx @ ry / denom) if denom else 0.0
+
+
+def driver_sensitivity(res: Results) -> list[tuple[str, float]]:
+    """Rank inputs by |Spearman correlation| with total QALYs -- a probabilistic
+    (one-way) sensitivity analysis identifying what drives the spread."""
+    total = res.total_qalys
+    rows: list[tuple[str, float]] = [
+        ("Realization factor (global)", _spearman(res.realization, total)),
+        ("QALYs per death averted", _spearman(res.qaly_per_death, total)),
+    ]
+    for j, label in enumerate(res.share_labels):
+        rows.append((f"$/QALY · {label}", _spearman(res.cost_per_qaly[label], total)))
+        rows.append((f"Allocation · {label}", _spearman(res.shares[:, j], total)))
+    rows.sort(key=lambda t: abs(t[1]), reverse=True)
+    return rows

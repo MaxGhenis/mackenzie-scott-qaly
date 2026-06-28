@@ -78,6 +78,10 @@ never drifts from the model. As of the committed run:
 
 ![Estimated QALYs](results/figure.png)
 
+The spread is driven mostly by the global realization factor and the cost-per-QALY of the largest, least-health-anchored buckets (education, equity & justice):
+
+![Sensitivity](results/sensitivity.png)
+
 _Full table: [results/summary.md](results/summary.md). Numbers regenerate on every `uv run msqaly`._
 <!-- RESULTS:END -->
 

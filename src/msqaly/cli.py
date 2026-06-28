@@ -14,7 +14,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .model import load_params, run
+from .model import driver_sensitivity, load_params, run
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results"
@@ -94,6 +94,17 @@ def summary_markdown(res, params) -> str:
         "2015); the rest are drawn from the cited cost-effectiveness literature. "
         "See data/parameters.yaml and SOURCES.md._\n"
     )
+
+    lines.append("## What drives the uncertainty (Spearman tornado)\n")
+    lines.append("| Input | Rank correlation with total QALYs |")
+    lines.append("|---|---:|")
+    for name, rho in driver_sensitivity(res)[:12]:
+        lines.append(f"| {name} | {rho:+.2f} |")
+    lines.append(
+        "\n_Positive: larger input → more QALYs (allocations, realization). "
+        "Negative: larger input → fewer QALYs (a higher $/QALY is less "
+        "cost-effective)._\n"
+    )
     return "\n".join(lines)
 
 
@@ -113,6 +124,10 @@ def readme_block(res) -> str:
         f"price of funding a rich country's social fabric rather than the global "
         f"frontier.\n\n"
         f"![Estimated QALYs](results/figure.png)\n\n"
+        f"The spread is driven mostly by the global realization factor and the "
+        f"cost-per-QALY of the largest, least-health-anchored buckets (education, "
+        f"equity & justice):\n\n"
+        f"![Sensitivity](results/sensitivity.png)\n\n"
         f"_Full table: [results/summary.md](results/summary.md). Numbers regenerate "
         f"on every `uv run msqaly`._"
     )
@@ -185,6 +200,35 @@ def make_figure(res, params, path: Path) -> None:
     plt.close(fig)
 
 
+def make_sensitivity_figure(res, path: Path, top: int = 12) -> None:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    rows = driver_sensitivity(res)[:top][::-1]
+    names = [r[0] for r in rows]
+    vals = [r[1] for r in rows]
+    colors = ["#0F6E56" if v >= 0 else "#993C1D" for v in vals]
+
+    fig, ax = plt.subplots(figsize=(9, 0.5 * len(rows) + 1.2))
+    ax.barh(range(len(vals)), vals, color=colors, alpha=0.85)
+    ax.axvline(0, color="#888780", lw=0.8)
+    ax.set_yticks(range(len(vals)))
+    ax.set_yticklabels(names, fontsize=9)
+    ax.set_xlabel("Spearman rank correlation with total QALYs")
+    ax.set_title(
+        "What drives the spread (probabilistic sensitivity)",
+        fontsize=12, loc="left",
+    )
+    ax.set_xlim(-1, 1)
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--n", type=int, default=100_000, help="Monte Carlo draws")
@@ -203,6 +247,7 @@ def main(argv=None) -> int:
     if not args.no_figure:
         try:
             make_figure(res, params, RESULTS / "figure.png")
+            make_sensitivity_figure(res, RESULTS / "sensitivity.png")
         except Exception as exc:  # pragma: no cover - figure is optional
             print(f"(figure skipped: {exc})")
     update_readme(res)
