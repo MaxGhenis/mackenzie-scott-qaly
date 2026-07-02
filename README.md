@@ -40,7 +40,11 @@ block below; a bare `uv run msqaly` only prints, so casual runs never dirty git.
 
 The model is a transparent pipeline over `n` Monte Carlo draws (vectorized numpy,
 seeded → reproducible). All inputs live in
-[`data/parameters.yaml`](data/parameters.yaml); every value carries a `source`.
+[`data/parameters.yaml`](data/parameters.yaml); every value carries a `source`,
+a typed `unit`, and — for dollar figures — a `dollars_base_year` that
+[`validate.py`](src/msqaly/validate.py) checks against the base year on every
+load, so a per-DALY figure in a per-QALY slot or an un-inflated old-dollar
+figure fails loudly instead of shipping.
 
 1. **QALYs per death averted.** A discounted (3%/yr), quality-weighted annuity
    over remaining life expectancy, calibrated to the low-income, middle-aged/older

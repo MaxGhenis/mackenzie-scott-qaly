@@ -25,14 +25,17 @@ import numpy as np
 import yaml
 
 from .distributions import sample
+from .validate import validate_params
 
 DEFAULT_PARAMS = Path(__file__).resolve().parents[2] / "data" / "parameters.yaml"
 
 
 def load_params(path: str | Path | None = None) -> dict:
+    """Load and validate the parameter file. Validation enforces typed units
+    and base-year dollar vintages on every sampled spec (see validate.py)."""
     path = Path(path) if path else DEFAULT_PARAMS
     with open(path) as fh:
-        return yaml.safe_load(fh)
+        return validate_params(yaml.safe_load(fh))
 
 
 def discounted_qale(years: np.ndarray, utility: np.ndarray, rate: float) -> np.ndarray:

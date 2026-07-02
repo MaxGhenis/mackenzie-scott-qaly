@@ -6,6 +6,13 @@
 #   fixed | uniform | loguniform | triangular | normal | lognormal_ci
 # `lognormal_ci` interprets {low, high} as the 5th/95th percentiles.
 #
+# TYPED UNITS (enforced by src/msqaly/validate.py on every load): each sampled
+# spec declares `unit`, and every dollar-denominated spec also declares
+# `dollars_base_year`, which MUST equal meta.base_year. A figure pasted in its
+# publication-year dollars fails validation until it is inflated and the
+# conversion documented in `source` — the DALY-mislabeled-as-QALY and
+# 2007-dollars-used-as-current bugs cannot recur silently.
+#
 # Philosophy (GiveWell-style): wherever possible a cost-per-QALY is DERIVED
 # from a causal effect estimate in the literature (cost-per-life, mortality
 # effect) rather than asserted. Indirect buckets (education, equity, civic,
@@ -13,6 +20,8 @@
 # =============================================================================
 
 meta:
+  # Nominal sum of gifts as reported 2019-2025 — no single price-year exists,
+  # so this scalar is deliberately exempt from the dollars_base_year rule.
   total_giving_usd: 2.63e+10   # $26.3B (signed exponent so YAML parses it as float)
   total_giving_source: >-
     Model uses the ~$26.3B cumulative estimate reported for year-end 2025;
@@ -38,8 +47,8 @@ conversions:
   # Calibrated to the low-income, middle-aged/older adults who dominate the
   # causal mortality studies (Medicaid expansion, community health centers).
   qaly_per_death_averted:
-    remaining_life_expectancy: {dist: normal, mean: 26, sd: 4, min: 5}
-    utility_weight: {dist: triangular, low: 0.60, mode: 0.78, high: 0.92}
+    remaining_life_expectancy: {dist: normal, mean: 26, sd: 4, min: 5, unit: years}
+    utility_weight: {dist: triangular, low: 0.60, mode: 0.78, high: 0.92, unit: utility_weight}
     source: >-
       Remaining life expectancy ~26y for low-income adults ~age 55 (the
       populations in [Miller, Johnson & Wherry 2021](https://www.nber.org/papers/w26081)
@@ -53,6 +62,8 @@ conversions:
     low: 231000
     mode: 611000
     high: 1030000
+    unit: usd_per_life_year   # HHS publishes VSLY; applied to QALYs when monetizing
+    dollars_base_year: 2026
     source: >-
       [HHS ASPE Standard Values for Regulatory Analysis 2026](https://aspe.hhs.gov/sites/default/files/documents/2d83af5823915d81871334ee08ad03d9/Standard-RIA-Values-2026.pdf):
       VSLY central $611k (3% discount), $1.03M (7%); 2024 low estimate $231k.
@@ -68,6 +79,8 @@ conversions:
     dist: loguniform
     low: 50
     high: 150
+    unit: usd_per_qaly        # QALY-equivalent; DALY conversion documented below
+    dollars_base_year: 2026   # 2026-dollar prior anchored to recent GiveWell figures
     source: >-
       GiveWell reports global-health cost-effectiveness in lives saved and DALYs,
       not QALYs: its [current impact estimates](https://www.givewell.org/impact-estimates)
@@ -100,6 +113,7 @@ realization_factor:
   low: 0.55
   mode: 0.80
   high: 1.10
+  unit: multiplier
   source: >-
     Implementation/attribution only (evidence quality now lives in
     causal_credibility). [Center for Effective Philanthropy (2023)](https://cep.org/wp-content/uploads/2023/11/BigGiftsStudy_Report_Y2_FNL.pdf):
@@ -138,7 +152,7 @@ archetypes:
       DD across staggered state Medicaid expansions with linked administrative
       mortality (Miller et al. 2021). Strong; Oregon HIE RCT (null on 2-yr
       physical health) tempers it, hence not the top tier.            # cost_per_qaly = cost_per_life / qaly_per_death
-    cost_per_life_usd: {dist: loguniform, low: 529000, high: 1400000}
+    cost_per_life_usd: {dist: loguniform, low: 529000, high: 1400000, unit: usd_per_life, dollars_base_year: 2026}
     source: >-
       [Miller, Johnson & Wherry (2021)](https://www.nber.org/papers/w26081),
       QJE 136(3), estimate ACA Medicaid expansion reduced annual mortality by
@@ -158,8 +172,8 @@ archetypes:
       Event-study/DD on CHC rollout (Bailey & Goodman-Bacon 2015). Credible but
       1960s-70s rollout with documented spatial-spillover concerns in later
       re-analyses; external validity to today's CHCs uncertain.  # = medicare_cost_per_lifeyear * chc_fraction
-    medicare_cost_per_lifeyear_usd: {dist: loguniform, low: 100000, high: 300000}
-    chc_fraction_of_medicare: {dist: uniform, low: 0.125, high: 0.333}
+    medicare_cost_per_lifeyear_usd: {dist: loguniform, low: 100000, high: 300000, unit: usd_per_life_year, dollars_base_year: 2026}
+    chc_fraction_of_medicare: {dist: uniform, low: 0.125, high: 0.333, unit: fraction}
     source: >-
       [Bailey & Goodman-Bacon (2015)](https://www.aeaweb.org/articles?id=10.1257/aer.20120070),
       AER 105(3): CHCs cut mortality among 50+ by ~2% within a decade, achieving
@@ -175,7 +189,7 @@ archetypes:
       ICERs come from RCTs of collaborative care for depression (high internal
       validity). Discount here is mostly attribution (does Scott's grant fund
       this exact model), handled by realization, not identification.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 15000, high: 90000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 15000, high: 90000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       Collaborative-care depression systematic reviews (e.g.,
       [Gilbody et al.](https://link.springer.com/article/10.1186/1472-6963-10-19)
@@ -192,7 +206,7 @@ archetypes:
       Lottery randomization (Cesarini et al. 2016) credibly estimates a ~null
       adult-mortality effect of income. High credibility for a SMALL effect:
       we trust the estimate, and the estimate is that there is little here.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 80000, high: 2000000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 80000, high: 2000000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       [Cesarini et al. (2016, QJE)](https://academic.oup.com/qje/article/131/2/687/2606947)
       lottery study finds ~zero causal effect of income on adult mortality in a
@@ -210,7 +224,7 @@ archetypes:
       (sicker or poorer households select in/out); strong confounding risk.
       The cost-per-QALY assumes the effect is real; credibility says it may
       not be causal.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 20000, high: 200000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 20000, high: 200000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       Cost-effectiveness range CONDITIONAL on the association being causal,
       anchored to (not derived from) [CBPP syntheses](https://www.cbpp.org/research/food-assistance/snap-is-linked-with-improved-health-outcomes-and-lower-health-care-costs)
@@ -228,7 +242,7 @@ archetypes:
       NASEM (2018) judged the PSH health evidence MIXED: few RCTs, mostly
       pre/post and quasi-experimental, contested cost-savings. Real signal for
       high-need subgroups, weak identification overall.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 20000, high: 150000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 20000, high: 150000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       [NASEM (2018) Permanent Supportive Housing review](https://nap.nationalacademies.org/read/25133/chapter/6).
       The ~$62,493/QALY point is the Housing & Health Study, an HIV-positive
@@ -246,7 +260,7 @@ archetypes:
       Health effect inferred from the income-health gradient with a causal
       discount; little direct experimental evidence that workforce grants move
       health. Consistent with the credible ~null income-mortality result.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 40000, high: 600000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 40000, high: 600000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       Cost-effectiveness CONDITIONAL on workforce/earnings gains translating to
       health via the income-health gradient. The causal doubt (~null per
@@ -263,7 +277,7 @@ archetypes:
       Compulsory-schooling IV/quasi-experiments (Lleras-Muney; Lager &
       Torssander; Dutch reform) are credible but the literature is genuinely
       contested — Clark & Royer (2013) find ~null mortality effects. Wide.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 40000, high: 600000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 40000, high: 600000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       [van Kippersluis, O'Donnell & van Doorslaer (2011)](https://jhr.uwpress.org/content/46/4/695.short),
       Journal of Human Resources 46(4), Dutch reform: +1 yr schooling -> ~6%
@@ -280,7 +294,7 @@ archetypes:
       No credible causal estimate links Scott's equity/justice grants to QALYs.
       Plausible indirect pathways (e.g., incarceration-mortality) exist but
       attribution is speculative; value is overwhelmingly non-health.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 50000, high: 2000000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 50000, high: 2000000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       Cause mix informed by [HBS analysis of Yield Giving recipients](https://www.library.hbs.edu/working-knowledge/mackenzie-scotts-15-billion-pledge-what-the-data-says-about-her-epic-giving):
       racial equity, criminal-justice reform, immigration, gender. Health pathway
@@ -293,7 +307,7 @@ archetypes:
     method: cost_per_qaly
     causal_credibility: assumption
     identification: "No causal health evidence; value is civic/institutional."
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 100000, high: 5000000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 100000, high: 5000000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       Cause mix informed by [HBS analysis of Yield Giving recipients](https://www.library.hbs.edu/working-knowledge/mackenzie-scotts-15-billion-pledge-what-the-data-says-about-her-epic-giving).
       Negligible direct health pathway; value is civic and institutional.
@@ -307,7 +321,7 @@ archetypes:
       Arts-and-health literature exists (WHO 2019; Bygren et al.) but is
       observational and about participation programs, not institutional grants.
       Treated as a skeptical near-zero prior.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 200000, high: 10000000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 200000, high: 10000000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       Arts-health evidence such as the [WHO 2019 scoping review](https://www.who.int/europe/publications/i/item/9789289054553)
       concerns participation and wellbeing, not institutional grants. Negligible
@@ -322,7 +336,7 @@ archetypes:
       Mortality cost of carbon is an integrated-assessment-model projection
       (Bressler 2021), not a causal estimate of a gift's effect; abatement
       attribution of diffuse climate philanthropy is speculative.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 25000, high: 2000000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 25000, high: 2000000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       Wide $/QALY range ANCHORED TO, not derived from,
       [Bressler (2021, Nature Communications)](https://www.nature.com/articles/s41467-021-24487-w)
@@ -336,7 +350,7 @@ archetypes:
     method: cost_per_qaly
     causal_credibility: observational
     identification: "Blended social-services proxy; no single identified estimate."
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 30000, high: 400000}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 30000, high: 400000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       Blended social-services proxy for unclassified giving, with recipient mix
       informed by [HBS analysis of Yield Giving recipients](https://www.library.hbs.edu/working-knowledge/mackenzie-scotts-15-billion-pledge-what-the-data-says-about-her-epic-giving).
