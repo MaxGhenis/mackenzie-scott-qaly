@@ -49,6 +49,7 @@ FRONTIER_CHILD_UNITS = {
     "remaining_life_years": "years",
     "utility_weight": "utility_weight",
 }
+VQALY_ADULT_UNITS = FRONTIER_CHILD_UNITS
 METHOD_UNITS = {
     "cost_per_qaly": {"cost_per_qaly_usd": "usd_per_qaly"},
     "cost_per_life": {"cost_per_life_usd": "usd_per_life"},
@@ -137,6 +138,9 @@ def validate_params(params: dict) -> dict:
     fc = conv["frontier_child"]
     for key, expected in FRONTIER_CHILD_UNITS.items():
         _check_spec(fc[key], f"conversions.frontier_child.{key}", expected, base_year)
+    va = conv["vqaly_adult"]
+    for key, expected in VQALY_ADULT_UNITS.items():
+        _check_spec(va[key], f"conversions.vqaly_adult.{key}", expected, base_year)
 
     _check_spec(params["realization_factor"], "realization_factor", "multiplier", base_year)
 

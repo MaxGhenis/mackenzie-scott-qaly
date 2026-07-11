@@ -48,10 +48,12 @@ figure fails loudly instead of shipping.
 
 1. **Giving, at one price level.** Gifts are recorded as the exact disclosed
    nominal tranches ($26.39B across 2020–2025, each row linked to its
-   disclosure) and each tranche is CPI-inflated to the 2026 base year
-   (→ ~$30.3B), so the dollars and the cost-per-QALY inputs share one price
-   level. Dividing nominal gifts by 2026-dollar costs would understate QALYs
-   by ~13%.
+   disclosure — e.g. [Yield Giving's updates](https://yieldgiving.com/essays)
+   and [CNBC's year-end accounting](https://www.cnbc.com/2025/12/13/mackenzie-scott-revealed-her-total-charitable-donations-for-2025.html))
+   and each tranche is [CPI-inflated](https://fred.stlouisfed.org/series/CPIAUCNS)
+   to the 2026 base year (→ ~$30.3B), so the dollars and the cost-per-QALY
+   inputs share one price level. Dividing nominal gifts by 2026-dollar costs
+   would understate QALYs by ~13%.
 
 2. **QALYs per death averted.** A discounted (3%/yr), quality-weighted annuity
    over remaining life expectancy with a half-cycle correction, calibrated to
@@ -104,17 +106,19 @@ figure fails loudly instead of shipping.
    summed across archetypes.
 
 8. **Monetize & benchmark.** QALYs × HHS's published **value per QALY**
-   (VQALY, Table 3 of the 2026 Data Point: $339k/$726k/$1,105k at 3% in
-   constant 2025 dollars, CPI-inflated to $353k/$756k/$1,150k) gives the
-   benefit/cost ratio — the correct series for QALY monetization, replacing
-   the earlier VSLY-applied-to-QALYs convention. The global-health frontier is
-   a QALY-equivalent cost derived from GiveWell's current program averages
+   ([VQALY, Table 3 of the 2026 Data Point](https://aspe.hhs.gov/sites/default/files/documents/2d83af5823915d81871334ee08ad03d9/Standard-RIA-Values-2026.pdf):
+   $339k/$726k/$1,105k at 3% in constant 2025 dollars, CPI-inflated to
+   $353k/$756k/$1,150k) gives the benefit/cost ratio — the correct series for
+   QALY monetization, replacing the earlier VSLY-applied-to-QALYs convention;
+   both the VQALY and the frontier are denominated at the 3% reference rate
+   and rescaled (adult PV-QALY ratio and child-QALE ratio respectively) when
+   the model runs at another rate. The global-health frontier is a
+   QALY-equivalent cost derived from
+   [GiveWell's current program averages](https://www.givewell.org/impact-estimates)
    ($4,000–$5,500 per under-5 life saved, 2022–2024, inflated → ÷ ~25.1
    discounted QALYs per child death → loguniform $150–$260, central ~$197),
-   denominated at the 3% reference rate and rescaled by the child-QALE ratio
-   when the model runs at another rate, then *handicapped with the same
-   realization and credibility* so the counterfactual benchmark is
-   like-for-like at any discount setting.
+   then *handicapped with the same realization and credibility* so the
+   counterfactual benchmark is like-for-like at any discount setting.
 
 ## Results
 
@@ -140,9 +144,9 @@ _Full table: [results/summary.md](results/summary.md). Regenerate with `uv run m
   not the dollar total.** Grounding the ratios in causal estimates and then
   weighting by identification quality (rather than a flat US cost-effectiveness
   threshold) is the whole point of this repo.
-- **Causal skepticism roughly halves the headline.** Taking evidence quality
-  seriously drops the central estimate from trusting every cited effect at face
-  value to the lower evidence-weighted estimate. The buckets that survive are
+- **Causal skepticism cuts the headline by roughly 60%.** Weighting each
+  effect by its study design takes the central estimate from ~224k QALYs
+  (trust every cited effect at face value) to ~87k. The buckets that survive are
   the ones with the strongest designs
   (collaborative-care RCTs, the Medicaid difference-in-differences); the largest
   *dollar* buckets (equity & justice, education) contribute little health because

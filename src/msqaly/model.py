@@ -80,7 +80,7 @@ class Results:
     cost_per_qaly: dict                           # label -> (n,) $/QALY
     credibility: dict                             # label -> (n,) causal-credibility weight
     qaly_per_death: np.ndarray                    # (n,)
-    value_usd: np.ndarray                         # (n,) QALYs monetized at VSLY
+    value_usd: np.ndarray                         # (n,) QALYs monetized at HHS VQALY
     bc_ratio: np.ndarray                          # (n,) value / giving
     frontier_qalys: np.ndarray                    # (n,) same $ at global frontier
     blended_cost_per_qaly: np.ndarray             # (n,) giving / total_qalys
@@ -113,6 +113,7 @@ class Results:
                 "p05": self._pct(self.bc_ratio, 5),
                 "p95": self._pct(self.bc_ratio, 95),
             },
+            "total_giving_usd": self.total_giving,
             "frontier_qalys_median": self._pct(self.frontier_qalys, 50),
             "frontier_multiple_median": self._pct(
                 self.frontier_qalys / np.maximum(tq, 1e-9), 50
@@ -192,7 +193,17 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
         total += q
 
     # 6. Monetize and frontier comparison
-    vqaly = sample(params["conversions"]["vqaly_usd"], n, rng)
+    # The VQALY prior is denominated at the 3% reference rate; rescale it to
+    # the active rate by the adult PV-QALY ratio (reproduces HHS Table 2 within
+    # ~1%), so the benefit/cost ratio stays consistent with the discount slider.
+    va = params["conversions"]["vqaly_adult"]
+    adult_years = np.array([float(va["remaining_life_years"]["value"])])
+    adult_u = np.array([float(va["utility_weight"]["value"])])
+    vqaly_scale = (
+        discounted_qale(adult_years, adult_u, 0.03)[0]
+        / discounted_qale(adult_years, adult_u, rate)[0]
+    )
+    vqaly = sample(params["conversions"]["vqaly_usd"], n, rng) * vqaly_scale
     value_usd = total * vqaly
     bc_ratio = value_usd / giving
     frontier_cpq = sample(params["conversions"]["frontier_cost_per_qaly_usd"], n, rng)

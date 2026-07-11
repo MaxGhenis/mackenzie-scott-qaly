@@ -339,3 +339,16 @@ def test_spearman_handles_ties_with_midranks():
     ties = np.repeat(np.arange(13), 4001 // 13 + 1)[:4001].astype(float)
     rng.shuffle(ties)
     assert abs(_spearman(ties, y)) < 0.05
+
+
+def test_vqaly_rescales_with_discount_rate():
+    # Monetization is denominated at 3%; at 7% the adult PV-QALY shrinks, the
+    # per-QALY value rises, and the ratio approximates HHS's published 7%/3%
+    # VQALY ratio (1205/726 ~ 1.66) within a few percent.
+    base = run(PARAMS, n=30_000, seed=13)
+    meta7 = {**PARAMS["meta"], "discount_rate": 0.07}
+    hi = run({**PARAMS, "meta": meta7}, n=30_000, seed=13)
+    implied_ratio = (np.median(hi.value_usd) / np.median(hi.total_qalys)) / (
+        np.median(base.value_usd) / np.median(base.total_qalys)
+    )
+    assert implied_ratio == pytest.approx(1205 / 726, rel=0.05)

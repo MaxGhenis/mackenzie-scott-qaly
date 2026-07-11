@@ -317,9 +317,18 @@ def main(argv=None) -> int:
     tmp_sens = RESULTS / "sensitivity.tmp.png"
     make_sensitivity_figure(res, tmp_sens)
     staged.append((tmp_sens, RESULTS / "sensitivity.png"))
+    # README joins the same bundle: compute its new text before replacing
+    # anything, so a failure anywhere leaves every canonical artifact intact.
+    wrote_readme = False
+    if README.exists():
+        new_readme = inject_results(README.read_text(), readme_block(res, params))
+        if new_readme is not None:
+            tmp_readme = ROOT / "README.tmp.md"
+            tmp_readme.write_text(new_readme)
+            staged.append((tmp_readme, README))
+            wrote_readme = True
     for tmp, final in staged:
         tmp.replace(final)
-    wrote_readme = update_readme(res, params)
     print(f"\nWrote {RESULTS/'summary.md'}, summary.json, figure.png, sensitivity.png"
           + (", README block" if wrote_readme else ""))
     return 0
