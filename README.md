@@ -179,6 +179,13 @@ _Full table: [results/summary.md](results/summary.md). Regenerate with `uv run m
   are the stress test.
 - Monetization uses HHS's published value per QALY; it affects only the
   benefit/cost ratio, never the QALY count.
+- **The frontier multiple is marginal, not portfolio-scale.** Redeploying the
+  full ~$30B at the frontier would exhaust frontier-priced opportunities
+  (GiveWell directed [$397M in all of 2024](https://blog.givewell.org/2025/08/13/givewells-2024-metrics-and-impact/)
+  and [moves its cost-effectiveness bar with expected funding](https://blog.givewell.org/2022/07/05/update-on-givewells-funding-projections/)
+  — down to ~6x cash when flush, back to 10x when projections fell);
+  rising marginal costs plausibly cut the ~1,200× multiple to a few hundred
+  times at portfolio scale — same direction, softer magnitude.
 - Effects are modeled as static cost-per-QALY ratios, not a dynamic life-table
   microsimulation.
 
