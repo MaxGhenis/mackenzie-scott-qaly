@@ -30,7 +30,7 @@ def test_every_dollar_spec_declares_base_year_matching_meta():
 
 def test_missing_unit_raises():
     p = copy.deepcopy(PARAMS)
-    del p["conversions"]["vsly_usd"]["unit"]
+    del p["conversions"]["vqaly_usd"]["unit"]
     with pytest.raises(ParamValidationError, match="missing required `unit`"):
         validate_params(p)
 

@@ -9,17 +9,20 @@ inputs are expressed in 2026 dollars; CPI-U index values from
 
 ## Giving total (nominal tranches → 2026 dollars)
 
-- **$26.30B nominal, 2020–2025, inflated tranche-by-tranche to ~$30.2B (2026$).**
-  Tranches: Jul 2020 $1.68B and Dec 2020 $4.16B (Scott's Medium letters, widely
-  reported); Jun 2021 $2.74B; Mar 2022 $3.86B (gifts since Jun 2021, booked
-  conservatively at the 2022 price level); Nov 2022 $1.99B; 2023 ~$2.10B and
-  2024 ~$2.07B (Yield Giving year totals as reported by CNBC); 2025 $7.165B and
-  the ~$26.3B cumulative:
-  [CNBC, 2025-12-13](https://www.cnbc.com/2025/12/13/mackenzie-scott-revealed-her-total-charitable-donations-for-2025.html).
-  A $0.535B reconciliation residual (undisclosed/smaller gifts) is booked at
-  the 2023 price level. [Yield Giving](https://yieldgiving.com/) itself says
-  "over $26B in 2,700+ gifts" — the exact $26.3B comes from the CNBC year-end
-  accounting, not the Yield page.
+- **$26.39B nominal in exact disclosed tranches, 2020–2025, inflated
+  tranche-by-tranche to ~$30.3B (2026$).**
+  Jul 2020 $1.68B and Dec 2020 $4.16B (Scott's essays, recapped in
+  [CNBC's year-end 2025 accounting](https://www.cnbc.com/2025/12/13/mackenzie-scott-revealed-her-total-charitable-donations-for-2025.html));
+  Jun 2021 $2.74B; Mar 2022 $3.86B (gifts since Jun 2021, booked conservatively
+  at the 2022 price level); Nov 2022 $1.99B;
+  2023 $2.153B ([Yield Giving update](https://yieldgiving.com/essays/giving-update/));
+  2024 $640M ([Open Call, AP](https://apnews.com/article/ae809a469080e9e61a945a14a230629e))
+  plus $2.0044B ([Yield Giving update](https://yieldgiving.com/essays/investing/));
+  2025 $7.166B ([Yield Giving update](https://yieldgiving.com/essays/we-are-the-ones-we-ve-been-waiting-for/)).
+  The 2025 CPI-U annual average (321.943) is BLS's calculated 11-month average
+  around the 2025 shutdown
+  ([BLS methodology](https://www.bls.gov/cpi/additional-resources/2025-federal-government-shutdown-impact-cpi-faq.htm)).
+  "$26.3B" is the public shorthand for this $26.39B ledger.
 - **Cause-area mix.** [HBS Working Knowledge analysis of Yield Giving
   recipients](https://www.library.hbs.edu/working-knowledge/mackenzie-scotts-15-billion-pledge-what-the-data-says-about-her-epic-giving)
   (largest areas: equity & justice, education, economic security, health;
@@ -65,20 +68,24 @@ inputs are expressed in 2026 dollars; CPI-U index values from
 
 ## Health — mental & behavioral
 
-- **Anchors inflated from 2000s nominal: Gilbody et al. $17k–$39k/QALY and the
-  Community Guide's highest $49.5k/QALY, treated as ~2006 dollars → ~$28k–$82k
-  (×1.66 from CPI-U 201.6 → 335.123); prior {25k, 140k} with the upper tail
-  toward Grochtdreis et al.'s wider healthcare-perspective range (up to ~$153k).**
-  [Gilbody et al., *BMC Health Services Research* 10:19](https://link.springer.com/article/10.1186/1472-6963-10-19)
-  · [Community Preventive Services Task Force](https://www.thecommunityguide.org/findings/mental-health-and-mental-illness-collaborative-care-management-depressive-disorders.html)
+- **Community Guide (Jacob et al.) $17.6k–$49.5k/QALY in 2008 dollars →
+  ~$27k–$77k (×1.56 from CPI-U 215.303 → 335.123); prior {25k, 150k} with the
+  upper tail toward Grochtdreis et al.'s healthcare-perspective maximum of
+  $153,299 in 2012 international dollars (not CPI-converted — international
+  dollars are not US dollars).**
+  [Community Preventive Services Task Force](https://www.thecommunityguide.org/findings/mental-health-and-mental-illness-collaborative-care-management-depressive-disorders.html)
+  · [van Steenbergen-Weijenburg et al., *BMC Health Services Research* 10:19,
+  2010](https://link.springer.com/article/10.1186/1472-6963-10-19) (systematic
+  review; an earlier revision misattributed this link to "Gilbody et al. 2006")
   · [Grochtdreis, Brettschneider, Wegener et al., *PLOS ONE* 10(5):e0123078,
   2015](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123078).
 
 ## Economic security — housing & homelessness
 
 - **Point anchor $62,493/QALY (Housing & Health intervention, HIV-positive
-  unstably-housed cohort, study 2004–2008), treated as ~2008 dollars → ~$97k
-  (×1.56 from CPI-U 215.303 → 335.123); prior {30k, 220k}.**
+  unstably-housed cohort, study 2004–2008), stated in 2005 dollars per the
+  team's [underlying cost analysis](https://shnny.org/uploads/Cost_and_Threshold_Analysis_of_Housing_as_an_HIV_Prevention.pdf)
+  → ~$107k (×1.716 from CPI-U 195.267 → 335.123); prior {30k, 220k}.**
   [Holtgrave et al., *AIDS and Behavior* 17(5), 2013](https://link.springer.com/article/10.1007/s10461-012-0204-3).
   [NASEM (2018), *Permanent Supportive Housing*](https://nap.nationalacademies.org/read/25133/chapter/6)
   is cited for the mixed-evidence assessment of PSH health effects only.
@@ -121,18 +128,21 @@ inputs are expressed in 2026 dollars; CPI-U index values from
   (income–life-expectancy gradient). Utility ~0.78:
   [US EQ-5D-5L population norms (Jiang et al., *Qual Life Res*, 2021)](https://link.springer.com/article/10.1007/s11136-020-02650-y).
   Values are calibration judgments anchored to these sources.
-- **VSLY (monetization only): triangular $285k / $611k / $931k, 2026 dollars,
-  3% discount.** Central from
-  [HHS ASPE Standard Values 2026](https://aspe.hhs.gov/sites/default/files/documents/2d83af5823915d81871334ee08ad03d9/Standard-RIA-Values-2026.pdf);
-  low/high are the [2024 Data Point's](https://aspe.hhs.gov/sites/default/files/documents/cd2a1348ea0777b1aa918089e4965b8c/standard-ria-values.pdf)
-  $231k/$754k scaled by 611/495 = 1.234 to the 2026 central, preserving
-  relative spread at one price level and discount convention.
-- **Global-health frontier: $110–$260 per QALY-equivalent (2026$), derived
-  from $3,340–$5,500 per under-5 life saved ÷ ~25 discounted QALYs per child
-  death** (remaining LE ~65y, 3% discount, half-cycle, utility ~0.87).
-  [GiveWell current impact estimates](https://www.givewell.org/impact-estimates)
-  (~$5,500/life for nets) · [older AMF/GiveWell summary](https://forum.effectivealtruism.org/posts/HbunzTyFPRwcYihg6/long-lasting-insecticide-treated-nets-usd3-340-per-life)
-  (~$3,340/life).
+- **VQALY (monetization only): triangular $353k / $756k / $1,150k, May-2026
+  dollars, 3% discount.** From
+  [HHS ASPE Standard Values 2026](https://aspe.hhs.gov/sites/default/files/documents/2d83af5823915d81871334ee08ad03d9/Standard-RIA-Values-2026.pdf),
+  Table 3: value per QALY $339k/$726k/$1,105k for 2026 impacts at 3%, in
+  constant 2025 dollars, inflated ×1.0409 (CPI-U 321.943 → 335.123). Replaces
+  the earlier convention of applying the per-life-YEAR value (VSLY) to QALYs.
+- **Global-health frontier: $150–$260 per QALY-equivalent (2026$), derived
+  from GiveWell's current 2022–2024 program averages of $4,000 (Malaria
+  Consortium) – $5,500 (AMF) per life saved, inflated ~×1.10 and ÷ ~25.1
+  discounted QALYs per child death** (remaining LE ~65y, 3% discount,
+  half-cycle, utility ~0.87); denominated at the 3% reference rate and
+  rescaled by the child-QALE ratio at other rates.
+  [GiveWell current impact estimates](https://www.givewell.org/impact-estimates).
+  (A 2015 AMF figure of ~$3,340/life used in an earlier revision is retired —
+  it predates current program costs and was itself a discounted calculation.)
 
 ---
 

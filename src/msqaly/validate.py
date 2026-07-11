@@ -38,11 +38,15 @@ DOLLAR_UNITS = {"usd_per_qaly", "usd_per_life", "usd_per_life_year"}
 # Expected unit for each sampled spec, by location. Archetype expectations are
 # keyed by the archetype's `method`, so adding an archetype needs no edit here.
 CONVERSION_UNITS = {
-    "vsly_usd": "usd_per_life_year",
+    "vqaly_usd": "usd_per_qaly",
     "frontier_cost_per_qaly_usd": "usd_per_qaly",
 }
 QALY_PER_DEATH_UNITS = {
     "remaining_life_expectancy": "years",
+    "utility_weight": "utility_weight",
+}
+FRONTIER_CHILD_UNITS = {
+    "remaining_life_years": "years",
     "utility_weight": "utility_weight",
 }
 METHOD_UNITS = {
@@ -130,6 +134,9 @@ def validate_params(params: dict) -> dict:
     qd = conv["qaly_per_death_averted"]
     for key, expected in QALY_PER_DEATH_UNITS.items():
         _check_spec(qd[key], f"conversions.qaly_per_death_averted.{key}", expected, base_year)
+    fc = conv["frontier_child"]
+    for key, expected in FRONTIER_CHILD_UNITS.items():
+        _check_spec(fc[key], f"conversions.frontier_child.{key}", expected, base_year)
 
     _check_spec(params["realization_factor"], "realization_factor", "multiplier", base_year)
 

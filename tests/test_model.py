@@ -46,7 +46,7 @@ def test_giving_total_derived_from_tranches():
     assert meta["total_giving_nominal_usd"] == pytest.approx(nominal)
     assert meta["total_giving_usd"] == pytest.approx(real)
     # Nominal matches the reported ~$26.3B cumulative; real-2026 sits above it.
-    assert nominal == pytest.approx(26.3e9, rel=0.005)
+    assert nominal == pytest.approx(26.3934e9, rel=0.001)
     assert 28e9 < real < 32e9
     assert real > nominal
 
@@ -305,3 +305,37 @@ def test_make_figure_writes_a_file(tmp_path):
     p = tmp_path / "fig.png"
     make_figure(res, PARAMS, p)
     assert p.exists() and p.stat().st_size > 0
+
+
+def test_write_refuses_no_figure():
+    from msqaly.cli import main as cli_main
+
+    with pytest.raises(SystemExit):
+        cli_main(["--write", "--no-figure"])
+
+
+def test_frontier_rescales_with_discount_rate():
+    # The frontier prior is denominated at 3%; at a higher rate the child QALE
+    # shrinks, the frontier's $/QALY rises, and frontier QALYs fall (holding
+    # everything else at the same seed).
+    base = run(PARAMS, n=30_000, seed=12)
+    meta7 = {**PARAMS["meta"], "discount_rate": 0.07}
+    hi = run({**PARAMS, "meta": meta7}, n=30_000, seed=12)
+    assert np.median(hi.frontier_qalys) < 0.75 * np.median(base.frontier_qalys)
+    # And at the reference rate the rescale is a no-op relative to the raw prior.
+    raw = base.total_giving / implied_median(
+        PARAMS["conversions"]["frontier_cost_per_qaly_usd"]
+    )
+    assert np.median(base.frontier_qalys) < raw
+
+
+def test_spearman_handles_ties_with_midranks():
+    # A constant vector must have zero correlation with anything, and heavy
+    # ties must not produce spurious argsort-order correlation.
+    rng = np.random.default_rng(3)
+    y = rng.normal(size=4001)
+    const = np.ones(4001)
+    assert _spearman(const, y) == pytest.approx(0.0, abs=1e-12)
+    ties = np.repeat(np.arange(13), 4001 // 13 + 1)[:4001].astype(float)
+    rng.shuffle(ties)
+    assert abs(_spearman(ties, y)) < 0.05

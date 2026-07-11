@@ -2,16 +2,19 @@
 
 Pipeline (all vectorized over `n` Monte Carlo draws):
 
-    1. Build a shared `qaly_per_death_averted` from a discounted, quality-
-       weighted remaining-life annuity.
-    2. Draw a global `realization_factor` (GiveWell-style adjustment).
-    3. Draw the dollar allocation across archetypes from a Dirichlet centered
+    1. Inflate the nominal giving tranches to base-year dollars (load_params).
+    2. Build a shared `qaly_per_death_averted` from a discounted, quality-
+       weighted remaining-life annuity (half-cycle corrected).
+    3. Draw a global `realization_factor` and per-archetype causal-credibility
+       weights from their evidence tiers.
+    4. Draw the dollar allocation across archetypes from a Dirichlet centered
        on the parameter file's `allocation_share` values.
-    4. For each archetype, obtain a cost-per-QALY -- either drawn directly or
-       DERIVED from a causal estimate (cost-per-life, or a fraction of the
-       Medicare cost of an equivalent mortality reduction).
-    5. QALYs = dollars * share * realization / cost_per_qaly, summed.
-    6. Monetize at VSLY and compare to the global-health frontier.
+    5. For each archetype, obtain a cost-per-QALY -- drawn directly, or
+       DERIVED from a causal estimate: cost-per-life / QALYs-per-death, or
+       cost-per-life-year / utility.
+    6. QALYs = dollars * share * realization * credibility / cost_per_qaly.
+    7. Monetize at HHS VQALY and compare to the global-health frontier
+       (frontier cost rescaled to the active discount rate via the child QALE).
 
 Everything is plain numpy; no hidden state. Re-running with the same seed
 reproduces results exactly.
@@ -189,10 +192,19 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
         total += q
 
     # 6. Monetize and frontier comparison
-    vsly = sample(params["conversions"]["vsly_usd"], n, rng)
-    value_usd = total * vsly
+    vqaly = sample(params["conversions"]["vqaly_usd"], n, rng)
+    value_usd = total * vqaly
     bc_ratio = value_usd / giving
     frontier_cpq = sample(params["conversions"]["frontier_cost_per_qaly_usd"], n, rng)
+    # The frontier prior is denominated at the 3% reference rate; rescale it to
+    # the active rate by the child-QALE ratio so the like-for-like comparison
+    # holds at any discount setting (cpq(rate) = cpq(3%) * QALE(3%)/QALE(rate)).
+    fc = params["conversions"]["frontier_child"]
+    child_years = np.array([float(fc["remaining_life_years"]["value"])])
+    child_u = np.array([float(fc["utility_weight"]["value"])])
+    ref_qale = discounted_qale(child_years, child_u, 0.03)[0]
+    act_qale = discounted_qale(child_years, child_u, rate)[0]
+    frontier_cpq = frontier_cpq * (ref_qale / act_qale)
     # Like-for-like: handicap the frontier with the SAME realization draws and a
     # high (RCT-grade) credibility, so we compare all-in vs all-in rather than a
     # discounted Scott estimate against a raw frontier.
@@ -213,10 +225,21 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
     )
 
 
+def _midranks(x: np.ndarray) -> np.ndarray:
+    """Ranks with ties assigned their group average (midranks), so tied values
+    contribute zero spurious correlation instead of argsort-order noise."""
+    order = np.argsort(x, kind="stable")
+    ranks = np.empty(len(x))
+    ranks[order] = np.arange(len(x), dtype=float)
+    _, inverse, counts = np.unique(x, return_inverse=True, return_counts=True)
+    sums = np.bincount(inverse, weights=ranks)
+    return sums[inverse] / counts[inverse]
+
+
 def _spearman(x: np.ndarray, y: np.ndarray) -> float:
-    """Spearman rank correlation (no scipy dependency)."""
-    rx = np.argsort(np.argsort(x)).astype(float)
-    ry = np.argsort(np.argsort(y)).astype(float)
+    """Spearman rank correlation with average ranks for ties (no scipy)."""
+    rx = _midranks(np.asarray(x, dtype=float))
+    ry = _midranks(np.asarray(y, dtype=float))
     rx -= rx.mean()
     ry -= ry.mean()
     denom = np.sqrt((rx @ rx) * (ry @ ry))

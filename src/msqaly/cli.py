@@ -3,7 +3,7 @@
     uv run msqaly                 # 100k draws, seed 0 — print only (no file writes)
     uv run msqaly --write         # also regenerate results/ + figures + README block
     uv run msqaly --n 500000 --write
-    uv run msqaly --no-figure --write
+    uv run msqaly --no-figure          # print-only run without matplotlib
 
 Prints a summary table. Only `--write` mutates committed artifacts, so casual
 runs (any --n/--seed) never dirty the repo.
@@ -66,7 +66,7 @@ def summary_markdown(res, params) -> str:
         f"{_dollar(s['blended_cost_per_qaly_median'])}/QALY"
     )
     lines.append(
-        f"- Monetized at VSLY (median): {_dollar(s['value_usd']['median'])} "
+        f"- Monetized at HHS VQALY (median): {_dollar(s['value_usd']['median'])} "
         f"→ benefit/cost ratio {s['bc_ratio']['median']:.1f}× "
         f"(90% {s['bc_ratio']['p05']:.1f}–{s['bc_ratio']['p95']:.1f}×)"
     )
@@ -125,6 +125,8 @@ def summary_markdown(res, params) -> str:
         lines.append(f"| {name} | {rho:+.2f} |")
     lines.append(
         "\n_Positive: larger input → more QALYs (allocations, realization). "
+        "Allocation shares are compositional (they sum to 1), so a share's "
+        "correlation is relative to the buckets it displaces. "
         "Negative: larger input → fewer QALYs (a higher $/QALY is less "
         "cost-effective)._\n"
     )
@@ -142,8 +144,9 @@ def readme_block(res, params) -> str:
         f"**Median ≈ {_fmt(tq['median'])} QALYs** "
         f"(mean {_fmt(tq['mean'])}; 90% interval {_fmt(tq['p05'])}–{_fmt(tq['p95'])}), "
         f"a blended **{_dollar(s['blended_cost_per_qaly_median'])}/QALY**. "
-        f"Monetized at VSLY that is **{_dollar(s['value_usd']['median'])}** of health "
-        f"value — a **{s['bc_ratio']['median']:.1f}× benefit/cost ratio**. "
+        f"Monetized at HHS's value per QALY that is "
+        f"**{_dollar(s['value_usd']['median'])}** of health value — a "
+        f"**{s['bc_ratio']['median']:.1f}× benefit/cost ratio**. "
         f"The same {giving} at the global-health frontier (~{_dollar(frontier)}/QALY-equivalent), "
         f"handicapped with the same realization and evidence discounts, would still "
         f"buy ~{_fmt(s['frontier_qalys_median'])} QALYs — about "
@@ -276,6 +279,11 @@ def main(argv=None) -> int:
     )
     args = ap.parse_args(argv)
 
+    if args.write and args.no_figure:
+        # Canonical artifacts are a bundle; writing summaries while keeping old
+        # figures would publish a mixed-vintage results/ directory.
+        ap.error("--write regenerates the full canonical bundle; drop --no-figure")
+
     if args.write and args.params:
         # The committed results/, figures, and README block are the canonical
         # artifacts of the DEFAULT parameter file; writing them from a custom
@@ -292,17 +300,27 @@ def main(argv=None) -> int:
         print("\n(dry run — pass --write to regenerate results/ and the README block)")
         return 0
 
+    # Atomic bundle: render everything to temporary paths first, then move all
+    # artifacts into place together, so a mid-run failure can never leave a
+    # mixed-vintage results/ directory.
     RESULTS.mkdir(exist_ok=True)
-    (RESULTS / "summary.md").write_text(md)
-    (RESULTS / "summary.json").write_text(json.dumps(res.summary(), indent=2))
-    if not args.no_figure:
-        # No exception swallowing: a failed figure must fail the write, or the
-        # regenerated README would embed stale images.
-        make_figure(res, params, RESULTS / "figure.png")
-        make_sensitivity_figure(res, RESULTS / "sensitivity.png")
+    staged: list[tuple[Path, Path]] = []
+    tmp_summary = RESULTS / "summary.tmp.md"
+    tmp_summary.write_text(md)
+    staged.append((tmp_summary, RESULTS / "summary.md"))
+    tmp_json = RESULTS / "summary.tmp.json"
+    tmp_json.write_text(json.dumps(res.summary(), indent=2))
+    staged.append((tmp_json, RESULTS / "summary.json"))
+    tmp_fig = RESULTS / "figure.tmp.png"
+    make_figure(res, params, tmp_fig)
+    staged.append((tmp_fig, RESULTS / "figure.png"))
+    tmp_sens = RESULTS / "sensitivity.tmp.png"
+    make_sensitivity_figure(res, tmp_sens)
+    staged.append((tmp_sens, RESULTS / "sensitivity.png"))
+    for tmp, final in staged:
+        tmp.replace(final)
     wrote_readme = update_readme(res, params)
-    print(f"\nWrote {RESULTS/'summary.md'}, summary.json"
-          + ("" if args.no_figure else ", figure.png, sensitivity.png")
+    print(f"\nWrote {RESULTS/'summary.md'}, summary.json, figure.png, sensitivity.png"
           + (", README block" if wrote_readme else ""))
     return 0
 

@@ -37,16 +37,21 @@ meta:
   # 2025 cumulative reporting.
   cpi_target: 335.123   # CPI-U May 2026, FRED CPIAUCNS (also used for all
                         # literature-figure inflations documented below)
+  # Exact disclosed tranches (no synthetic residuals). They sum to $26.390B
+  # nominal — the "$26.3B" in public shorthand. The 2025 CPI-U annual average
+  # (321.943) is BLS's calculated average from the 11 months published around
+  # the 2025 federal shutdown; see
+  # [BLS methodology note](https://www.bls.gov/cpi/additional-resources/2025-federal-government-shutdown-impact-cpi-faq.htm).
   giving_tranches:
-    - {year: 2020, nominal_usd: 1.68e+9, cpi: 258.811, source: "July 2020 letter: $1.68B to 116 organizations (Scott, Medium; widely reported)"}
-    - {year: 2020, nominal_usd: 4.16e+9, cpi: 258.811, source: "December 2020 letter: $4.16B to 384 organizations"}
-    - {year: 2021, nominal_usd: 2.74e+9, cpi: 270.970, source: "June 2021 letter: $2.74B to 286 organizations"}
-    - {year: 2022, nominal_usd: 3.86e+9, cpi: 292.655, source: "March 2022 letter: $3.86B to 465 organizations (gifts made since June 2021; booked at 2022 price level, a conservative choice that slightly understates the real total)"}
+    - {year: 2020, nominal_usd: 1.68e+9, cpi: 258.811, source: "July 2020 essay ('116 Organizations Driving Change'): $1.68B; series recapped in [CNBC's year-end 2025 accounting](https://www.cnbc.com/2025/12/13/mackenzie-scott-revealed-her-total-charitable-donations-for-2025.html)"}
+    - {year: 2020, nominal_usd: 4.16e+9, cpi: 258.811, source: "December 2020 essay ('384 Ways to Help'): $4.16B to 384 organizations"}
+    - {year: 2021, nominal_usd: 2.74e+9, cpi: 270.970, source: "June 2021 essay ('Seeding by Ceding'): $2.74B to 286 organizations"}
+    - {year: 2022, nominal_usd: 3.86e+9, cpi: 292.655, source: "March 2022 essay ('Helping Any of Us Can Help Us All'): $3.86B to 465 organizations (gifts since June 2021; booked at the 2022 price level — conservative)"}
     - {year: 2022, nominal_usd: 1.99e+9, cpi: 292.655, source: "November 2022 disclosure: $1.99B to 343 organizations"}
-    - {year: 2023, nominal_usd: 2.10e+9, cpi: 304.702, source: "2023 gifts of ~$2.1B (Yield Giving database year total as reported by CNBC)"}
-    - {year: 2023, nominal_usd: 0.535e+9, cpi: 304.702, source: "Reconciliation residual: undisclosed/smaller gifts bringing disclosed tranches to the ~$26.3B cumulative total reported for year-end 2025 (CNBC 2025-12-13); booked mid-series at the 2023 price level"}
-    - {year: 2024, nominal_usd: 2.07e+9, cpi: 313.689, source: "2024 gifts of ~$2.07B (CNBC year-end reporting; cumulative ~$19.25B through 2024)"}
-    - {year: 2025, nominal_usd: 7.165e+9, cpi: 322.7, source: "2025 gifts of $7.165B (CNBC 2025-12-13); 2025 CPI-U annual average, FRED CPIAUCNS"}
+    - {year: 2023, nominal_usd: 2.153e+9, cpi: 304.702, source: "[Yield Giving 2023 update](https://yieldgiving.com/essays/giving-update/): $2.153B in 2023"}
+    - {year: 2024, nominal_usd: 0.640e+9, cpi: 313.689, source: "[2024 Open Call](https://apnews.com/article/ae809a469080e9e61a945a14a230629e): $640M to 361 community-led nonprofits"}
+    - {year: 2024, nominal_usd: 2.0044e+9, cpi: 313.689, source: "[Yield Giving 2024 update](https://yieldgiving.com/essays/investing/): $2.0044B in further 2024 gifts"}
+    - {year: 2025, nominal_usd: 7.166e+9, cpi: 321.943, source: "[Yield Giving 2025 update](https://yieldgiving.com/essays/we-are-the-ones-we-ve-been-waiting-for/): $7.166B in 2025; also [CNBC 2025-12-13](https://www.cnbc.com/2025/12/13/mackenzie-scott-revealed-her-total-charitable-donations-for-2025.html)"}
 
   # Floor on any sampled cost-per-QALY. A backstop against fat-tailed
   # reciprocals (QALYs = $/cpq grows large as cpq -> 0). In practice it almost
@@ -76,46 +81,61 @@ conversions:
       ages 55-64 ~0.80 overall, lower at low income). Discounted at 3% with a
       half-cycle correction.
 
-  # Value of a statistical life-year, used only to MONETIZE the QALYs for a
-  # benefit/cost ratio. Not used to compute QALYs. Applying a life-year value
-  # to a quality-adjusted year is itself a convention; flagged, not hidden.
-  vsly_usd:
+  # HHS value per quality-adjusted life year (VQALY), used only to MONETIZE
+  # the QALYs for a benefit/cost ratio. Not used to compute QALYs. This is the
+  # correct series for QALY monetization — the prior revision applied the
+  # per-life-YEAR value (VSLY) to quality-adjusted years, a convention this
+  # replaces with HHS's published VQALY.
+  vqaly_usd:
     dist: triangular
-    low: 285000
-    mode: 611000
-    high: 931000
-    unit: usd_per_life_year
+    low: 353000
+    mode: 756000
+    high: 1150000
+    unit: usd_per_qaly
     dollars_base_year: 2026
     source: >-
-      [HHS ASPE Standard Values for Regulatory Analysis 2026](https://aspe.hhs.gov/sites/default/files/documents/2d83af5823915d81871334ee08ad03d9/Standard-RIA-Values-2026.pdf):
-      central VSLY $611k at a 3% discount rate. Low/high are the
-      [2024 Data Point's](https://aspe.hhs.gov/sites/default/files/documents/cd2a1348ea0777b1aa918089e4965b8c/standard-ria-values.pdf)
-      $231k/$754k low/high estimates scaled by 611/495 = 1.234 (the ratio of
-      the 2026 to 2024 central VSLY), preserving that document's relative
-      spread at one price level and one discount convention (3%). The prior
-      revision mixed a 2024-dollar low and a 7%-discount high into a
-      2026-dollar 3% triangle; this rebuild removes both inconsistencies.
+      [HHS ASPE Standard Values for Regulatory Analysis 2026](https://aspe.hhs.gov/sites/default/files/documents/2d83af5823915d81871334ee08ad03d9/Standard-RIA-Values-2026.pdf),
+      Table 3: VQALY for 2026 impacts at a 3% discount rate, low/central/high
+      $339k / $726k / $1,105k in constant 2025 dollars. Inflated to the May
+      2026 price level with [CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS)
+      335.123 / 321.943 (2025 annual average) = 1.0409: $353k / $756k / $1,150k.
+      One series, one discount rate, one price level.
 
   # Global-health frontier, expressed as a QALY-equivalent cost with the
   # conversion arithmetic explicit (GiveWell reports lives saved, not QALYs).
+  # Denominated at the 3% reference discount rate; when the model runs at a
+  # different rate, it rescales this cost by the ratio of the child QALE at 3%
+  # to the child QALE at that rate (frontier_child below), keeping the
+  # frontier comparison like-for-like at any discount setting.
   frontier_cost_per_qaly_usd:
     dist: loguniform
-    low: 110
+    low: 150
     high: 260
     unit: usd_per_qaly
     dollars_base_year: 2026
     source: >-
-      Derived from cost per under-5 life saved: ~$3,340 (older
-      [AMF/GiveWell summary](https://forum.effectivealtruism.org/posts/HbunzTyFPRwcYihg6/long-lasting-insecticide-treated-nets-usd3-340-per-life))
-      to ~$5,500 ([GiveWell current impact estimates](https://www.givewell.org/impact-estimates)).
-      Converted with this model's own conventions: a child death averted at
-      ~age 1 with ~65 remaining life-years, discounted at 3% with half-cycle
-      correction (annuity ~28.9) and utility ~0.87, is ~25 discounted QALYs,
-      giving endpoints of ~$134-$220 per QALY-equivalent; the range is widened
-      to $110-$260 for conversion uncertainty. GiveWell's figures are recent
-      nominal dollars treated as ~2026 (error small relative to the range).
-      This replaces the prior $50-$150 range, which relied on undiscounted
-      per-DALY conventions inconsistent with the discounted US-side QALYs.
+      Derived from [GiveWell's current impact estimates](https://www.givewell.org/impact-estimates)
+      of cost per life saved, 2022-2024 program averages: ~$4,000 (Malaria
+      Consortium seasonal chemoprevention) to ~$5,500 (AMF nets), figures
+      GiveWell rounds up to the nearest $500. Treating those as ~2023 dollars
+      and inflating by [CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS)
+      335.123/304.702 = 1.10 gives ~$4,400-$6,050 per life. A child death
+      averted at ~age 1 with ~65 remaining life-years, discounted at 3% with
+      half-cycle correction (annuity ~28.9) and utility ~0.87, is ~25.1
+      discounted QALYs, giving endpoints of ~$175-$241 per QALY-equivalent;
+      the loguniform {150, 260} widens that for conversion uncertainty
+      (utility, remaining years, price level). An earlier revision also used a
+      2015 AMF figure ($3,340/life, itself already a discounted-QALY-era
+      calculation, in ~2015 dollars); it is retired here in favor of
+      GiveWell's current program averages.
+
+  # Fixed conversion inputs for the frontier's life -> QALY arithmetic and its
+  # discount-rate rescaling. Author calibration: ~65 remaining years for an
+  # under-5 death averted in AMF/Malaria Consortium countries; utility ~0.87
+  # near global population norms.
+  frontier_child:
+    remaining_life_years: {dist: fixed, value: 65, unit: years}
+    utility_weight: {dist: fixed, value: 0.87, unit: utility_weight}
 
 # ---------------------------------------------------------------------------
 # TWO ORTHOGONAL ADJUSTMENTS (GiveWell-style), kept deliberately separate:
@@ -239,20 +259,21 @@ archetypes:
       ICERs come from RCTs of collaborative care for depression (high internal
       validity). Attribution of Scott's grants to this exact model is a
       realization matter.
-    cost_per_qaly_usd: {dist: lognormal_ci, low: 25000, high: 140000, unit: usd_per_qaly, dollars_base_year: 2026}
+    cost_per_qaly_usd: {dist: lognormal_ci, low: 25000, high: 150000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
-      Anchors are 2000s-era nominal ICERs and are inflated here:
-      [Gilbody et al. (2006 review)](https://link.springer.com/article/10.1186/1472-6963-10-19)
-      $17k-$39k/QALY and the
-      [Community Guide's](https://www.thecommunityguide.org/findings/mental-health-and-mental-illness-collaborative-care-management-depressive-disorders.html)
-      highest reported $49.5k/QALY. Treating these as ~2006 dollars and
-      inflating by [CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS)
-      201.6 -> 335.123 (x1.66) gives ~$28k-$82k for the cost-effective case;
-      the upper tail extends toward
-      [Grochtdreis et al. (2015)](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123078),
-      whose healthcare-perspective ICERs range up to ~$153k. The 5th/95th
-      prior {25k, 140k} brackets that inflated evidence (prior revision used
-      un-inflated {15k, 90k}).
+      Anchors are 2000s-era nominal ICERs and are inflated here. The
+      [Community Guide review (Jacob et al.)](https://www.thecommunityguide.org/findings/mental-health-and-mental-illness-collaborative-care-management-depressive-disorders.html)
+      reports $17.6k-$49.5k/QALY in 2008 dollars; inflating by
+      [CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS) 335.123/215.303 =
+      1.56 gives ~$27k-$77k for the cost-effective case. The systematic review
+      at [van Steenbergen-Weijenburg et al. (2010), BMC Health Services
+      Research 10:19](https://link.springer.com/article/10.1186/1472-6963-10-19)
+      corroborates that range (an earlier revision misattributed this link to
+      "Gilbody et al. 2006", which is a different meta-analysis). The upper
+      tail extends toward [Grochtdreis et al. (2015)](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123078),
+      whose healthcare-perspective ICERs reach $153,299 in 2012 international
+      dollars (not CPI-converted here; international dollars are not US CPI
+      dollars). The 5th/95th prior {25k, 150k} brackets the inflated evidence.
 
   econ_cash:
     label: "Economic security - cash & financial"
@@ -306,14 +327,14 @@ archetypes:
       Point anchor: [Holtgrave et al. (2013), AIDS and Behavior 17(5)](https://link.springer.com/article/10.1007/s10461-012-0204-3)
       report $62,493/QALY for the Housing & Health intervention — an
       HIV-positive, unstably-housed cohort (2004-2008 study), NOT general
-      chronic homelessness. Treating the figure as ~2008 dollars and inflating
-      by [CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS) 215.303 ->
-      335.123 (x1.56) gives ~$97k/QALY; the {30k, 220k} prior brackets that
-      with room for cheaper high-need PSH cases (frequent cost offsets) and
-      costlier general populations.
-      [NASEM (2018)](https://nap.nationalacademies.org/read/25133/chapter/6)
-      is cited for the mixed-evidence assessment only — the prior revision
-      wrongly said NASEM reviewed the $62,493 figure and skipped the inflation.
+      chronic homelessness. The team's [underlying cost analysis](https://shnny.org/uploads/Cost_and_Threshold_Analysis_of_Housing_as_an_HIV_Prevention.pdf)
+      is stated in 2005 dollars; inflating by
+      [CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS) 335.123/195.267 =
+      1.716 gives ~$107k/QALY (an earlier revision assumed 2008 dollars,
+      ~$97k). The {30k, 220k} prior brackets that with room for cheaper
+      high-need PSH cases (frequent cost offsets) and costlier general
+      populations. [NASEM (2018)](https://nap.nationalacademies.org/read/25133/chapter/6)
+      is cited for the mixed-evidence assessment only.
 
   econ_workforce:
     label: "Economic security - workforce & mobility"
@@ -402,11 +423,11 @@ archetypes:
     method: cost_per_qaly
     causal_credibility: projection
     identification: >-
-      Mortality cost of carbon is an integrated-assessment-model projection
-      (Bressler 2021), not a causal estimate of a gift's effect. The
-      grant-to-abatement chain is unmodeled; that delivery gap is priced in
-      this wide conditional prior and in credibility's projection tier only
-      insofar as the projected effect itself is uncertain.
+      The projection tier covers ONE doubt only: trust in Bressler (2021)'s
+      integrated-assessment-model mortality projection itself. The separate
+      grant-to-abatement delivery gap (how much abatement a philanthropic
+      dollar buys) lives entirely in this archetype's wide cost-per-QALY
+      prior — each doubt in exactly one layer.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 25000, high: 2000000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       Wide judgmental 2026-dollar range ANCHORED TO, not derived from,
