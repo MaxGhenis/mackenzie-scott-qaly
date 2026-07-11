@@ -351,4 +351,4 @@ def test_vqaly_rescales_with_discount_rate():
     implied_ratio = (np.median(hi.value_usd) / np.median(hi.total_qalys)) / (
         np.median(base.value_usd) / np.median(base.total_qalys)
     )
-    assert implied_ratio == pytest.approx(1205 / 726, rel=0.05)
+    assert implied_ratio == pytest.approx(1205 / 726, rel=0.02)

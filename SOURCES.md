@@ -68,11 +68,12 @@ inputs are expressed in 2026 dollars; CPI-U index values from
 
 ## Health — mental & behavioral
 
-- **Community Guide (Jacob et al.) $17.6k–$49.5k/QALY in 2008 dollars →
-  ~$27k–$77k (×1.56 from CPI-U 215.303 → 335.123); prior {25k, 150k} with the
-  upper tail toward Grochtdreis et al.'s healthcare-perspective maximum of
-  $153,299 in 2012 international dollars (not CPI-converted — international
-  dollars are not US dollars).**
+- **Community Guide: Gilbody-era $17k–$39k/QALY in 2008 dollars → ~$26k–$61k
+  (×1.56 from CPI-U 215.303 → 335.123); van Steenbergen-Weijenburg (2010):
+  study ICERs ~$21.5k–$49.5k without year normalization (similar-era dollars).
+  Prior {25k, 150k} with the upper tail toward Grochtdreis et al.'s
+  healthcare-perspective maximum of $153,299 in 2012 international dollars
+  (not CPI-converted — international dollars are not US dollars).**
   [Community Preventive Services Task Force](https://www.thecommunityguide.org/findings/mental-health-and-mental-illness-collaborative-care-management-depressive-disorders.html)
   · [van Steenbergen-Weijenburg et al., *BMC Health Services Research* 10:19,
   2010](https://link.springer.com/article/10.1186/1472-6963-10-19) (systematic

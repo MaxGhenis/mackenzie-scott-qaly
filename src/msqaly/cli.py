@@ -300,9 +300,11 @@ def main(argv=None) -> int:
         print("\n(dry run — pass --write to regenerate results/ and the README block)")
         return 0
 
-    # Atomic bundle: render everything to temporary paths first, then move all
-    # artifacts into place together, so a mid-run failure can never leave a
-    # mixed-vintage results/ directory.
+    # Staged bundle: every artifact is fully generated to a temporary path
+    # before any canonical file is replaced, so a GENERATION failure leaves the
+    # committed bundle untouched. Each rename is atomic, but the rename loop is
+    # not transactional across files — a crash mid-loop could mix vintages; the
+    # CI params-sync guard and git diff make that state visible, not silent.
     RESULTS.mkdir(exist_ok=True)
     staged: list[tuple[Path, Path]] = []
     tmp_summary = RESULTS / "summary.tmp.md"
