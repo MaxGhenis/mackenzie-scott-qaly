@@ -1,0 +1,91 @@
+# Mapping from Yield Giving's 53 org-reported focus-area leaves to the model's
+# 13 intervention archetypes. Used by src/msqaly/allocation.py to derive the
+# allocation_share centers in data/parameters.yaml from disclosed gift dollars.
+#
+# Rules (implemented in allocation.py, tested in tests/test_allocation.py):
+# - A gift's dollars are split EQUALLY across its organization's listed areas
+#   (tags are org-level; Yield Giving does not tag individual gifts).
+# - Gifts with amount 0 (undisclosed) are excluded; shares are computed on the
+#   ~$17.5B (about two-thirds of dollars) that are disclosed.
+# - PASSTHROUGH marks vehicle descriptors (funds, regrantors), not causes.
+#   They are dropped whenever the organization lists substantive areas; the
+#   rare organizations tagged ONLY as vehicles (~$0.01B) end up distributed
+#   proportionally across all archetypes via the final normalization.
+# - SPLIT_HEALTH marks generic health-delivery/condition areas. Yield Giving's
+#   taxonomy does not separate insurance expansion from clinic delivery, so
+#   these split 50/50 between health_coverage and health_chc — the model's two
+#   US health-access archetypes, whose cost-effectiveness anchors (Medicaid
+#   expansion; community health centers) proxy for health-access giving
+#   broadly.
+#
+# Group labels below are Yield Giving's own; archetype keys are the model's.
+
+# --- Education (Yield Giving group: Education) ---
+"Postsecondary, tertiary education": education
+"Youth development": education
+"Elementary, secondary education": education
+"Early learning": education
+"Vocational education": econ_workforce  # job-training mechanism, not schooling
+
+# --- Equity and justice ---
+"Race and ethnicity": equity_justice
+"Incarceration and justice system involvement": equity_justice
+"Gender identity": equity_justice
+"Immigration or migration": equity_justice
+"Disability": equity_justice
+"Sexual orientation": equity_justice
+"Aging": equity_justice
+"Faith and religion": equity_justice
+"Caste": equity_justice
+"Human rights": equity_justice  # from her "Additional Areas" group
+
+# --- Economic security and opportunity ---
+"Livelihoods and workforce development": econ_workforce
+"Economic development": econ_workforce
+"Agricultural development": econ_workforce
+"Access to housing and housing development": econ_housing
+"Financial inclusion": econ_cash
+"Humanitarian assistance and relief": econ_cash  # emergency cash/in-kind aid
+
+# --- Health ---
+"Nutrition and food security": econ_food
+"Mental and behavioral health": health_mental
+"Access to healthcare": SPLIT_HEALTH
+"Public health, public health infrastructure": SPLIT_HEALTH
+"Chronic diseases": SPLIT_HEALTH
+"Infectious and parasitic diseases": SPLIT_HEALTH
+"Water access, sanitation, and hygiene": SPLIT_HEALTH
+"Maternal and perinatal health": SPLIT_HEALTH
+"Sexual and reproductive health and justice": SPLIT_HEALTH
+"Sexual and gender-based violence": SPLIT_HEALTH
+"Active living": SPLIT_HEALTH
+"Child development and welfare": other_community  # welfare services; no
+  # health-access mechanism matching the coverage/CHC anchors
+
+# --- Democratic process / Nonprofit sector / Funding ---
+"Civic and social engagement": civic_democracy
+"Democracy": civic_democracy
+"Nonprofit sector strengthening": civic_democracy
+"Philanthropic sector strengthening": civic_democracy
+"Fund": PASSTHROUGH
+"Regrantor": PASSTHROUGH
+
+# --- Environment ---
+"Climate change": environment
+"Environmental justice": environment
+"Natural resources conservation": environment
+"Biodiversity": environment
+
+# --- Arts and culture ---
+"Multidisciplinary arts": arts_culture
+"Cultural awareness": arts_culture
+"Creative youth development": arts_culture
+"Performing arts": arts_culture
+"Museums": arts_culture
+"Visual arts": arts_culture
+"Public arts": arts_culture
+"Craft and traditional arts": arts_culture
+"Literary arts": arts_culture
+
+# --- Additional Areas (remainder) ---
+"Bridging divides": other_community  # social-cohesion programs

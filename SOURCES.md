@@ -23,12 +23,18 @@ inputs are expressed in 2026 dollars; CPI-U index values from
   around the 2025 shutdown
   ([BLS methodology](https://www.bls.gov/cpi/additional-resources/2025-federal-government-shutdown-impact-cpi-faq.htm)).
   "$26.3B" is the public shorthand for this $26.39B ledger.
-- **Cause-area mix.** [HBS Working Knowledge analysis of Yield Giving
-  recipients](https://www.library.hbs.edu/working-knowledge/mackenzie-scotts-15-billion-pledge-what-the-data-says-about-her-epic-giving)
-  (largest areas: equity & justice, education, economic security, health;
-  average disclosed gift ~$8.4M). Exact allocation percentages in the model are
-  author estimates around that qualitative picture — Scott does not publish
-  dollars by cause. · [Center for Effective Philanthropy
+- **Cause-area mix.** Derived from the [Yield Giving gift
+  database](https://yieldgiving.com/gifts) (verbatim snapshot retrieved
+  2026-07-11 in [`data/yieldgiving/`](data/yieldgiving/)): 2,545
+  organizations, 2,711 gifts, dollar amounts disclosed for 2,035 gifts
+  ($17.46B nominal, ~two-thirds of the $26.39B total), org-reported focus
+  areas on every disclosed dollar. Each gift's dollars are split equally
+  across its organization's areas; the 53 areas map onto the model's 13
+  archetypes per [`leaf_to_archetype.yaml`](data/yieldgiving/leaf_to_archetype.yaml),
+  enforced by a sync test. Scott publishes no *aggregate* dollars-by-cause
+  breakdown; this derivation is ours. Qualitative corroboration: [HBS Working
+  Knowledge analysis of Yield Giving recipients](https://www.library.hbs.edu/working-knowledge/mackenzie-scotts-15-billion-pledge-what-the-data-says-about-her-epic-giving)
+  (largest areas: equity & justice, education, economic security, health). · [Center for Effective Philanthropy
   (2023)](https://cep.org/wp-content/uploads/2023/11/BigGiftsStudy_Report_Y2_FNL.pdf)
   on the capacity effects of large unrestricted gifts (basis for letting the
   realization factor exceed 1).

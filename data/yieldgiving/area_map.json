@@ -1,0 +1,228 @@
+{
+ "groups": {
+  "g_1": "Arts and culture",
+  "g_11": "Democratic process",
+  "g_3": "Economic security and opportunity",
+  "g_4": "Education",
+  "g_5": "Environment",
+  "g_6": "Equity and justice",
+  "g_12": "Funding and Regranting",
+  "g_7": "Health",
+  "g_13": "Nonprofit Sector",
+  "g_14": "Additional Areas"
+ },
+ "leaves": {
+  "1": {
+   "label": "Craft and traditional arts",
+   "group": "Arts and culture"
+  },
+  "2": {
+   "label": "Creative youth development",
+   "group": "Arts and culture"
+  },
+  "3": {
+   "label": "Cultural awareness",
+   "group": "Arts and culture"
+  },
+  "4": {
+   "label": "Literary arts",
+   "group": "Arts and culture"
+  },
+  "5": {
+   "label": "Multidisciplinary arts",
+   "group": "Arts and culture"
+  },
+  "6": {
+   "label": "Museums",
+   "group": "Arts and culture"
+  },
+  "7": {
+   "label": "Performing arts",
+   "group": "Arts and culture"
+  },
+  "8": {
+   "label": "Public arts",
+   "group": "Arts and culture"
+  },
+  "9": {
+   "label": "Visual arts",
+   "group": "Arts and culture"
+  },
+  "70": {
+   "label": "Civic and social engagement",
+   "group": "Democratic process"
+  },
+  "71": {
+   "label": "Democracy",
+   "group": "Democratic process"
+  },
+  "13": {
+   "label": "Access to housing and housing development",
+   "group": "Economic security and opportunity"
+  },
+  "10": {
+   "label": "Agricultural development",
+   "group": "Economic security and opportunity"
+  },
+  "11": {
+   "label": "Economic development",
+   "group": "Economic security and opportunity"
+  },
+  "12": {
+   "label": "Financial inclusion",
+   "group": "Economic security and opportunity"
+  },
+  "14": {
+   "label": "Livelihoods and workforce development",
+   "group": "Economic security and opportunity"
+  },
+  "15": {
+   "label": "Early learning",
+   "group": "Education"
+  },
+  "16": {
+   "label": "Elementary, secondary education",
+   "group": "Education"
+  },
+  "17": {
+   "label": "Postsecondary, tertiary education",
+   "group": "Education"
+  },
+  "18": {
+   "label": "Vocational education",
+   "group": "Education"
+  },
+  "19": {
+   "label": "Youth development",
+   "group": "Education"
+  },
+  "86": {
+   "label": "Biodiversity",
+   "group": "Environment"
+  },
+  "21": {
+   "label": "Climate change",
+   "group": "Environment"
+  },
+  "22": {
+   "label": "Environmental justice",
+   "group": "Environment"
+  },
+  "23": {
+   "label": "Natural resources conservation",
+   "group": "Environment"
+  },
+  "24": {
+   "label": "Aging",
+   "group": "Equity and justice"
+  },
+  "25": {
+   "label": "Caste",
+   "group": "Equity and justice"
+  },
+  "26": {
+   "label": "Disability",
+   "group": "Equity and justice"
+  },
+  "27": {
+   "label": "Faith and religion",
+   "group": "Equity and justice"
+  },
+  "28": {
+   "label": "Gender identity",
+   "group": "Equity and justice"
+  },
+  "72": {
+   "label": "Immigration or migration",
+   "group": "Equity and justice"
+  },
+  "73": {
+   "label": "Incarceration and justice system involvement",
+   "group": "Equity and justice"
+  },
+  "30": {
+   "label": "Race and ethnicity",
+   "group": "Equity and justice"
+  },
+  "29": {
+   "label": "Sexual orientation",
+   "group": "Equity and justice"
+  },
+  "74": {
+   "label": "Fund",
+   "group": "Funding and Regranting"
+  },
+  "75": {
+   "label": "Regrantor",
+   "group": "Funding and Regranting"
+  },
+  "31": {
+   "label": "Access to healthcare",
+   "group": "Health"
+  },
+  "32": {
+   "label": "Active living",
+   "group": "Health"
+  },
+  "76": {
+   "label": "Child development and welfare",
+   "group": "Health"
+  },
+  "33": {
+   "label": "Chronic diseases",
+   "group": "Health"
+  },
+  "34": {
+   "label": "Infectious and parasitic diseases",
+   "group": "Health"
+  },
+  "35": {
+   "label": "Maternal and perinatal health",
+   "group": "Health"
+  },
+  "36": {
+   "label": "Mental and behavioral health",
+   "group": "Health"
+  },
+  "37": {
+   "label": "Nutrition and food security",
+   "group": "Health"
+  },
+  "38": {
+   "label": "Public health, public health infrastructure",
+   "group": "Health"
+  },
+  "40": {
+   "label": "Sexual and gender-based violence",
+   "group": "Health"
+  },
+  "41": {
+   "label": "Sexual and reproductive health and justice",
+   "group": "Health"
+  },
+  "42": {
+   "label": "Water access, sanitation, and hygiene",
+   "group": "Health"
+  },
+  "78": {
+   "label": "Nonprofit sector strengthening",
+   "group": "Nonprofit Sector"
+  },
+  "77": {
+   "label": "Philanthropic sector strengthening",
+   "group": "Nonprofit Sector"
+  },
+  "79": {
+   "label": "Bridging divides",
+   "group": "Additional Areas"
+  },
+  "80": {
+   "label": "Human rights",
+   "group": "Additional Areas"
+  },
+  "81": {
+   "label": "Humanitarian assistance and relief",
+   "group": "Additional Areas"
+  }
+ }
+}
