@@ -203,8 +203,9 @@ evidence_tiers:
 # ---------------------------------------------------------------------------
 # Dirichlet concentration governing uncertainty in the dollar allocation
 # across archetypes. AUTHOR-ELICITED (higher = shares held closer to central):
-# the share centers below are data-derived, but one-third of dollars are
-# undisclosed and the area->archetype mapping embeds judgment.
+# the share centers below are data-derived, but the undisclosed third of
+# dollars enters via a revenue-scaled imputation and the area->archetype
+# mapping embeds judgment.
 # ---------------------------------------------------------------------------
 allocation_concentration: 60
 
@@ -219,13 +220,19 @@ allocation_concentration: 60
 # Giving's 53 areas onto these 13 archetypes
 # (data/yieldgiving/leaf_to_archetype.yaml documents every mapping rule);
 # tests/test_allocation.py fails if the shares below drift from that
-# derivation. Undisclosed gifts are assumed to allocate like disclosed ones.
+# derivation. Undisclosed gifts are NOT dropped: each year window's residual
+# (announced tranche total minus disclosed dollars) is distributed across
+# that window's undisclosed gifts in proportion to the recipient's pre-gift
+# IRS 990 total revenue (ProPublica Nonprofit Explorer snapshot in
+# data/yieldgiving/propublica_revenue.jsonl) raised to an elasticity
+# calibrated on the disclosed gift~revenue pairs; recipients without a
+# matched 990 (mostly non-US) get the window's median weight.
 # ---------------------------------------------------------------------------
 archetypes:
 
   health_coverage:
     label: "Health - insurance & access"
-    allocation_share: 0.051
+    allocation_share: 0.054
     method: cost_per_life
     causal_credibility: strong_quasi
     identification: >-
@@ -250,7 +257,7 @@ archetypes:
 
   health_chc:
     label: "Health - community health centers"
-    allocation_share: 0.051
+    allocation_share: 0.054
     method: cost_per_life_year
     causal_credibility: moderate_quasi
     identification: >-
@@ -301,7 +308,7 @@ archetypes:
 
   econ_cash:
     label: "Economic security - cash & financial"
-    allocation_share: 0.042
+    allocation_share: 0.037
     method: cost_per_qaly
     causal_credibility: randomized
     identification: >-
@@ -319,7 +326,7 @@ archetypes:
 
   econ_food:
     label: "Economic security - food security"
-    allocation_share: 0.020
+    allocation_share: 0.024
     method: cost_per_qaly
     causal_credibility: observational
     identification: >-
@@ -339,7 +346,7 @@ archetypes:
 
   econ_housing:
     label: "Economic security - housing & homelessness"
-    allocation_share: 0.039
+    allocation_share: 0.036
     method: cost_per_qaly
     causal_credibility: moderate_quasi
     identification: >-
@@ -362,7 +369,7 @@ archetypes:
 
   econ_workforce:
     label: "Economic security - workforce & mobility"
-    allocation_share: 0.143
+    allocation_share: 0.134
     method: cost_per_qaly
     causal_credibility: observational
     identification: >-
@@ -379,7 +386,7 @@ archetypes:
 
   education:
     label: "Education (HBCUs, comm. college, scholarships)"
-    allocation_share: 0.202
+    allocation_share: 0.188
     method: cost_per_qaly
     causal_credibility: moderate_quasi
     identification: >-
@@ -398,7 +405,7 @@ archetypes:
 
   equity_justice:
     label: "Equity & justice"
-    allocation_share: 0.157
+    allocation_share: 0.172
     method: cost_per_qaly
     causal_credibility: assumption
     identification: >-
@@ -416,7 +423,7 @@ archetypes:
 
   civic_democracy:
     label: "Civic / democracy / philanthropy infra"
-    allocation_share: 0.108
+    allocation_share: 0.107
     method: cost_per_qaly
     causal_credibility: assumption
     identification: "No causal health evidence; value is civic/institutional."
@@ -427,7 +434,7 @@ archetypes:
 
   arts_culture:
     label: "Arts & culture"
-    allocation_share: 0.030
+    allocation_share: 0.034
     method: cost_per_qaly
     causal_credibility: assumption
     identification: >-
@@ -443,7 +450,7 @@ archetypes:
 
   environment:
     label: "Environment / climate"
-    allocation_share: 0.074
+    allocation_share: 0.082
     method: cost_per_qaly
     causal_credibility: projection
     identification: >-
@@ -464,7 +471,7 @@ archetypes:
 
   other_community:
     label: "Other / general community"
-    allocation_share: 0.060
+    allocation_share: 0.055
     method: cost_per_qaly
     causal_credibility: observational
     identification: "Blended social-services proxy; no single identified estimate."

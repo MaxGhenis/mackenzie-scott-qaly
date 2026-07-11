@@ -26,6 +26,24 @@ The focus-area taxonomy (10 groups, 53 leaf areas), parsed from the
 (same retrieval date). Maps each numeric `giftAreas` code to its org-facing
 label and group.
 
+## propublica_revenue.jsonl
+
+One record per organization: the name→EIN match against ProPublica's
+[Nonprofit Explorer API](https://projects.propublica.org/nonprofits/api/)
+(difflib similarity ≥ 0.87; fetched by `scripts/fetch_propublica.py`,
+2026-07-11) and every filing's total revenue by tax year. 1,462 of 2,545
+organizations matched; the rest are mostly non-US recipients with no 990.
+
+## match_audit.jsonl
+
+LLM audit overlay (gpt-5.6-terra via Codex CLI, 2026-07-11) of the fuzzy
+matches: 827 audited items (similarity < 0.95, plausible rejects, and the
+highest-revenue undisclosed-gift orgs) verified against the live API.
+Verdicts: 518 correct, 236 newly-found EINs (legal-name/DBA mismatches), 73
+confirmed non-filers, 0 false positives. `msqaly.allocation.load_revenue`
+applies these on top of the raw fetch. Built/applied by
+`scripts/audit_matches.py`.
+
 ## leaf_to_archetype.yaml
 
 The judgment layer: maps each of the 53 Yield Giving leaf areas to one of the
