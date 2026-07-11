@@ -8,6 +8,9 @@ parameters and the repos silently diverged.
 
 - **`data/parameters.yaml` is the single source of truth** for every parameter,
   unit, and source citation. All parameter changes happen there and only there.
+- Giving is stored as nominal `meta.giving_tranches`; `meta.total_giving_usd`
+  (2026 dollars) is DERIVED by `load_params` and appears in the export — never
+  write a stored total.
 - `web/params.json` is **generated**. Never hand-edit it. Regenerate with
   `uv run msqaly-export-params`. CI fails if it differs from a fresh export.
 - The website copy at `~/maxghenis.com/src/data/mackenzie-qaly-params.json` is a

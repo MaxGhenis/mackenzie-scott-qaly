@@ -276,6 +276,13 @@ def main(argv=None) -> int:
     )
     args = ap.parse_args(argv)
 
+    if args.write and args.params:
+        # The committed results/, figures, and README block are the canonical
+        # artifacts of the DEFAULT parameter file; writing them from a custom
+        # file would silently publish an inconsistent bundle.
+        ap.error("--write only regenerates canonical artifacts from the default "
+                 "parameters; drop --params or drop --write")
+
     params = load_params(args.params)
     res = run(params, n=args.n, seed=args.seed)
     md = summary_markdown(res, params)
@@ -289,11 +296,10 @@ def main(argv=None) -> int:
     (RESULTS / "summary.md").write_text(md)
     (RESULTS / "summary.json").write_text(json.dumps(res.summary(), indent=2))
     if not args.no_figure:
-        try:
-            make_figure(res, params, RESULTS / "figure.png")
-            make_sensitivity_figure(res, RESULTS / "sensitivity.png")
-        except Exception as exc:  # pragma: no cover - figure is optional
-            print(f"(figure skipped: {exc})")
+        # No exception swallowing: a failed figure must fail the write, or the
+        # regenerated README would embed stale images.
+        make_figure(res, params, RESULTS / "figure.png")
+        make_sensitivity_figure(res, RESULTS / "sensitivity.png")
     wrote_readme = update_readme(res, params)
     print(f"\nWrote {RESULTS/'summary.md'}, summary.json"
           + ("" if args.no_figure else ", figure.png, sensitivity.png")

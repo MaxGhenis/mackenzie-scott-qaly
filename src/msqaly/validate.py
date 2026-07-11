@@ -16,10 +16,11 @@ becomes impossible to commit, not merely catchable in review.
 ``load_params`` calls :func:`validate_params` on every load, so the CLI, the
 params exporter, and the test suite all refuse a malformed file.
 
-Notes on scope: ``meta.total_giving_usd`` is a nominal sum of gifts made
-2019-2025 as reported, so it has no single price-year; it is exempt by design
-and documented as such. ``allocation_share`` floats are validated separately
-(tests assert they sum to 1).
+Giving is recorded as nominal tranches (``meta.giving_tranches``) that the
+loader inflates to base-year dollars, so the model's dollars and its
+cost-per-QALY inputs share one price level; ``meta.total_giving_usd`` is
+DERIVED by the loader, never stored. ``allocation_share`` floats are validated
+separately (tests assert they sum to 1).
 """
 from __future__ import annotations
 
@@ -47,10 +48,10 @@ QALY_PER_DEATH_UNITS = {
 METHOD_UNITS = {
     "cost_per_qaly": {"cost_per_qaly_usd": "usd_per_qaly"},
     "cost_per_life": {"cost_per_life_usd": "usd_per_life"},
-    "cost_per_qaly_derived_chc": {
-        "medicare_cost_per_lifeyear_usd": "usd_per_life_year",
-        "chc_fraction_of_medicare": "fraction",
-    },
+    # $/life-year figures are divided by the utility-weight draw in the model
+    # to become $/QALY — the life-year -> QALY conversion is explicit, never
+    # a silent relabeling.
+    "cost_per_life_year": {"cost_per_life_year_usd": "usd_per_life_year"},
 }
 
 
@@ -90,9 +91,38 @@ def _check_spec(spec, path: str, expected_unit: str, base_year: int) -> None:
             )
 
 
+def _check_tranches(meta: dict) -> None:
+    """Giving is recorded as nominal tranches inflated to base-year dollars by
+    the loader. Each tranche needs a year, a positive nominal amount, the CPI-U
+    annual average for that year, and a source."""
+    tranches = meta.get("giving_tranches")
+    if not isinstance(tranches, list) or not tranches:
+        raise ParamValidationError(
+            "meta.giving_tranches: required non-empty list of "
+            "{year, nominal_usd, cpi, source} tranches"
+        )
+    cpi_target = meta.get("cpi_target")
+    if not isinstance(cpi_target, int | float) or cpi_target <= 0:
+        raise ParamValidationError("meta.cpi_target: required positive CPI-U index value")
+    for i, t in enumerate(tranches):
+        path = f"meta.giving_tranches[{i}]"
+        if not isinstance(t, dict):
+            raise ParamValidationError(f"{path}: expected a dict")
+        year = t.get("year")
+        if not isinstance(year, int) or not 2019 <= year <= int(meta["base_year"]):
+            raise ParamValidationError(f"{path}: year must be an int in [2019, base_year]")
+        if not isinstance(t.get("nominal_usd"), int | float) or t["nominal_usd"] <= 0:
+            raise ParamValidationError(f"{path}: nominal_usd must be positive")
+        if not isinstance(t.get("cpi"), int | float) or t["cpi"] <= 0:
+            raise ParamValidationError(f"{path}: cpi must be a positive CPI-U index value")
+        if not t.get("source"):
+            raise ParamValidationError(f"{path}: missing source")
+
+
 def validate_params(params: dict) -> dict:
     """Validate units and dollar vintages; return params unchanged if valid."""
     base_year = int(params["meta"]["base_year"])
+    _check_tranches(params["meta"])
 
     conv = params["conversions"]
     for key, expected in CONVERSION_UNITS.items():

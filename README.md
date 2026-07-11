@@ -6,8 +6,8 @@
 
 A GiveWell-style, fully-parameterized Monte Carlo estimate of the health impact
 — in quality-adjusted life-years (QALYs) — of MacKenzie Scott's ~**$26.3 billion**
-in lifetime philanthropy (2019–2025; Yield Giving reports over $26 billion in
-2,700+ gifts).
+in lifetime philanthropy (2019–2025 nominal, ~$30.2B in 2026 dollars as modeled;
+Yield Giving reports over $26 billion in 2,700+ gifts).
 
 It replaces hand-waved "$/QALY by sector" guesses with cost-effectiveness ratios
 that are, wherever possible, **derived from published causal estimates** (Medicaid
@@ -46,64 +46,71 @@ a typed `unit`, and — for dollar figures — a `dollars_base_year` that
 load, so a per-DALY figure in a per-QALY slot or an un-inflated old-dollar
 figure fails loudly instead of shipping.
 
-1. **QALYs per death averted.** A discounted (3%/yr), quality-weighted annuity
-   over remaining life expectancy, calibrated to the low-income, middle-aged/older
-   adults who dominate the causal mortality studies (~26 remaining years, utility
-   ~0.78) → ~11–14 QALYs per premature death averted.
+1. **Giving, at one price level.** Gifts are recorded as nominal tranches by
+   disclosure year ($26.3B, 2020–2025) and each tranche is CPI-inflated to the
+   2026 base year (→ ~$30.2B), so the dollars and the cost-per-QALY inputs
+   share one price level. Dividing nominal gifts by 2026-dollar costs would
+   understate QALYs by ~13%.
 
-2. **Dollar allocation.** Scott does not publish dollars-by-cause, so the split
+2. **QALYs per death averted.** A discounted (3%/yr), quality-weighted annuity
+   over remaining life expectancy with a half-cycle correction, calibrated to
+   the low-income, middle-aged/older adults who dominate the causal mortality
+   studies (~26 remaining years per Chetty et al. 2016's income–life-expectancy
+   gradient; utility ~0.78 per US EQ-5D norms) → ~11–14 QALYs per premature
+   death averted.
+
+3. **Dollar allocation.** Scott does not publish dollars-by-cause, so the split
    across 13 intervention archetypes is drawn from a **Dirichlet** centered on
-   the best available qualitative picture (top areas: economic security, equity &
-   justice, education, health), with the concentration parameter controlling how
-   tightly shares hold to those centers.
+   the qualitative recipient picture (largest areas: equity & justice,
+   education, economic security, health), with an author-set concentration
+   controlling how tightly shares hold to those centers.
 
-3. **Cost-per-QALY per archetype.** Three derivation methods:
-   - `cost_per_life` — divide a published cost-per-life-saved by QALYs-per-death.
-     Used for **health insurance/access** (Miller, Johnson & Wherry 2021).
-   - `cost_per_qaly_derived_chc` — a fraction of the Medicare cost of an equivalent
-     mortality reduction. Used for **community health centers** (Bailey &
-     Goodman-Bacon 2015).
-   - `cost_per_qaly` — drawn directly from the cost-effectiveness literature
-     (housing, mental health, food security) or, for indirect buckets, a
-     deliberately wide distribution: *anchored to* a causal study where one exists
-     (education→mortality; climate mortality-cost-of-carbon) and to an explicit
-     *skeptical prior* where none does (equity & justice, civic, arts). Each
-     `cost_per_qaly` is the cost-effectiveness **conditional on the effect being
-     real** — all causal doubt lives in the credibility axis (step 4), not here,
-     so the two never double-count. Concretely, the ranges are the *as-if-causal*
-     cost-effectiveness and are deliberately **not** also widened for confounding
-     (that is the credibility weight's job). This is an explicit modeling
-     assertion — the data alone cannot enforce it — and it biases mildly *down*
-     (a real effect is discounted once via credibility) rather than up.
+4. **Cost-per-QALY per archetype.** Three derivation methods:
+   - `cost_per_life` — a published cost-per-life-saved ÷ QALYs-per-death. Used
+     for **health insurance/access**: Sommers (2017, *AJHE*) $327k–$867k per
+     life saved in 2007 dollars, CPI-inflated to $529k–$1.40M.
+   - `cost_per_life_year` — a published cost-per-life-year ÷ the utility-weight
+     draw (life-years → QALYs, explicitly). Used for **community health
+     centers**: Bailey & Goodman-Bacon (2015) ~$54k/life-year in 2012 dollars,
+     CPI-inflated to ~$79k.
+   - `cost_per_qaly` — drawn from the cost-effectiveness literature with every
+     anchor inflated to 2026 dollars (collaborative-care depression, supportive
+     housing), or, for indirect buckets, a deliberately wide prior: *anchored
+     to* a causal study where one exists (education→mortality; climate
+     mortality-cost-of-carbon) and an explicit *skeptical author prior* where
+     none does (equity & justice, civic, arts). Each `cost_per_qaly` is the
+     cost-effectiveness **conditional on the effect being real and delivered**
+     — causal doubt lives in the credibility axis, delivery doubt in
+     realization, so no layer double-counts.
 
-4. **Causal credibility (the evidence-quality axis).** Each archetype is rated by
-   the identification design of its evidence — `randomized` (RCT/lottery),
+5. **Causal credibility (the evidence-quality axis).** Each archetype is rated
+   by the identification design of its evidence — `randomized` (RCT/lottery),
    `strong_quasi`, `moderate_quasi`, `observational`, `projection`, or
    `assumption` — and a credibility weight is drawn from that tier's Beta
-   distribution (mean 0.85 → 0.07; weaker designs are also wider). It linearly
-   shrinks QALYs/dollar toward the null of *no health effect*. This is what keeps
-   an associational SNAP correlation or an assumption-only bucket from counting
-   the same as a difference-in-differences on linked mortality records. Note the
-   axis is about *trust in the estimate*, not its size: the income→mortality
-   lottery RCT is high-credibility precisely because it credibly shows a *small*
-   effect.
+   distribution (means 0.85 → 0.07; weaker designs are also wider). It linearly
+   shrinks QALYs/dollar toward the null of *no health effect*. Credibility is
+   **internal validity only**; transport to Scott's grantees belongs to
+   realization. The tier levels are author-elicited priors — the ordering is
+   the defensible part — and the interactive's evidence-stance slider sweeps
+   them from skeptical to face-value.
 
-5. **Realization factor.** One global multiplier (triangular, mode 0.80, range
-   0.55–1.10) for the *implementation/attribution* gap — does Scott's marginal
-   unrestricted dollar deliver the studied intervention — net of the capacity
-   benefits of large unrestricted gifts (CEP 2023). Kept orthogonal to
-   credibility, which now carries the "evidence may be overstated" discount.
+6. **Realization factor.** One global multiplier (triangular, mode 0.80, range
+   0.55–1.10; author-elicited) for everything between a real effect and her
+   marginal grant — external validity/transport, overhead, funging — net of
+   the capacity benefits of large unrestricted gifts (CEP 2023).
 
-6. **QALYs** = dollars × share × realization × credibility ÷ cost-per-QALY,
+7. **QALYs** = dollars × share × realization × credibility ÷ cost-per-QALY,
    summed across archetypes.
 
-7. **Monetize & benchmark.** QALYs × VSLY (HHS 2026 central $611k) gives a
-   benefit/cost ratio; the same dollars at the global-health frontier
-   (loguniform $50–150 **per QALY-equivalent**, central ~$87) are *handicapped
-   with the same realization and credibility* so the counterfactual benchmark is
-   like-for-like, not a raw ceiling. The parameter note documents the cited
-   GiveWell lives-saved/DALY figures and the one-year-of-full-health conversion
-   convention.
+8. **Monetize & benchmark.** QALYs × VSLY (HHS 2026: central $611k at 3%, with
+   low/high scaled from the 2024 document at the same discount rate) gives a
+   benefit/cost ratio — a *convention*, since a life-year value is applied to
+   quality-adjusted years. The global-health frontier is expressed as a
+   QALY-equivalent cost derived from GiveWell's lives-saved figures
+   ($3,340–$5,500 per under-5 life ÷ ~25 discounted QALYs per child death →
+   loguniform $110–$260, central ~$169) and *handicapped with the same
+   realization and credibility* so the counterfactual benchmark is
+   like-for-like, not a raw ceiling.
 
 ## Results
 
@@ -112,7 +119,7 @@ See [`results/summary.md`](results/summary.md) (regenerated by `uv run msqaly
 the README never drifts from the model. As of the committed run:
 
 <!-- RESULTS:START -->
-**Median ≈ 98k QALYs** (mean 105k; 90% interval 54k–180k), a blended **$270k/QALY**. Monetized at VSLY that is **$59.4B** of health value — a **2.3× benefit/cost ratio**. The same $26.3B at the global-health frontier (~$87/QALY-equivalent), handicapped with the same realization and evidence discounts, would still buy ~207.91M QALYs — about **2126× more health per dollar**, the price of funding a rich country's social fabric rather than the global frontier.
+**Median ≈ 87k QALYs** (mean 94k; 90% interval 49k–161k), a blended **$348k/QALY**. Monetized at VSLY that is **$51.9B** of health value — a **1.7× benefit/cost ratio**. The same $30.2B at the global-health frontier (~$169/QALY-equivalent), handicapped with the same realization and evidence discounts, would still buy ~122.51M QALYs — about **1411× more health per dollar**, the price of funding a rich country's social fabric rather than the global frontier.
 
 ![Estimated QALYs](results/figure.png)
 
@@ -147,11 +154,23 @@ _Full table: [results/summary.md](results/summary.md). Regenerate with `uv run m
 ## Limitations
 
 - Allocation shares are an informed prior, not Scott's actual ledger. Swapping in
-  a dollar-coded recipient database (Yield Giving) would sharpen step 2.
+  a dollar-coded recipient database (Yield Giving) would sharpen the split.
 - Several archetypes (equity & justice, civic, arts) have no clean health pathway;
   their wide distributions reflect genuine ignorance, not measured effect.
 - Causal estimates are transported across populations and time; the realization
   factor is a coarse correction.
+- **Correlation structure is stylized.** Credibility is drawn independently per
+  archetype while realization is one global draw — two opposite extremes. A
+  tier-correlated credibility variant widens the 90% interval by ~7% and leaves
+  the median unchanged. Credibility is also strictly positive: the model puts no
+  probability on zero or harmful effects (assumption-tier means of 0.07
+  approximate, but never reach, a null).
+- **The evidence-tier levels, realization triangle, and Dirichlet concentration
+  are author-elicited priors**, not literature estimates; they are labeled as
+  such in the parameter file, and the sensitivity tornado + interactive sliders
+  are the stress test.
+- Monetization applies a statistical-life-year value to quality-adjusted years —
+  a stated convention affecting only the benefit/cost ratio, never the QALY count.
 - Effects are modeled as static cost-per-QALY ratios, not a dynamic life-table
   microsimulation.
 

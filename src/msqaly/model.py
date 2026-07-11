@@ -32,10 +32,24 @@ DEFAULT_PARAMS = Path(__file__).resolve().parents[2] / "data" / "parameters.yaml
 
 def load_params(path: str | Path | None = None) -> dict:
     """Load and validate the parameter file. Validation enforces typed units
-    and base-year dollar vintages on every sampled spec (see validate.py)."""
+    and base-year dollar vintages on every sampled spec (see validate.py).
+
+    Derives ``meta.total_giving_usd`` (base-year dollars) from the nominal
+    ``meta.giving_tranches``: each tranche is inflated by cpi_target / cpi, so
+    the model's dollars and its cost-per-QALY inputs share one price level.
+    """
     path = Path(path) if path else DEFAULT_PARAMS
     with open(path) as fh:
-        return validate_params(yaml.safe_load(fh))
+        params = validate_params(yaml.safe_load(fh))
+    meta = params["meta"]
+    target = float(meta["cpi_target"])
+    meta["total_giving_usd"] = sum(
+        float(t["nominal_usd"]) * target / float(t["cpi"]) for t in meta["giving_tranches"]
+    )
+    meta["total_giving_nominal_usd"] = sum(
+        float(t["nominal_usd"]) for t in meta["giving_tranches"]
+    )
+    return params
 
 
 def discounted_qale(years: np.ndarray, utility: np.ndarray, rate: float) -> np.ndarray:
@@ -140,10 +154,11 @@ def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
         elif method == "cost_per_life":
             cpl = sample(a["cost_per_life_usd"], n, rng)
             cpq = cpl / qaly_per_death
-        elif method == "cost_per_qaly_derived_chc":
-            med = sample(a["medicare_cost_per_lifeyear_usd"], n, rng)
-            frac = sample(a["chc_fraction_of_medicare"], n, rng)
-            cpq = med * frac
+        elif method == "cost_per_life_year":
+            # $/life-year -> $/QALY via the same utility-weight draw used in
+            # the QALE annuity (a life-year in this population is ~u QALYs).
+            cply = sample(a["cost_per_life_year_usd"], n, rng)
+            cpq = cply / u
         else:
             raise ValueError(f"Unknown method {method!r} for archetype {key!r}")
 

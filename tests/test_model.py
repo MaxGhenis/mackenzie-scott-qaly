@@ -32,9 +32,41 @@ def test_every_archetype_has_a_source():
 
 
 def test_methods_are_known():
-    known = {"cost_per_qaly", "cost_per_life", "cost_per_qaly_derived_chc"}
+    known = {"cost_per_qaly", "cost_per_life", "cost_per_life_year"}
     for a in PARAMS["archetypes"].values():
         assert a["method"] in known
+
+
+def test_giving_total_derived_from_tranches():
+    meta = PARAMS["meta"]
+    nominal = sum(t["nominal_usd"] for t in meta["giving_tranches"])
+    real = sum(
+        t["nominal_usd"] * meta["cpi_target"] / t["cpi"] for t in meta["giving_tranches"]
+    )
+    assert meta["total_giving_nominal_usd"] == pytest.approx(nominal)
+    assert meta["total_giving_usd"] == pytest.approx(real)
+    # Nominal matches the reported ~$26.3B cumulative; real-2026 sits above it.
+    assert nominal == pytest.approx(26.3e9, rel=0.005)
+    assert 28e9 < real < 32e9
+    assert real > nominal
+
+
+def test_chc_life_years_are_converted_to_qalys():
+    # cpq = cost_per_life_year / utility, so the median $/QALY must exceed the
+    # median $/life-year (utility < 1). Regression for the unit-slip bug.
+    res = run(PARAMS, n=50_000, seed=9)
+    cpq = res.cost_per_qaly["Health - community health centers"]
+    spec = PARAMS["archetypes"]["health_chc"]["cost_per_life_year_usd"]
+    median_cply = implied_median(spec)
+    assert np.median(cpq) > median_cply
+    assert 80_000 < np.median(cpq) < 140_000
+
+
+def test_write_refuses_custom_params(tmp_path):
+    from msqaly.cli import main as cli_main
+
+    with pytest.raises(SystemExit):
+        cli_main(["--params", str(tmp_path / "x.yaml"), "--write"])
 
 
 def test_every_archetype_has_a_valid_evidence_tier():
