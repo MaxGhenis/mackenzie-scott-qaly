@@ -5,11 +5,11 @@ _100,000 draws, seed 0. Total giving $30.3B (2026 base)._
 ## Headline
 
 - **Median: 70k QALYs**
-- Mean: 76k QALYs
-- 90% interval: 38k – 136k QALYs
-- Blended cost-effectiveness (median of giving ÷ QALYs): $435k/QALY
-- Monetized at HHS VQALY (median): $51.6B → benefit/cost ratio 1.7× (90% 0.8–3.6×)
-- Global-health frontier (median, handicapped like-for-like with the same realization + RCT-grade credibility): 105.43M QALYs ≈ 1510× the estimate above
+- Mean: 77k QALYs
+- 90% interval: 38k – 138k QALYs
+- Blended cost-effectiveness (median of giving ÷ QALYs): $432k/QALY
+- Monetized at HHS VQALY (median): $52.1B → benefit/cost ratio 1.7× (90% 0.8–3.6×)
+- Global-health frontier (median, handicapped like-for-like with the same realization + RCT-grade credibility): 105.52M QALYs ≈ 1499× the estimate above
 
 ## QALYs by archetype
 
@@ -19,13 +19,13 @@ _100,000 draws, seed 0. Total giving $30.3B (2026 base)._
 | Health - insurance & access | 12k | $63k | strong quasi-exp | 0.66 | 5% |
 | Health - mental & behavioral | 6k | $61k | RCT/lottery | 0.86 | 2% |
 | Economic security - workforce & mobility | 3k | $155k | observational | 0.19 | 13% |
-| Economic security - housing & homelessness | 4k | $81k | quasi-exp (contested) | 0.45 | 4% |
 | Health - community health centers | 5k | $104k | quasi-exp (contested) | 0.45 | 5% |
+| Economic security - housing & homelessness | 4k | $81k | quasi-exp (contested) | 0.45 | 4% |
 | Other / general community | 2k | $109k | observational | 0.19 | 6% |
-| Environment / climate | 788 | $223k | model projection | 0.11 | 8% |
-| Economic security - cash & financial | 2k | $400k | RCT/lottery | 0.86 | 4% |
+| Economic security - cash & financial | 2k | $274k | strong quasi-exp | 0.66 | 4% |
+| Environment / climate | 789 | $223k | model projection | 0.11 | 8% |
 | Economic security - food security | 1k | $63k | observational | 0.19 | 2% |
-| Equity & justice | 464 | $317k | assumption | 0.04 | 17% |
+| Equity & justice | 465 | $317k | assumption | 0.04 | 17% |
 | Civic / democracy / philanthropy infra | 123 | $707k | assumption | 0.04 | 11% |
 | Arts & culture | 16 | $1.4M | assumption | 0.04 | 3% |
 
@@ -36,16 +36,16 @@ _Each effect is shrunk toward the null in proportion to its causal-identificatio
 | Input | Rank correlation with total QALYs |
 |---|---:|
 | $/QALY · Education (HBCUs, comm. college, scholarships) | -0.45 |
-| Realization factor (global) | +0.35 |
-| Allocation · Health - insurance & access | +0.22 |
-| Credibility · Education (HBCUs, comm. college, scholarships) | +0.22 |
-| Allocation · Health - mental & behavioral | +0.21 |
-| $/QALY · Economic security - workforce & mobility | -0.16 |
-| $/QALY · Health - insurance & access | -0.16 |
+| Realization factor (global) | +0.36 |
+| Credibility · Education (HBCUs, comm. college, scholarships) | +0.21 |
+| Allocation · Health - insurance & access | +0.21 |
+| Allocation · Health - mental & behavioral | +0.20 |
+| $/QALY · Economic security - workforce & mobility | -0.17 |
+| $/QALY · Health - insurance & access | -0.17 |
 | $/QALY · Health - mental & behavioral | -0.16 |
-| Credibility · Economic security - workforce & mobility | +0.16 |
-| Allocation · Equity & justice | -0.13 |
+| Credibility · Economic security - workforce & mobility | +0.15 |
+| Allocation · Equity & justice | -0.12 |
 | $/QALY · Economic security - housing & homelessness | -0.12 |
-| $/QALY · Environment / climate | -0.11 |
+| $/QALY · Economic security - cash & financial | -0.12 |
 
 _Positive: larger input → more QALYs (allocations, realization). Allocation shares are compositional (they sum to 1), so a share's correlation is relative to the buckets it displaces. Negative: larger input → fewer QALYs (a higher $/QALY is less cost-effective)._
