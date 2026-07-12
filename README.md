@@ -209,8 +209,14 @@ _Full table: [results/summary.md](results/summary.md). Regenerate with `uv run m
   (GiveWell directed [$397M in all of 2024](https://blog.givewell.org/2025/08/13/givewells-2024-metrics-and-impact/)
   and [moves its cost-effectiveness bar with expected funding](https://blog.givewell.org/2022/07/05/update-on-givewells-funding-projections/)
   — down to ~6x cash when flush, back to 10x when projections fell);
-  rising marginal costs plausibly cut the ~1,200× multiple to a few hundred
-  times at portfolio scale — same direction, softer magnitude.
+  rising marginal costs plausibly cut the ~1,500× multiple to a few hundred
+  times at portfolio scale — same direction, softer magnitude. The floor is
+  direct cash, the most scalable option, which
+  [GiveWell now scores at 3–4× its own historic benchmark](https://blog.givewell.org/2024/11/12/re-evaluating-the-impact-of-unconditional-cash-transfers/)
+  and whose measured health effects extend beyond child mortality
+  ([Richterman et al. 2023](https://www.nature.com/articles/s41586-023-06116-2);
+  [Haushofer & Shapiro 2016](https://haushofer.ne.su.se/publications/Haushofer_Shapiro_UCT_QJE_2016.pdf)):
+  in health-only terms, somewhere under ~50–100×.
 - Effects are modeled as static cost-per-QALY ratios, not a dynamic life-table
   microsimulation.
 
