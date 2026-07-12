@@ -81,7 +81,7 @@ figure fails loudly instead of shipping.
    sub-linearly with org size; R² 0.37, n=1,313). Fuzzy name-to-EIN matches
    were audited by a second model against the live API
    ([`match_audit.jsonl`](data/yieldgiving/match_audit.jsonl): 518 confirmed,
-   236 recovered, 73 confirmed non-filers, 0 false positives). The author-set
+   236 recovered, 73 confirmed non-filers, 0 false positives). An AI-proposed, author-reviewed
    concentration controls how tightly draws hold to those centers.
 
 4. **Cost-per-QALY per archetype.** Three derivation methods:
@@ -96,8 +96,8 @@ figure fails loudly instead of shipping.
      anchor inflated to 2026 dollars (collaborative-care depression, supportive
      housing), or, for indirect buckets, a deliberately wide prior: *anchored
      to* a causal study where one exists (education→mortality; climate
-     mortality-cost-of-carbon) and an explicit *skeptical author prior* where
-     none does (equity & justice, civic, arts). Each `cost_per_qaly` is the
+     mortality-cost-of-carbon) and an explicit *skeptical prior* (AI-proposed,
+     author-reviewed) where none does (equity & justice, civic, arts). Each `cost_per_qaly` is the
      cost-effectiveness **conditional on the effect being real and delivered**
      — causal doubt lives in the credibility axis, delivery doubt in
      realization, so no layer double-counts.
@@ -109,12 +109,12 @@ figure fails loudly instead of shipping.
    distribution (means 0.85 → 0.07; weaker designs are also wider). It linearly
    shrinks QALYs/dollar toward the null of *no health effect*. Credibility is
    **internal validity only**; transport to Scott's grantees belongs to
-   realization. The tier levels are author-elicited priors — the ordering is
-   the defensible part — and the interactive's evidence-stance slider sweeps
+   realization. The tier levels are AI-proposed, author-reviewed priors — Claude drafted
+   them, and the ordering is the defensible part — and the interactive's evidence-stance slider sweeps
    them from skeptical to face-value.
 
 6. **Realization factor.** One global multiplier (triangular, mode 0.80, range
-   0.55–1.10; author-elicited) for everything between a real effect and her
+   0.55–1.10; AI-proposed, author-reviewed) for everything between a real effect and her
    marginal grant — external validity/transport, overhead, funging — net of
    the capacity benefits of large unrestricted gifts (CEP 2023).
 
@@ -198,7 +198,8 @@ _Full table: [results/summary.md](results/summary.md). Regenerate with `uv run m
   probability on zero or harmful effects (assumption-tier means of 0.07
   approximate, but never reach, a null).
 - **The evidence-tier levels, realization triangle, and Dirichlet concentration
-  are author-elicited priors**, not literature estimates; they are labeled as
+  are AI-proposed, author-reviewed priors** — Claude drafted them, and no
+  literature estimates exist; they are labeled as
   such in the parameter file, and the sensitivity tornado + interactive sliders
   are the stress test.
 - Monetization uses HHS's published value per QALY; it affects only the

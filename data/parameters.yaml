@@ -22,7 +22,8 @@
 # cost-per-life-year) rather than asserted. Indirect buckets (education,
 # equity, civic, arts) get wide distributions and explicit skeptical priors.
 # The evidence-tier Beta parameters, realization triangle, and Dirichlet
-# concentration are AUTHOR-ELICITED PRIORS, not literature estimates; they are
+# concentration are AI-PROPOSED, AUTHOR-REVIEWED PRIORS (Claude drafted them;
+# no literature estimates exist); they are
 # labeled as such and stress-tested in the sensitivity tornado and the
 # interactive's sliders.
 # =============================================================================
@@ -179,14 +180,15 @@ realization_factor:
   high: 1.10
   unit: multiplier
   source: >-
-    AUTHOR-ELICITED PRIOR (no literature estimate exists for this quantity).
+    AI-PROPOSED, AUTHOR-REVIEWED PRIOR (no literature estimate exists for this quantity).
     Downweight for transport/overhead/funging; upweight allowed past 1.0
     because [Center for Effective Philanthropy (2023)](https://cep.org/wp-content/uploads/2023/11/BigGiftsStudy_Report_Y2_FNL.pdf)
     finds large unrestricted gifts materially expand recipient capacity/reach.
     Stress-test with the interactive's realization slider (it moves the MODE of
     this triangle within [0.55, 1.10]).
 
-# Evidence tiers by causal-identification design. AUTHOR-ELICITED PRIORS:
+# Evidence tiers by causal-identification design. AI-PROPOSED, AUTHOR-REVIEWED
+# PRIORS (Claude drafted the levels):
 # `mean` is the central credibility weight (1 = take the estimate at face
 # value; 0 = shrink fully to the null of no health effect); `concentration`
 # sets the spread (lower = more uncertain). Weaker designs get a lower mean
@@ -202,7 +204,8 @@ evidence_tiers:
 
 # ---------------------------------------------------------------------------
 # Dirichlet concentration governing uncertainty in the dollar allocation
-# across archetypes. AUTHOR-ELICITED (higher = shares held closer to central):
+# across archetypes. AI-proposed, author-reviewed (higher = shares held closer
+# to central):
 # the share centers below are data-derived, but the undisclosed third of
 # dollars enters via a revenue-scaled imputation and the area->archetype
 # mapping embeds judgment.

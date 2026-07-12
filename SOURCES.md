@@ -154,7 +154,7 @@ inputs are expressed in 2026 dollars; CPI-U index values from
 ---
 
 _Causal estimates are transported across populations/time; the global
-`realization_factor` (author-elicited) is the coarse correction for that and
+`realization_factor` (AI-proposed, author-reviewed) is the coarse correction for that and
 for philanthropic counterfactuals. Evidence-tier weights, the realization
-triangle, and the Dirichlet concentration are author-elicited priors — labeled
+triangle, and the Dirichlet concentration are AI-proposed, author-reviewed priors — labeled
 as such in the parameter file. See README "Limitations."_
