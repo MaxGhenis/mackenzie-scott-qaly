@@ -220,7 +220,8 @@ allocation_concentration: 60
 # $17.46B nominal, about two-thirds of the $26.39B total — with org-reported
 # focus areas on every disclosed dollar. src/msqaly/allocation.py splits each
 # disclosed gift equally across its organization's areas and maps Yield
-# Giving's 53 areas onto these 13 archetypes
+# Giving's 53 areas onto the US-anchored archetypes (non-US health dollars
+# route to global_health by service location)
 # (data/yieldgiving/leaf_to_archetype.yaml documents every mapping rule);
 # tests/test_allocation.py fails if the shares below drift from that
 # derivation. Undisclosed gifts are NOT dropped: each year window's residual

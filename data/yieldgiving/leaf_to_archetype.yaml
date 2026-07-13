@@ -1,5 +1,7 @@
 # Mapping from Yield Giving's 53 org-reported focus-area leaves to the model's
-# 13 intervention archetypes. Used by src/msqaly/allocation.py to derive the
+# US-anchored intervention archetypes (a 14th, global_health, is routed by
+# delivery geography in allocation.py, not by this mapping). Used by
+# src/msqaly/allocation.py to derive the
 # allocation_share centers in data/parameters.yaml from disclosed gift dollars.
 #
 # Rules (implemented in allocation.py, tested in tests/test_allocation.py):
