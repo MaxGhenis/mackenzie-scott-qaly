@@ -315,12 +315,15 @@ archetypes:
     method: cost_per_qaly
     causal_credibility: strong_quasi
     identification: >-
-      Mixed by target population. Adult-targeted cash is credibly ~null
-      (lottery randomization; two US cash RCTs). Child-targeted cash shows
-      replicated positive effects in strong quasi-experimental designs
-      (accepted-vs-rejected Mothers' Pension applicants; EITC expansions;
-      casino-dividend event study). strong_quasi reflects that the positive
-      anchors are QEDs coexisting with RCT-grade adult nulls.
+      Mixed by target population, replicated across developed countries.
+      Adult-targeted cash is credibly ~null on health (Swedish lottery
+      randomization; two US cash RCTs; Swedish lottery wealth buys sustained
+      life satisfaction but significantly smaller mental-health effects).
+      Child-targeted cash shows replicated positive effects in strong
+      quasi-experimental designs in the US (Mothers' Pensions, EITC, casino
+      dividends) and Canada (child-benefit expansions). strong_quasi
+      reflects that the positive anchors are QEDs coexisting with RCT-grade
+      adult nulls.
     cost_per_qaly_usd: {dist: lognormal_ci, low: 50000, high: 1500000, unit: usd_per_qaly, dollars_base_year: 2026}
     source: >-
       [Cesarini et al. (2016, QJE)](https://academic.oup.com/qje/article/131/2/687/2606947)
@@ -345,7 +348,14 @@ archetypes:
       2-3% (6.7-10.8% for single low-education mothers);
       [Great Smoky Mountains casino dividends](https://www.nber.org/papers/w24337)
       (~$6k/year/household) cut child behavioral problems ~40%, with
-      depression/anxiety reductions persisting to age 30. Broader
+      depression/anxiety reductions persisting to age 30;
+      [Milligan & Stabile (2011, AEJ:Policy)](https://www.aeaweb.org/articles?id=10.1257/pol.3.3.175)
+      Canadian child-benefit expansions (province x time x family-type
+      variation) improve child test scores, child mental health, and
+      maternal health. On the adult quality-of-life channel,
+      [Lindqvist, Ostling & Cesarini (2020, REStud)](https://academic.oup.com/restud/article/87/6/2703/5734654)
+      find Swedish lottery wealth yields sustained life-satisfaction gains
+      but significantly smaller happiness and mental-health effects. Broader
       [EITC health evidence](https://academyhealth.org/sites/default/files/Updated.EITC%20Rapid%20Evidence%20Review%20FINAL.pdf)
       beyond these designs stays mixed and confounded. The lognormal
       $50k-$1.5M (2026$) spans child-targeted-QED optimism to adult-null
