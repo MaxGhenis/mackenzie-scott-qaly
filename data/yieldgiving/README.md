@@ -47,7 +47,7 @@ applies these on top of the raw fetch. Built/applied by
 ## leaf_to_archetype.yaml
 
 The judgment layer: maps each of the 53 Yield Giving leaf areas to one of the
-model's 13 intervention archetypes. Every rule is commented inline. To change
+model's intervention archetypes. Every rule is commented inline. To change
 the allocation, edit that mapping (or refresh the snapshot), run
 `uv run python -m msqaly.allocation`, and copy the printed shares into
 `data/parameters.yaml` — the sync test fails until they match.

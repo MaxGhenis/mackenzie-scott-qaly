@@ -1,36 +1,37 @@
 {
   "total_qalys": {
-    "mean": 76899.64178635478,
-    "median": 70194.96988406409,
-    "p05": 37808.55643358191,
-    "p95": 137529.4367559575
+    "mean": 224208.01222409165,
+    "median": 203948.63644477003,
+    "p05": 94360.6153278256,
+    "p95": 423646.77780989924
   },
-  "blended_cost_per_qaly_median": 431683.1080823671,
+  "blended_cost_per_qaly_median": 148576.54015074455,
   "value_usd": {
-    "mean": 57939219612.51812,
-    "median": 52106957073.93562
+    "mean": 168812304768.25916,
+    "median": 150297906651.4311
   },
   "bc_ratio": {
-    "median": 1.7195890271343046,
-    "p05": 0.8206305108059598,
-    "p95": 3.630481238430522
+    "median": 4.960002379573538,
+    "p05": 2.0966153944054997,
+    "p95": 11.165603184753309
   },
   "total_giving_usd": 30301982771.297325,
-  "frontier_qalys_median": 105517654.12687638,
-  "frontier_multiple_median": 1499.2545566752706,
+  "frontier_qalys_median": 105579058.84856218,
+  "frontier_multiple_median": 515.9823562079489,
   "per_archetype_mean": {
-    "Health - insurance & access": 14514.268757028703,
-    "Health - community health centers": 5945.97244708553,
-    "Health - mental & behavioral": 9135.036588251229,
-    "Economic security - cash & financial": 3729.98134659832,
-    "Economic security - food security": 2625.8908931963415,
-    "Economic security - housing & homelessness": 5938.557456337567,
-    "Economic security - workforce & mobility": 6588.029507044074,
-    "Education (HBCUs, comm. college, scholarships)": 19026.401157980275,
-    "Equity & justice": 1770.8217792159116,
-    "Civic / democracy / philanthropy infra": 531.7776866089854,
-    "Arts & culture": 85.00957599192218,
-    "Environment / climate": 3266.6184992563494,
-    "Other / general community": 3741.2760917595847
+    "Health - insurance & access": 9959.773618613768,
+    "Health - community health centers": 4055.064657521769,
+    "Health - mental & behavioral": 8387.214261621419,
+    "Global health & development (non-US delivery)": 156020.60013797935,
+    "Economic security - cash & financial": 2870.483872385889,
+    "Economic security - food security": 2089.70740601372,
+    "Economic security - housing & homelessness": 5897.062661305258,
+    "Economic security - workforce & mobility": 6660.417884946899,
+    "Education (HBCUs, comm. college, scholarships)": 18933.137983491888,
+    "Equity & justice": 1770.7033900795684,
+    "Civic / democracy / philanthropy infra": 534.5278722064476,
+    "Arts & culture": 85.75519756797817,
+    "Environment / climate": 3211.6611313232197,
+    "Other / general community": 3731.902149034487
   }
 }

@@ -48,6 +48,23 @@ PARAMS_PATH = ROOT / "data" / "parameters.yaml"
 PASSTHROUGH = "PASSTHROUGH"
 SPLIT_HEALTH = "SPLIT_HEALTH"
 SPLIT_HEALTH_TARGETS = ("health_coverage", "health_chc")
+# Health-relevant targets whose dollars split by delivery geography: the
+# non-US-location share of each org routes to `global_health` (LMIC anchors)
+# instead of the US-anchored archetype. A bed-net gift priced at Medicaid
+# rates is off by orders of magnitude — the flaw a LinkedIn reader caught.
+GEO_SPLIT_TARGETS = {SPLIT_HEALTH, "health_mental", "econ_food", "econ_cash"}
+GLOBAL_HEALTH = "global_health"
+
+
+def nonus_fraction(locations: list | None) -> float:
+    """Share of an org's reported service locations outside the US."""
+    if not locations:
+        return 0.0
+    nonus = [
+        loc for loc in locations
+        if not loc.startswith("us") and loc != "north_america"
+    ]
+    return len(nonus) / len(locations)
 # 2019-2021 pooled: the DB attributes more disclosed 2021 dollars than the
 # 2021 announcement total, so the year boundary inside the pool is unreliable.
 WINDOWS = ((2019, 2021), (2022, 2022), (2023, 2023), (2024, 2024), (2025, 2025))
@@ -145,15 +162,20 @@ def derive_shares(
     def credit(usd: dict, org: dict, amount: float) -> None:
         areas = substantive_areas(org)
         weight = amount / len(areas)
+        geo = nonus_fraction(org.get("locations"))
         for label in areas:
             target = mapping[label]
             if target == PASSTHROUGH:
                 continue  # vehicle-only org: spread via normalization
+            local = weight
+            if target in GEO_SPLIT_TARGETS and geo > 0:
+                usd[GLOBAL_HEALTH] += weight * geo
+                local = weight * (1 - geo)
             if target == SPLIT_HEALTH:
                 for half in SPLIT_HEALTH_TARGETS:
-                    usd[half] += weight / 2
+                    usd[half] += local / 2
             else:
-                usd[target] += weight
+                usd[target] += local
 
     usd: dict[str, float] = defaultdict(float)
     disclosed_usd = 0.0
