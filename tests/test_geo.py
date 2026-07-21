@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from msqaly.allocation import load_inputs, nonus_fraction
-from msqaly.geo import aggregate
+from msqaly.geo import aggregate, aggregate_full
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -37,7 +37,25 @@ def test_unmapped_tail_is_small():
     assert other < 0.02 * out["nonus_usd"], "grow _CODE_REGION instead"
 
 
-def test_export_in_sync():
+def test_full_ledger_conserves_all_dollars():
+    from msqaly.allocation import derive_shares
+
     orgs, _, _ = load_inputs()
+    _, stats = derive_shares()
+    out = aggregate_full(orgs, stats["org_usd"])
+    assert abs(out["total_usd"] - sum(stats["org_usd"])) < 1000
+    assert abs(sum(r["usd"] for r in out["regions"]) - out["total_usd"]) < 1000
+    # Every bucket is labeled and flagged
+    assert all("label" in r and "unspecified" in r for r in out["regions"])
+
+
+def test_export_in_sync():
+    from msqaly.allocation import derive_shares
+
+    orgs, _, _ = load_inputs()
+    _, stats = derive_shares()
     disk = json.loads((ROOT / "web" / "geo.json").read_text())
-    assert disk == aggregate(orgs)
+    assert disk == {
+        "disclosed_nonus": aggregate(orgs),
+        "full_ledger": aggregate_full(orgs, stats["org_usd"]),
+    }

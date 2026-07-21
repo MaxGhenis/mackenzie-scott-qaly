@@ -181,8 +181,9 @@ def derive_shares(
     disclosed_usd = 0.0
     n_gifts = n_disclosed = 0
     disclosed_by_window: dict[tuple, float] = defaultdict(float)
-    undisclosed: list[tuple[dict, int]] = []  # (org, gift year)
-    for org in orgs:
+    org_usd = [0.0] * len(orgs)  # dollars credited per org (index-aligned)
+    undisclosed: list[tuple[int, dict, int]] = []  # (org index, org, gift year)
+    for i, org in enumerate(orgs):
         for gift in org.get("gifts") or []:
             n_gifts += 1
             year = int(gift["year"])
@@ -191,9 +192,10 @@ def derive_shares(
                 n_disclosed += 1
                 disclosed_usd += amount
                 disclosed_by_window[year_window(year)] += amount
+                org_usd[i] += amount
                 credit(usd, org, amount)
             else:
-                undisclosed.append((org, year))
+                undisclosed.append((i, org, year))
 
     stats: dict = {
         "n_orgs": len(orgs),
@@ -212,23 +214,24 @@ def derive_shares(
 
         by_window: dict[tuple, list] = defaultdict(list)
         n_fallback = 0
-        for org, year in undisclosed:
+        for i, org, year in undisclosed:
             r = pre_gift_revenue(revenue.get(org["name"]), year)
-            by_window[year_window(year)].append((org, r))
+            by_window[year_window(year)].append((i, org, r))
         imputed_usd = 0.0
         imputed_by_window = {}
         for window, rows in by_window.items():
             residual = max(window_total[window] - disclosed_by_window[window], 0.0)
-            weights = [r**beta if r else None for _, r in rows]
+            weights = [r**beta if r else None for _, _, r in rows]
             known = [w for w in weights if w is not None]
             fallback = median(known) if known else 1.0
             n_fallback += sum(1 for w in weights if w is None)
             weights = [w if w is not None else fallback for w in weights]
             total_w = sum(weights)
             imputed_by_window[f"{window[0]}-{window[1]}"] = residual
-            for (org, _), w in zip(rows, weights, strict=True):
+            for (i, org, _), w in zip(rows, weights, strict=True):
                 amount = residual * w / total_w
                 imputed_usd += amount
+                org_usd[i] += amount
                 credit(usd, org, amount)
         stats.update(
             elasticity=beta,
@@ -251,6 +254,7 @@ def derive_shares(
         floors[k] += 1
     shares = {k: floors[k] / 1000 for k in sorted(floors, key=floors.get, reverse=True)}
     stats["raw_shares"] = raw
+    stats["org_usd"] = org_usd
     return shares, stats
 
 

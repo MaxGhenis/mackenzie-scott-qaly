@@ -56,8 +56,20 @@ _CODE_REGION = {
     "ca": "canada",
 }
 
+_US_BUCKETS = (
+    ("us_west", "US — West"),
+    ("us_south", "US — South"),
+    ("us_midwest", "US — Midwest"),
+    ("us_northeast", "US — Northeast"),
+)
+
+# Buckets that name a reporting granularity rather than a place.
+_UNSPECIFIED = {"global", "us_national", "north_america_unspec", "other"}
+
 _LABELS = {
     "global": "Global (multi-region)",
+    "us_national": "US — national / unspecified",
+    "north_america_unspec": "North America (unspecified)",
     "sub-_saharan_africa": "Sub-Saharan Africa",
     "south_asia": "South Asia",
     "latin_america&_caribbean": "Latin America & Caribbean",
@@ -72,6 +84,56 @@ _LABELS = {
 def _is_us(loc: str) -> bool:
     # Mirrors allocation.nonus_fraction's US test.
     return loc.startswith("us") or loc == "north_america"
+
+
+def _bucket(loc: str) -> str:
+    """Full-ledger bucket for one location slug (US and non-US alike)."""
+    if loc == "us":
+        return "us_national"
+    if loc == "north_america":
+        return "north_america_unspec"
+    for prefix, _ in _US_BUCKETS:
+        if loc.startswith(prefix):
+            return prefix
+    if loc in _LABELS:
+        return loc
+    return _CODE_REGION.get(loc, "other")
+
+
+def aggregate_full(orgs: list, org_usd: list[float]) -> dict:
+    """Bucket ALL ledger dollars (disclosed + imputed, index-aligned
+    ``org_usd`` from ``derive_shares``) by service geography."""
+    buckets: Counter[str] = Counter()
+    labels = dict(_LABELS)
+    labels.update({k: v for k, v in _US_BUCKETS})
+    for org, usd in zip(orgs, org_usd, strict=True):
+        locs = org.get("locations") or []
+        if not usd:
+            continue
+        if not locs:
+            buckets["us_national"] += usd  # no locations reported
+            continue
+        per = usd / len(locs)
+        for loc in locs:
+            buckets[_bucket(loc)] += per
+    entries = [
+        {
+            "key": k,
+            "label": labels[k],
+            "usd": round(v),
+            "unspecified": k in _UNSPECIFIED,
+        }
+        for k, v in buckets.most_common()
+    ]
+    return {
+        "method": (
+            "All ledger dollars (disclosed + imputed) split equally across "
+            "each organization's reported service locations. Muted buckets "
+            "name a reporting granularity, not a place."
+        ),
+        "total_usd": round(sum(buckets.values())),
+        "regions": entries,
+    }
 
 
 def aggregate(orgs: list) -> dict:
@@ -110,13 +172,19 @@ def aggregate(orgs: list) -> dict:
 
 
 def main() -> None:
+    from .allocation import derive_shares
+
     orgs, _, _ = load_inputs()
-    out = aggregate(orgs)
+    _, stats = derive_shares()
+    out = {
+        "disclosed_nonus": aggregate(orgs),
+        "full_ledger": aggregate_full(orgs, stats["org_usd"]),
+    }
     path = Path(__file__).resolve().parents[2] / "web" / "geo.json"
     path.write_text(json.dumps(out, indent=1) + "\n")
-    print(f"wrote {path}: US ${out['us_usd']/1e9:.2f}B, "
-          f"non-US ${out['nonus_usd']/1e9:.2f}B, "
-          f"{len(out['regions'])} regions")
+    fl = out["full_ledger"]
+    print(f"wrote {path}: full ledger ${fl['total_usd']/1e9:.2f}B "
+          f"in {len(fl['regions'])} buckets")
 
 
 if __name__ == "__main__":
