@@ -18,6 +18,37 @@ from pathlib import Path
 
 from .allocation import load_inputs
 
+# Audit region keys (geo_audit.jsonl) -> bucket keys.
+_AUDIT_REGION = {
+    "sub_saharan_africa": "sub-_saharan_africa",
+    "south_asia": "south_asia",
+    "east_asia_pacific": "east_asia&_pacific",
+    "latin_america_caribbean": "latin_america&_caribbean",
+    "middle_east_north_africa": "middle_east&_north_africa",
+    "europe_central_asia": "europe&_central_asia",
+    "north_america_us": "us_national",
+    "global_unattributable": "global",
+}
+
+
+def load_geo_audit(data_dir=None) -> dict[str, dict[str, float]]:
+    """org name -> audited region shares for 'global'-listed orgs (terra
+    sweep of the top 50 by dollars; each row cites its source_url)."""
+    from .allocation import DATA_DIR
+
+    d = Path(data_dir) if data_dir else DATA_DIR
+    path = d / "geo_audit" / "geo_audit.jsonl"
+    if not path.exists():
+        return {}
+    out = {}
+    for line in path.read_text().splitlines():
+        row = json.loads(line)
+        shares = {k: float(v) for k, v in (row.get("region_shares") or {}).items() if float(v) > 0}
+        total = sum(shares.values())
+        if total > 0:
+            out[row["name"]] = {k: v / total for k, v in shares.items()}
+    return out
+
 # ISO-3166 alpha-2 codes appearing in the Yield locations field, rolled into
 # the database's own region vocabulary. US territories with their own codes
 # (as, gu) are grouped with East Asia & Pacific geographically; they are a
@@ -100,12 +131,18 @@ def _bucket(loc: str) -> str:
     return _CODE_REGION.get(loc, "other")
 
 
-def aggregate_full(orgs: list, org_usd: list[float]) -> dict:
+def aggregate_full(
+    orgs: list, org_usd: list[float], audit: dict | None = None
+) -> dict:
     """Bucket ALL ledger dollars (disclosed + imputed, index-aligned
-    ``org_usd`` from ``derive_shares``) by service geography."""
+    ``org_usd`` from ``derive_shares``) by service geography. When an org's
+    'global' listing has audited region shares, that slice is redistributed
+    accordingly (unattributable shares stay in the Global bucket)."""
+    audit = audit or {}
     buckets: Counter[str] = Counter()
     labels = dict(_LABELS)
     labels.update({k: v for k, v in _US_BUCKETS})
+    n_audited = 0
     for org, usd in zip(orgs, org_usd, strict=True):
         locs = org.get("locations") or []
         if not usd:
@@ -114,8 +151,14 @@ def aggregate_full(orgs: list, org_usd: list[float]) -> dict:
             buckets["us_national"] += usd  # no locations reported
             continue
         per = usd / len(locs)
+        shares = audit.get(org["name"])
         for loc in locs:
-            buckets[_bucket(loc)] += per
+            if loc == "global" and shares:
+                n_audited += 1
+                for rk, sh in shares.items():
+                    buckets[_AUDIT_REGION[rk]] += per * sh
+            else:
+                buckets[_bucket(loc)] += per
     entries = [
         {
             "key": k,
@@ -128,9 +171,13 @@ def aggregate_full(orgs: list, org_usd: list[float]) -> dict:
     return {
         "method": (
             "All ledger dollars (disclosed + imputed) split equally across "
-            "each organization's reported service locations. Muted buckets "
-            "name a reporting granularity, not a place."
+            "each organization's reported service locations. 'Global' slices "
+            "of the top-50 audited organizations are redistributed per their "
+            "own published geographies (geo_audit.jsonl); unattributable "
+            "shares stay Global. Muted buckets name a reporting granularity, "
+            "not a place."
         ),
+        "n_audited_orgs": n_audited,
         "total_usd": round(sum(buckets.values())),
         "regions": entries,
     }
@@ -178,7 +225,7 @@ def main() -> None:
     _, stats = derive_shares()
     out = {
         "disclosed_nonus": aggregate(orgs),
-        "full_ledger": aggregate_full(orgs, stats["org_usd"]),
+        "full_ledger": aggregate_full(orgs, stats["org_usd"], load_geo_audit()),
     }
     path = Path(__file__).resolve().parents[2] / "web" / "geo.json"
     path.write_text(json.dumps(out, indent=1) + "\n")

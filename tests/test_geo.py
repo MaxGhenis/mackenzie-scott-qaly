@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from msqaly.allocation import load_inputs, nonus_fraction
-from msqaly.geo import aggregate, aggregate_full
+from msqaly.geo import aggregate, aggregate_full, load_geo_audit
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -42,7 +42,7 @@ def test_full_ledger_conserves_all_dollars():
 
     orgs, _, _ = load_inputs()
     _, stats = derive_shares()
-    out = aggregate_full(orgs, stats["org_usd"])
+    out = aggregate_full(orgs, stats["org_usd"], load_geo_audit())
     assert abs(out["total_usd"] - sum(stats["org_usd"])) < 1000
     assert abs(sum(r["usd"] for r in out["regions"]) - out["total_usd"]) < 1000
     # Every bucket is labeled and flagged
@@ -57,5 +57,15 @@ def test_export_in_sync():
     disk = json.loads((ROOT / "web" / "geo.json").read_text())
     assert disk == {
         "disclosed_nonus": aggregate(orgs),
-        "full_ledger": aggregate_full(orgs, stats["org_usd"]),
+        "full_ledger": aggregate_full(orgs, stats["org_usd"], load_geo_audit()),
     }
+
+
+def test_geo_overlay_loads_and_shares_still_sum():
+    from msqaly.allocation import derive_shares, load_geo_overlay
+
+    overlay = load_geo_overlay()
+    assert len(overlay) == 50
+    assert all(0.0 <= v <= 1.0 for v in overlay.values())
+    shares, _ = derive_shares(geo_overlay=True)
+    assert abs(sum(shares.values()) - 1.0) < 1e-9

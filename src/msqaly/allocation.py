@@ -143,13 +143,28 @@ def calibrate_elasticity(orgs: list, revenue: dict) -> tuple[float, float, int]:
     return float(beta), float(r2), len(xs)
 
 
+def load_geo_overlay(data_dir: str | Path | None = None) -> dict[str, float]:
+    """Audited non-US fractions for 'global'-listed orgs (geo_audit.jsonl):
+    org name -> (1 - audited US share). Produced by the terra research sweep;
+    each row carries source_url + confidence. Opt-in via derive_shares."""
+    d = Path(data_dir) if data_dir else DATA_DIR
+    path = d / "geo_audit" / "geo_audit.jsonl"
+    out: dict[str, float] = {}
+    for line in path.read_text().splitlines():
+        row = json.loads(line)
+        out[row["name"]] = max(0.0, min(1.0, 1.0 - float(row["us_share"])))
+    return out
+
+
 def derive_shares(
     data_dir: str | Path | None = None,
     params_path: str | Path | None = None,
     impute: bool = True,
+    geo_overlay: bool = False,
 ) -> tuple[dict[str, float], dict]:
     """Compute archetype -> share (3-decimal, sums to exactly 1.0) and stats."""
     orgs, leaves, mapping = load_inputs(data_dir)
+    overlay = load_geo_overlay(data_dir) if geo_overlay else {}
 
     unmapped = sorted({leaf["label"] for leaf in leaves.values()} - set(mapping))
     if unmapped:
@@ -162,7 +177,7 @@ def derive_shares(
     def credit(usd: dict, org: dict, amount: float) -> None:
         areas = substantive_areas(org)
         weight = amount / len(areas)
-        geo = nonus_fraction(org.get("locations"))
+        geo = overlay.get(org["name"], nonus_fraction(org.get("locations")))
         for label in areas:
             target = mapping[label]
             if target == PASSTHROUGH:
