@@ -204,12 +204,13 @@ def _org_region_dists(org, audit_shares):
     if not locs:
         d = {"us_national": 1.0}
         return d, {"global": 1.0}, d
-    us_locs = [l for l in locs if _is_us(l)]
-    ab_locs = [l for l in locs if not _is_us(l)]
+    us_locs = [loc for loc in locs if _is_us(loc)]
+    ab_locs = [loc for loc in locs if not _is_us(loc)]
+
     def dist(ls):
         out: dict[str, float] = {}
-        for l in ls:
-            b = _bucket(l)
+        for loc in ls:
+            b = _bucket(loc)
             out[b] = out.get(b, 0.0) + 1.0 / len(ls)
         return out
     us = dist(us_locs) if us_locs else {"us_national": 1.0}
@@ -223,15 +224,22 @@ def archetype_region_matrix(data_dir=None) -> dict:
     SPLIT_HEALTH halves, audited geo routing). Within each archetype the
     model prices all regions identically, so these shares also decompose
     the archetype's QALYs — by construction, not as an empirical claim."""
-    from .allocation import (GEO_SPLIT_TARGETS, GLOBAL_HEALTH, PASSTHROUGH,
-                             SPLIT_HEALTH, SPLIT_HEALTH_TARGETS,
-                             derive_shares, load_geo_overlay, nonus_fraction)
+    from .allocation import (
+        GEO_SPLIT_TARGETS,
+        GLOBAL_HEALTH,
+        PASSTHROUGH,
+        SPLIT_HEALTH,
+        SPLIT_HEALTH_TARGETS,
+        derive_shares,
+        load_geo_overlay,
+        nonus_fraction,
+    )
 
     orgs, leaves, mapping = load_inputs(data_dir)
     overlay = load_geo_overlay(data_dir)
-    audit = load_geo_audit(data_dir)
-    # geo_audit region shares are keyed by audit vocabulary; keep raw rows too
+    # geo_audit region shares are keyed by audit vocabulary; use raw rows
     import json as _json
+
     from .allocation import DATA_DIR
     d = Path(data_dir) if data_dir else DATA_DIR
     raw_audit = {}
