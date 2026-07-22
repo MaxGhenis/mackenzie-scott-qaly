@@ -183,6 +183,120 @@ def aggregate_full(
     }
 
 
+def _org_region_dists(org, audit_shares):
+    """(us_dist, abroad_dist, all_dist): region-bucket dollar distributions
+    for one org's US-side, abroad-side, and overall geography."""
+    locs = org.get("locations") or []
+    if audit_shares:
+        us = {"us_national": 1.0}
+        abroad = {}
+        for rk, sh in audit_shares.items():
+            if rk == "north_america_us":
+                continue
+            abroad[_AUDIT_REGION[rk]] = abroad.get(_AUDIT_REGION[rk], 0.0) + sh
+        tot = sum(abroad.values())
+        abroad = {k: v / tot for k, v in abroad.items()} if tot else {"global": 1.0}
+        us_w = audit_shares.get("north_america_us", 0.0)
+        alls = {k: v * (1 - us_w) for k, v in abroad.items()}
+        if us_w:
+            alls["us_national"] = alls.get("us_national", 0.0) + us_w
+        return us, abroad, alls
+    if not locs:
+        d = {"us_national": 1.0}
+        return d, {"global": 1.0}, d
+    us_locs = [l for l in locs if _is_us(l)]
+    ab_locs = [l for l in locs if not _is_us(l)]
+    def dist(ls):
+        out: dict[str, float] = {}
+        for l in ls:
+            b = _bucket(l)
+            out[b] = out.get(b, 0.0) + 1.0 / len(ls)
+        return out
+    us = dist(us_locs) if us_locs else {"us_national": 1.0}
+    abroad = dist(ab_locs) if ab_locs else {"global": 1.0}
+    return us, abroad, dist(locs)
+
+
+def archetype_region_matrix(data_dir=None) -> dict:
+    """Per-archetype regional dollar shares, mirroring the allocation
+    pipeline's crediting rules exactly (substantive areas, PASSTHROUGH,
+    SPLIT_HEALTH halves, audited geo routing). Within each archetype the
+    model prices all regions identically, so these shares also decompose
+    the archetype's QALYs — by construction, not as an empirical claim."""
+    from .allocation import (GEO_SPLIT_TARGETS, GLOBAL_HEALTH, PASSTHROUGH,
+                             SPLIT_HEALTH, SPLIT_HEALTH_TARGETS,
+                             derive_shares, load_geo_overlay, nonus_fraction)
+
+    orgs, leaves, mapping = load_inputs(data_dir)
+    overlay = load_geo_overlay(data_dir)
+    audit = load_geo_audit(data_dir)
+    # geo_audit region shares are keyed by audit vocabulary; keep raw rows too
+    import json as _json
+    from .allocation import DATA_DIR
+    d = Path(data_dir) if data_dir else DATA_DIR
+    raw_audit = {}
+    for line in (d / "geo_audit" / "geo_audit.jsonl").read_text().splitlines():
+        row = _json.loads(line)
+        raw_audit[row["name"]] = row.get("region_shares") or {}
+    _, stats = derive_shares(data_dir)
+    org_usd = stats["org_usd"]
+
+    matrix: dict[str, Counter] = {}
+
+    def add(target: str, dist: dict[str, float], amount: float) -> None:
+        if amount <= 0:
+            return
+        m = matrix.setdefault(target, Counter())
+        for region, w in dist.items():
+            m[region] += amount * w
+
+    for org, usd in zip(orgs, org_usd, strict=True):
+        if not usd:
+            continue
+        labels = [leaves[c]["label"] for c in org.get("giftAreas") or []]
+        subst = [la for la in labels if mapping[la] != PASSTHROUGH] or labels
+        if not subst:
+            continue
+        weight = usd / len(subst)
+        geo = overlay.get(org["name"], nonus_fraction(org.get("locations")))
+        us_d, ab_d, all_d = _org_region_dists(org, raw_audit.get(org["name"]))
+        for la in subst:
+            target = mapping[la]
+            if target == PASSTHROUGH:
+                continue
+            local = weight
+            if target in GEO_SPLIT_TARGETS and geo > 0:
+                add(GLOBAL_HEALTH, ab_d, weight * geo)
+                local = weight * (1 - geo)
+            if target == SPLIT_HEALTH:
+                for half in SPLIT_HEALTH_TARGETS:
+                    add(half, us_d if target in GEO_SPLIT_TARGETS else all_d, local / 2)
+            elif target in GEO_SPLIT_TARGETS:
+                add(target, us_d, local)
+            else:
+                add(target, all_d, local)
+
+    labels = dict(_LABELS)
+    labels.update({k: v for k, v in _US_BUCKETS})
+    out_regions = sorted({r for m in matrix.values() for r in m})
+    return {
+        "note": (
+            "Within each archetype the model prices all delivery locations "
+            "identically (the health->global_health routing is the only "
+            "geographic pricing), so these dollar shares decompose the "
+            "archetype's QALYs by construction."
+        ),
+        "regions": [
+            {"key": k, "label": labels[k], "unspecified": k in _UNSPECIFIED}
+            for k in out_regions
+        ],
+        "matrix": {
+            t: {k: round(v / sum(m.values()), 6) for k, v in m.items()}
+            for t, m in matrix.items()
+        },
+    }
+
+
 def aggregate(orgs: list) -> dict:
     """Return {us_usd, nonus_usd, regions: [{key, label, usd}]} over
     disclosed dollars, equal-split across each org's listed locations."""
@@ -226,6 +340,7 @@ def main() -> None:
     out = {
         "disclosed_nonus": aggregate(orgs),
         "full_ledger": aggregate_full(orgs, stats["org_usd"], load_geo_audit()),
+        "archetype_region_matrix": archetype_region_matrix(),
     }
     path = Path(__file__).resolve().parents[2] / "web" / "geo.json"
     path.write_text(json.dumps(out, indent=1) + "\n")

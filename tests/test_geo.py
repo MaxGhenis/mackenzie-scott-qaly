@@ -79,3 +79,20 @@ def test_version_exports_in_sync():
         disk = json.loads((ROOT / "web" / name).read_text())
         assert disk == builder()
         assert abs(sum(disk["allocation_share"].values()) - 1.0) < 1e-9
+
+
+def test_archetype_region_matrix_invariants():
+    from msqaly.geo import archetype_region_matrix
+
+    out = archetype_region_matrix()
+    m = out["matrix"]
+    assert len(m) == 14
+    region_keys = {r["key"] for r in out["regions"]}
+    for target, dist in m.items():
+        assert abs(sum(dist.values()) - 1.0) < 2e-3, target
+        assert set(dist) <= region_keys
+    # global_health receives only abroad-routed dollars
+    gh = m["global_health"]
+    us_side = sum(v for k, v in gh.items()
+                  if k.startswith("us") or k == "north_america_unspec")
+    assert us_side == 0
