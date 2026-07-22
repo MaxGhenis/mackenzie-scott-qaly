@@ -22,7 +22,6 @@ real-dollar share re-derivation; geo-audit field normalization.
 - [x] Reproducibility seat verified in a clean clone: tests pass, renders
       byte-identical, all spot-checked numbers reconcile to artifacts
 - [x] Rendered HTML/PDF current with source (docs/, Pages)
-- [ ] Author confirms the financial-relationship disclosure ("Neither I nor
-      the organizations I lead have received funding from MacKenzie Scott or
-      Yield Giving") before upload
+- [x] Author confirmed the financial-relationship disclosure, extended to
+      cover GiveWell (the benchmark source) alongside Scott and Yield Giving
 - [ ] Author uploads docs/index.pdf to SSRN
