@@ -1,0 +1,27 @@
+project:
+  type: manuscript
+  output-dir: ../docs
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    theme: litera
+    fig-align: center
+  pdf:
+    toc: false
+    number-sections: true
+    fontsize: 11pt
+    geometry: margin=1.1in
+    header-includes:
+      - \usepackage{tgpagella}
+      - \usepackage[scaled=0.94]{helvet}
+
+execute:
+  echo: false
+  warning: false
+  message: false
+  freeze: auto
+
+manuscript:
+  article: index.qmd

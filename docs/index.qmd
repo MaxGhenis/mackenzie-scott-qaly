@@ -1,0 +1,273 @@
+---
+title: "MacKenzie Scott's giving, in QALYs"
+subtitle: "An evidence-weighted, auditable cost-effectiveness model of a $26 billion portfolio"
+bibliography: references.bib
+jupyter: msqaly-paper
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    author:
+      - name: "Max Ghenis"
+        email: max@maxghenis.com
+        url: https://maxghenis.com
+  pdf:
+    number-sections: true
+    author: 'Max Ghenis\thanks{max@maxghenis.com. I am CEO of PolicyEngine and president of the Axiom Foundation; this paper is a personal research project and does not represent the views of either organization. Interactive version, code, data, and full audit trail: \url{https://maxghenis.com/mackenzie-scott-qaly} and \url{https://github.com/MaxGhenis/mackenzie-scott-qaly}.}'
+abstract: |
+  MacKenzie Scott has disclosed $26.39 billion in gifts to more than 2,500 organizations since 2019 — roughly a third of American megagiving in 2025 — yet almost none of it is denominated in outcomes. This paper prices the entire portfolio in quality-adjusted life-years. A Monte Carlo model allocates dollars across 14 intervention archetypes using Scott's own gift-level database, imputes the undisclosed third from recipients' pre-gift IRS 990 revenue, assigns each archetype a cost-per-QALY anchor from published causal estimates, and shrinks every effect toward zero in proportion to the causal credibility of its evidence. The best-guess estimate is a median of roughly 202,000 QALYs (90% interval 94,000–419,000), a blended $150,000 per QALY, and a benefit–cost ratio of 4.9 at the U.S. government's value per QALY. Three findings follow. First, impact is geographically concentrated: the 4.8% of dollars funding health and development delivered outside the United States produces 69% of estimated health impact. Second, gift size scales with recipient size to only the 0.41 power — a 10× larger organization receives about 2.5× more money. Third, the answer is dominated by evidence philosophy rather than arithmetic: restricting to randomized evidence collapses the median to ~9,000 QALYs while taking every study at face value raises it to ~415,000, a 45× range that dwarfs every other modeling choice. All parameters, code, data snapshots, and an AI-audit trail are public, and the model runs interactively in the browser.
+---
+
+```{python}
+#| echo: false
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import yaml
+
+ROOT = Path.cwd().resolve()
+if not (ROOT / "results").exists():
+    ROOT = ROOT.parent
+sys.path.insert(0, str(ROOT / "src"))
+
+S = json.loads((ROOT / "results" / "summary.json").read_text())
+GEO = json.loads((ROOT / "web" / "geo.json").read_text())
+V10 = json.loads((ROOT / "web" / "allocation_v10.json").read_text())
+V11 = json.loads((ROOT / "web" / "allocation_v11.json").read_text())
+P = yaml.safe_load((ROOT / "data" / "parameters.yaml").read_text())
+
+from msqaly.allocation import derive_shares
+_, DIAG = derive_shares()
+
+tq = S["total_qalys"]
+def k(x): return f"{x/1000:,.0f},000" if x >= 10000 else f"{x:,.0f}"
+def kk(x): return f"{round(x/1000):,}k"
+def usd(x):
+    if abs(x) >= 0.9995e9: return f"${x/1e9:,.2f}B"
+    if abs(x) >= 0.9995e6: return f"${x/1e6:,.0f}M"
+    return f"${x:,.0f}"
+
+F = dict(
+    median=f"{tq['median']:,.0f}",
+    median_k=k(tq['median']),
+    mean=f"{tq['mean']:,.0f}",
+    p05=k(tq['p05']), p95=k(tq['p95']),
+    blended=f"${S['blended_cost_per_qaly_median']:,.0f}",
+    giving=f"${S['total_giving_usd']/1e9:,.1f}B",
+    frontier_mult=f"{S['frontier_multiple_median']:,.0f}",
+    frontier_q=f"{S['frontier_qalys_median']/1e6:,.1f} million",
+    elasticity=f"{DIAG['elasticity']:.2f}",
+    r2=f"{DIAG['elasticity_r2']:.2f}",
+    n_cal=f"{DIAG['n_calibration']:,}",
+    n_orgs=f"{DIAG['n_orgs']:,}",
+    n_gifts=f"{DIAG['n_gifts']:,}",
+    n_disclosed=f"{DIAG['n_disclosed']:,}",
+    disclosed_b=f"${DIAG['disclosed_usd']/1e9:,.2f}B",
+    imputed_b=f"${DIAG['imputed_usd']/1e9:,.2f}B",
+    abroad_share=f"{100*DIAG['raw_shares']['global_health']:.2f}%",
+    abroad_share_1=f"{100*DIAG['raw_shares']['global_health']:.1f}%",
+)
+
+per = S["per_archetype_mean"]
+mean_total = sum(per.values())
+gh_label = [kb for kb in per if "Global health" in kb][0]
+F["gh_share"] = f"{100*per[gh_label]/mean_total:.1f}%"
+F["gh_mean"] = f"{per[gh_label]:,.0f}"
+```
+
+# Introduction
+
+MacKenzie Scott gave away $7 billion in 2025 — by the Indiana University Lilly Family School of Philanthropy's accounting, about a third of every megagift in America that year [@givingusa2026; @cnbc2025scott]. Her disclosed lifetime total is $26.39 billion across `{python} F["n_gifts"]` gifts to `{python} F["n_orgs"]` organizations since 2019 [@yieldgiving2026]. Almost none of it is denominated in health, and no published estimate prices the portfolio in outcomes of any kind.
+
+This paper does so in the unit health economists use to compare a death averted against years lived in better health: the quality-adjusted life-year. The exercise is deliberately in the style of a charity evaluator's cost-effectiveness analysis [@givewell2026impact], scaled from a program to a portfolio, with one addition the setting forces: because most of the portfolio funds interventions whose health effects have never been causally measured, the model makes its epistemics explicit. Every effect is shrunk toward zero in proportion to how well its supporting study identifies causation, the shrinkage schedule is a slider rather than a buried constant, and the headline is reported across the full range of evidence philosophies — from counting only randomized evidence to taking every published estimate at face value.
+
+The paper makes four contributions. It provides, to my knowledge, the first portfolio-level cost-effectiveness estimate for a major philanthropist: a best-guess median of `{python} F["median_k"]` QALYs from $26.39 billion nominal (`{python} F["giving"]` in 2026 dollars), a blended `{python} F["blended"]` per QALY, and a benefit–cost ratio of 4.9 at the U.S. government's value per QALY [@aspe2026values]. It documents extreme geographic concentration of modeled impact: the `{python} F["abroad_share_1"]` of dollars funding global health and development delivered outside the United States accounts for `{python} F["gh_share"]` of estimated health impact. It reports a new empirical regularity in the gift data itself: across `{python} F["n_cal"]` disclosed gift–filing pairs, gift size scales with recipient pre-gift revenue to the power `{python} F["elasticity"]` (R² `{python} F["r2"]`) — Scott's giving is far flatter across organization size than proportional. And it demonstrates a working method for auditable, AI-assisted cost-effectiveness modeling: the model was built with a frontier language model, reviewed and corrected in public across eleven revision rounds, audited by two independent model families against primary filings, and ships with versioned parameters, machine-checked citations, and a browser implementation that reruns the full Monte Carlo under any reader's assumptions.
+
+The unit of account deserves a caveat before any number. QALYs measure health. Most of Scott's portfolio aims at other things — education, economic mobility, equity, civic infrastructure — whose primary benefits are not health benefits. A finding that a dollar of education philanthropy produces few QALYs is a statement about the lens, not a verdict on the gift. The estimates here are a lower bound on total wellbeing produced, measured along the one dimension with a mature comparative literature.
+
+# Data
+
+## The ledger
+
+Scott's essays disclose giving in dated tranches totaling $26.39 billion nominal over 2020–2025. The model inflates each tranche to 2026 dollars with CPI-U, so dollars and cost-effectiveness evidence share one price level: `{python} F["giving"]` total. All derivations below, and the replication repository, start from a verbatim snapshot of the Yield Giving gift database retrieved July 11, 2026 [@yieldgiving2026].
+
+## Allocation across causes
+
+Scott publishes no aggregate dollars-by-cause breakdown, but she publishes better: a gift-level database listing every recipient organization, its self-reported focus areas, and — for `{python} F["n_disclosed"]` of `{python} F["n_gifts"]` gifts (`{python} F["disclosed_b"]`, about two-thirds of the nominal total) — the dollar amount. Each organization's dollars are split equally across its focus areas; the database's 53 areas map onto the model's 14 intervention archetypes under a documented, sync-tested crosswalk.
+
+The undisclosed third is imputed rather than dropped. Because the essays give each year's total, the undisclosed residual per period is a known dollar amount; it is distributed across that period's undisclosed gifts in proportion to each recipient's pre-gift IRS Form 990 total revenue [@propublica2026], raised to an elasticity fit on the disclosed pairs. Pre-gift means the latest filing strictly before the gift year, since a Scott gift mechanically inflates receipt-year revenue. The fit is a finding in its own right: across `{python} F["n_cal"]` disclosed gift–filing pairs, log gift size rises with log revenue with slope `{python} F["elasticity"]` (R² `{python} F["r2"]`). A 10× larger organization receives about 2.5× more money, not 10× more. Fuzzy name-to-EIN matches were audited by a third, smaller model against the live IRS API, with corrections committed as a reviewable overlay. The imputed third moves each cause share by at most about 1.5 percentage points — the disclosed two-thirds is representative.
+
+## Delivery geography
+
+Each organization reports service locations. Weighting disclosed dollars by the share of an organization's locations outside the United States, an estimated 20% of disclosed dollars ($3.57 billion of `{python} F["disclosed_b"]`) goes to organizations serving abroad, led by environment, health, and funding intermediaries. The model prices geography through a single channel: health-relevant dollars route to a global-health archetype in proportion to the recipient's non-U.S. service share, because global health delivery is the one category with a published cost-per-QALY evidence base an order of magnitude below U.S. anchors. Education and climate dollars keep their U.S.-study anchors wherever they are delivered; if geography changes their effectiveness, the model does not capture it.
+
+The coarsest geographic field is the bare label "global." An audit of the 50 largest organizations reporting only that label — 87% of that bucket's dollars — replaced the blanket assumption of fully-abroad delivery with fractions taken from each organization's own filings and program reports, independently verified by a second model family, with per-organization sources committed to the repository. Many "global" organizations operate substantially in the United States: Planned Parenthood and Crisis Text Line, for example, list "global" service but are roughly 95% and 93% U.S. by their own reporting. The audited allocation routes `{python} F["abroad_share"]` of the ledger to global health and development delivered abroad.
+
+# Model
+
+Each Monte Carlo draw allocates the giving across archetypes (a Dirichlet centered on the derived shares), assigns each archetype a cost per QALY drawn from a distribution anchored in published estimates, and multiplies the implied QALYs by two independent discounts. **Causal credibility** asks whether the measured effect is real. Each archetype carries the identification tier of its best supporting evidence, and the tier sets a Beta-distributed shrinkage factor toward the null: a lottery-randomized wealth shock [@cesarini2016wealth] or the ACA Medicaid mortality quasi-experiment [@miller2021medicaid; @sommers2017medicaid] keeps most of its effect; the community-health-center rollout design [@bailey2015war] and similar contested quasi-experiments keep less; associational and assumption-only categories are shrunk near zero. **Realization** asks whether a marginal philanthropic dollar delivers the studied effect at all — transport to different populations, overhead, and funging, net of the capacity effects of large unrestricted gifts that the Center for Effective Philanthropy documents for Scott's recipients specifically [@cep2023gifts]. It is one global triangular draw with mode 0.80 on support 0.55–1.10.
+
+The two discounts partition the doubt: transportability concerns live only in realization, identification concerns only in credibility, and cost-per-QALY priors are stated conditional on the effect being real and delivered. The tier ordering is the defensible part; the levels are judgment, proposed by a language model and reviewed by the author, and the results section reports the full consequence of disagreeing with them.
+
+Health effects arrive in different natural units — lives saved, life-years, depression-free days — and are converted to discounted QALYs under a common set of conventions (about 65 remaining life-years at baseline utility 0.87, 3% annual discounting), with every parameter's unit and dollar vintage machine-validated at load. The global-health frontier benchmark is handicapped like-for-like: GiveWell's current program averages [@givewell2026impact], converted to roughly $175–$241 per discounted QALY-equivalent under this model's own conventions, modeled as loguniform $150–$260, and subjected to the same realization and credibility discounts as Scott's portfolio.
+
+# Results
+
+```{python}
+#| echo: false
+tiers = {a: P["archetypes"][a].get("causal_credibility", "—") for a in P["archetypes"]}
+labels = {a: P["archetypes"][a]["label"] for a in P["archetypes"]}
+label_to_key = {v: k for k, v in labels.items()}
+giving_usd = S["total_giving_usd"]
+rows = []
+for lab, q in sorted(per.items(), key=lambda kv: -kv[1]):
+    key = label_to_key[lab]
+    share = V11["allocation_share"][key]
+    d = share * giving_usd
+    rows.append({
+        "Cause": lab,
+        "Dollars": usd(d),
+        "% of $": f"{100*share:.0f}%",
+        "QALYs": f"{q:,.0f}",
+        "% of QALYs": f"{100*q/mean_total:.0f}%" if q/mean_total >= 0.005 else "<1%",
+        "$/QALY": usd(d/q) if q > 0 else "—",
+        "Evidence": tiers[key],
+    })
+rows.append({"Cause": "Total", "Dollars": usd(giving_usd), "% of $": "100%",
+             "QALYs": f"{mean_total:,.0f}", "% of QALYs": "100%",
+             "$/QALY": usd(giving_usd/mean_total), "Evidence": ""})
+cause_df = pd.DataFrame(rows)
+```
+
+At the best-guess defaults (100,000 draws), the portfolio produces a median of `{python} F["median"]` QALYs, with a 90% interval of `{python} F["p05"]` to `{python} F["p95"]` and a mean of `{python} F["mean"]`. The blended cost-effectiveness — dollars given over QALYs produced, at the median — is `{python} F["blended"]` per QALY. Monetized at the U.S. Department of Health and Human Services' value per QALY, the health alone repays the giving 4.9 times over (90% interval 2.1–11.0). @fig-dist shows the full distribution.
+
+![Distribution of total QALYs across 100,000 Monte Carlo draws at the best-guess defaults. The dashed line marks the mean; the solid line the median.](../results/figure.png){#fig-dist}
+
+## Where it comes from
+
+@tbl-cause decomposes the mean estimate by cause. The result is the paper's central fact: the global health and development slice — `{python} F["abroad_share_1"]` of dollars — contributes `{python} F["gh_share"]` of estimated QALYs, at a realized cost of about $10,000 per QALY against $350,000–$450,000 for the large U.S. buckets. The 1,200-fold spread in realized cost-effectiveness within a single donor's portfolio restates, in one column, the central empirical claim of the effective-altruism literature: the cheapest health in the world is not bought where most philanthropic dollars are spent.
+
+```{python}
+#| label: tbl-cause
+#| tbl-cap: "Dollars and estimated QALYs by cause, best-guess defaults. Dollars apply the allocation centers to the 2026-dollar total; QALYs are mean contributions (only means are additive). $/QALY is the realized ratio after credibility and realization discounts, not the raw study anchor."
+from IPython.display import Markdown
+Markdown(cause_df.to_markdown(index=False))
+```
+
+```{python}
+#| echo: false
+M = GEO["archetype_region_matrix"]["matrix"]
+region_meta = {r["key"]: r for r in GEO["archetype_region_matrix"]["regions"]}
+acc = {}
+for lab, q in per.items():
+    key = label_to_key[lab]
+    d = V11["allocation_share"][key] * giving_usd
+    for region, w in M.get(key, {}).items():
+        a = acc.setdefault(region, [0.0, 0.0])
+        a[0] += d * w
+        a[1] += q * w
+geo_rows = []
+for region, (d, q) in sorted(acc.items(), key=lambda kv: -kv[1][1]):
+    meta = region_meta[region]
+    geo_rows.append({
+        "Region": meta["label"] + (" *" if meta["unspecified"] else ""),
+        "Dollars": usd(d),
+        "% of $": f"{100*d/giving_usd:.0f}%" if d/giving_usd >= 0.005 else "<1%",
+        "QALYs": f"{q:,.0f}",
+        "% of QALYs": f"{100*q/mean_total:.0f}%" if q/mean_total >= 0.005 else "<1%",
+        "$/QALY": usd(d/q) if q > 0 else "—",
+    })
+geo_df = pd.DataFrame(geo_rows)
+ssa = [r for r in geo_rows if "Sub-Saharan" in r["Region"]][0]
+usnat = [r for r in geo_rows if "national" in r["Region"]][0]
+```
+
+@tbl-geo decomposes the same run by delivery geography. The table is a by-construction decomposition, not evidence of regional differences: within each cause the model prices every delivery location identically — the health routing to global anchors is its only geographic pricing — so a cause's QALYs follow its dollars across regions. Under that construction, Sub-Saharan Africa receives `{python} ssa["% of $"]` of dollars and `{python} ssa["% of QALYs"]` of estimated QALYs at `{python} ssa["$/QALY"]` per QALY; nationally-scoped U.S. giving receives `{python} usnat["% of $"]` of dollars and `{python} usnat["% of QALYs"]` of QALYs at `{python} usnat["$/QALY"]`.
+
+```{python}
+#| label: tbl-geo
+#| tbl-cap: "The same run decomposed by delivery geography. Asterisked rows are reporting granularity (national or multi-region listings), not places. Geography derives from each organization's reported service locations, equal-split, with audited fractions for the 50 largest \"global\"-listed organizations."
+Markdown(geo_df.to_markdown(index=False))
+```
+
+## Against the global-health frontier
+
+Handicapped with the same realization and credibility discounts, the GiveWell-derived frontier benchmark delivers roughly `{python} F["frontier_mult"]`× more health per marginal dollar than the blended portfolio; the same sum directed entirely to the frontier would imply on the order of `{python} F["frontier_q"]` QALYs. That figure is a marginal comparison, not an attainable counterfactual: frontier-priced opportunities are scarce, GiveWell directs hundreds of millions — not tens of billions — per year at these prices, and funding beyond identified room drives toward cash-transfer cost-effectiveness. Redeploying the full portfolio would compress the multiple toward a floor plausibly under 20–40× [@givewell2024cash]. The honest statement is directional: the frontier multiple is several hundred at today's margin and remains large under any plausible account of diminishing returns.
+
+# Robustness
+
+## Evidence philosophy dominates everything else
+
+```{python}
+#| label: fig-stance
+#| fig-cap: "Median total QALYs across the evidence-stance range, 100,000 draws per point. The stance interpolates every tier's credibility mean from an RCT-only floor (non-randomized tiers shrunk to 0.01) through the drafted best-guess tiers (0.5) to face value (1.0)."
+import matplotlib.pyplot as plt
+from msqaly import load_params, run
+
+def stance_median(s_val, n=100_000):
+    p = load_params()
+    for name, t in p["evidence_tiers"].items():
+        base = t["mean"]
+        floor = base if name == "randomized" else 0.01
+        m = floor + (s_val/0.5)*(base-floor) if s_val <= 0.5 else base + ((s_val-0.5)/0.5)*(0.999-base)
+        t["mean"] = min(max(m, 0.001), 0.999)
+    r = run(p, n=n, seed=0)
+    return float(np.median(np.asarray(r.total_qalys)))
+
+grid = [0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0]
+meds = [stance_median(s_val) for s_val in grid]
+
+fig, ax = plt.subplots(figsize=(7, 3.6))
+ax.plot(grid, meds, marker="o", color="#b45309", lw=2)
+ax.axvline(0.5, color="#94a3b8", ls="--", lw=1)
+ax.set_yscale("log")
+ax.set_xticks([0, 0.5, 1.0])
+ax.set_xticklabels(["RCT-only", "best guess\n(default)", "face value"])
+ax.set_ylabel("Median QALYs (log scale)")
+for s_val, m in [(0.0, meds[0]), (0.5, meds[4]), (1.0, meds[-1])]:
+    ax.annotate(f"{m:,.0f}", (s_val, m), textcoords="offset points", xytext=(6, 8), fontsize=9)
+ax.spines[["top", "right"]].set_visible(False)
+plt.tight_layout()
+plt.show()
+
+F_rct = f"{meds[0]:,.0f}"
+F_face = f"{meds[-1]:,.0f}"
+```
+
+The dominant sensitivity is not a parameter but a philosophy. Restricting credit to randomized evidence collapses the median to `{python} F_rct` QALYs — dominated by the one lottery-randomized bucket — while taking every cited effect at face value raises it to `{python} F_face` (@fig-stance). That 45-fold range dwarfs the spread from any distributional parameter, and the gap between the face-value and best-guess estimates is a direct reading of how much of claimed philanthropic impact rests on evidence that would not survive a causal-inference seminar. The Spearman tornado (@fig-tornado) tells the same story within the default stance: the top three drivers are the global-health allocation share, the realization factor, and global-health credibility.
+
+![What drives the spread: Spearman rank correlations between each input draw and total QALYs at the best-guess defaults.](../results/sensitivity.png){#fig-tornado}
+
+## The audit moved the headline by less than 2%
+
+The geography audit is the largest data correction the model has absorbed since publication, and its effect is small: recentering the allocation on audited service geographies moved the abroad share from 4.93% to `{python} F["abroad_share"]`, the median from about 205,000 to `{python} F["median"]`, and the blended figure from about $148,000 to `{python} F["blended"]` per QALY. Both allocations ship with the model, the browser version exposes them as a version toggle, and the pre-audit parameters remain pinned at tag `v2026.07.20` (audited: `v2026.07.22`).
+
+## Corrections history
+
+The model reached this state through eleven public revision rounds, and the trajectory is itself evidence about the method. Cross-model review rounds cut the headline from roughly 98,000 to 87,000 QALYs (dollar-vintage normalization, a life-year/QALY conversion made explicit, a re-derived frontier benchmark, one re-attributed citation). Replacing an assumed allocation with the derivation from Scott's own database cut it to roughly 70,000. A reader's correction — health dollars had been priced at U.S. anchors regardless of delivery location — tripled it to roughly 205,000, and the subsequent two-model geography audit settled it at `{python} F["median_k"]`. Every correction is documented in the repository and summarized on the public tool; none was caught by the author unaided, and all but one were caught by models or readers rather than the author.
+
+# Construction and auditability
+
+The model was built with a frontier language model (Anthropic's Claude), with the author reviewing every parameter and assumption; adversarial review by a second model family (OpenAI's), plus reader corrections, produced the revision history above. Three mechanisms make the result checkable rather than merely stated. Parameters live in one typed file in which every value carries its unit, dollar vintage, and inline citation, machine-validated at load; an annotated bibliography maps each quantitative input to its primary source and price-level conversion. Sync tests force the published web parameters, allocation shares, geography exports, and this manuscript's inputs to equal fresh derivations from the committed data snapshots, so prose and model cannot drift apart. And the audit trail is data: the 990 match audit and the 50-organization geography audit are committed as per-row overlay files with sources and confidence grades, applied by the pipeline rather than folded silently into parameters.
+
+The browser implementation is a checked TypeScript port that reruns the full Monte Carlo client-side; every figure in this paper can be reproduced, and every assumption overridden, at [maxghenis.com/mackenzie-scott-qaly](https://maxghenis.com/mackenzie-scott-qaly). The repository, including this manuscript's source, is at [github.com/MaxGhenis/mackenzie-scott-qaly](https://github.com/MaxGhenis/mackenzie-scott-qaly).
+
+# Limitations
+
+The credibility tiers and realization distribution are judgment priors with no literature calibration; the ordering is defensible, the levels are not measured, and the stance sweep is the honest bound on their influence. The QALY lens counts only health, so the estimate is a floor on total wellbeing, and the causes where Scott concentrates — education, mobility, equity — are precisely those whose main benefits the lens excludes. Credibility shrinks toward zero but never below it, so the model places no mass on harmful giving. Allocation splits each organization's dollars equally across its focus areas and service locations; both are coarse, and the geography audit covers only the 50 largest "global"-listed organizations. Realization is one global draw, so it cannot vary by cause. Archetype anchors treat heterogeneous organizations as draws from one distribution. Within each cause, delivery regions are priced identically, so the geographic decomposition exposes assumptions rather than measuring regional differences. The undisclosed third of dollars is imputed from a fitted elasticity, not observed. Finally, several anchors rest on a small number of quasi-experimental papers whose external validity to Scott's grantees is exactly what the realization factor is guessing at.
+
+# Conclusion
+
+Measured in health, MacKenzie Scott's $26 billion buys a median of about `{python} F["median_k"]` quality-adjusted life-years — several times its cost at the government's own valuation — and most of that health comes from the twentieth of her dollars delivered in low-income countries. The number is a model output under stated priors, not a fact, and the model's most important output is not the point estimate but the machinery around it: explicit evidence weights, a 45-fold stance range that any reader can traverse, versioned corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes without waiting for donors to publish outcome data — their own gift lists, recipients' tax filings, and the published causal literature suffice — and the same machinery applies to any large giver. The invitation of the interactive version is the paper's real conclusion: disagree with a parameter, move it, and watch what survives.
+
+# Acknowledgments {.unnumbered}
+
+I thank readers on LinkedIn and the EA Forum whose corrections materially improved the model, including the reader who identified the original mispricing of internationally delivered health dollars. The model, audits, and this manuscript were built with Anthropic's Claude, with additional adversarial review by OpenAI models; all judgments and errors are mine. This is a personal research project and does not represent the views of PolicyEngine or the Axiom Foundation.
+
+# References {.unnumbered}
+
+::: {#refs}
+:::

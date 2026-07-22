@@ -11,3 +11,5 @@ dist/
 # reproducible output of `uv run msqaly`. Ignore scratch only.
 results/*.tmp
 .DS_Store
+paper/.quarto/
+paper/_freeze/

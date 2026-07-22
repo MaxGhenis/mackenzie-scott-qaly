@@ -1,5 +1,7 @@
 # MacKenzie Scott giving — QALY cost-effectiveness model
 
+**Working paper:** [HTML](https://maxghenis.github.io/mackenzie-scott-qaly/) · [PDF](https://maxghenis.github.io/mackenzie-scott-qaly/index.pdf) — source in [paper/](paper/), rendered from the frozen results so every number in the manuscript is computed, not typed.
+
 [![CI](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml)
 
 **▶ Interactive version: [maxghenis.com/mackenzie-scott-qaly](https://maxghenis.com/mackenzie-scott-qaly)** — drag the assumptions and watch the model rerun in your browser (a TypeScript port of this package, reading the same `parameters.yaml`).
