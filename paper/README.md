@@ -17,7 +17,12 @@ cd paper && QUARTO_PYTHON="$(cd .. && pwd)/.venv/bin/python" quarto render
 
 Requires [Quarto](https://quarto.org) ≥ 1.4 (built with 1.9) and, for the PDF,
 a TeX distribution with `tgpagella` and `helvet` (`quarto install tinytex`
-suffices). Output lands in `../docs/` (the GitHub Pages webview + `index.pdf`).
+suffices). Output lands in `../docs/` (the GitHub Pages webview + `index.pdf`). Two
+post-render steps: rewrite `../results/` to `results/` in `docs/index.html`
+(quarto copies the figures into `docs/results/` but keeps the source-relative
+src), then copy `docs/{index.html,index.pdf,site_libs,index_files,results}`
+into the site repo at `public/mackenzie-scott-qaly/paper/` — the canonical
+webview is a tab of the interactive page.
 
 Regenerating the inputs, in order, when the model changes:
 
