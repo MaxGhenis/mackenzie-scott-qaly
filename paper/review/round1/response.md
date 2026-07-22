@@ -1,0 +1,44 @@
+# Response to reviewers — round 1
+
+Five referees: neutrality (Claude/fable), red-team, methodology, reproducibility, citations (GPT-5.6-sol, high effort). 42 findings adjudicated by the author-side editor (fable). Revision commit: "Paper round 1: revisions from the five-referee review."
+
+## Adopted (fixed as recommended, occasionally reworded)
+
+- Neutrality 1–12 in full: "central fact"→"central contrast"; financial-relationship disclosure added (twice); factual voice softened; "dwarfs" removed; 1,200-fold reframed as partly lens with the spread computed in-document; EA-literature claim cited (Ord 2013); frontier universals tied to cited benchmarks; seminar flourish removed; "publishes better"→"more granular"; priority qualifier added; "any large giver" scoped; representativeness conditioned.
+- Red-team 2 (CRITICAL): "lower bound" corrected to "partial, health-only accounting under positive-effect priors," with the structural-positivity point in intro and limitations.
+- Red-team 3: disclosed-abroad share now computed from the audited overlay (19%, interpolated at render), raw 20.4% given for contrast; delivery verbs replaced with location-proxy language.
+- Red-team 4: audit described exactly (50 largest by global-slice dollars, 20 also list other locations; two independent coders; 33/4/13 reconciliation; 16/17/17 confidence mix).
+- Red-team 5: PP/CTL figures labeled later-period organization-wide proxies.
+- Red-team 7: US contrast recomputed from the cause table (evidenced-tier min–max, interpolated); spread figure interpolated and labeled "under stipulated priors."
+- Red-team 8: priority claim narrowed to outside/independent estimate; funder-run prior art cited (GiveWell, Robin Hood, Constellation Fund, DIV/CEGA).
+- Red-team 9 + Citations 1: megagiving stat restated on Giving USA's own numerator ($6.65B of $19.2B) with the AP citation; CNBC corrected (author/title) and cited only for Yield's annual total; abstract clause re-scoped to 2025 giving.
+- Red-team 10 + Methodology 4: stance endpoints renamed near-RCT-only/near-face-value with exact definitions in caption and prose; the floor's dominant bucket corrected to the randomized-tier mental-health archetype; "any other modeling choice" narrowed to single distributional parameters with the structural counterexample stated.
+- Red-team 12 + Methodology 9: benefit–cost reworded as the median draw-level ratio under the HHS regulatory valuation distribution (Table 3 cited), interpolated from summary.json; interval labeled as joint health-and-valuation uncertainty.
+- Red-team 13: corrections table with before→after and detector added.
+- Red-team 11 + Reproducibility 1/3: manuscript re-rendered; sync claim narrowed to the guards that exist; previously typed model-derived numbers (benefit–cost, abroad shares, contrast ratios, spread) now interpolated.
+- Methodology 5 + Citations 5: common-convention claim replaced with per-source conversion description.
+- Methodology 6: frontier handicapping described exactly (shared realization draw; RCT-grade credibility vs per-archetype tiers); "model conversion, not a GiveWell QALY figure" stated.
+- Methodology 7/8: both table captions restated (ratio of expectations; deterministic post-estimation decomposition, no region-level uncertainty).
+- Methodology 10: interval labeled probabilistic-sensitivity under stated priors; Monte Carlo error on the median noted.
+- Citations 2: Miller/Sommers roles separated; Finkelstein cited where the OHIE component enters; Aizer cited for the cash anchor.
+- Citations 3/4: 20–40× labeled model arithmetic; GiveWell 2024 cited only for its 3–4× re-evaluation; funding-scale claim cited to the impact page.
+- Citations 6/7/8: CEP authors/title corrected and prose limited to self-reported capacity (realization>1 = author judgment); ASPE author/title corrected with Table 3 cite; Oregon Health Study Group added; both formerly orphaned entries now cited in text.
+- Citations 9: EA claim cited; SOURCES.md 13→14 corrected.
+- Reproducibility 2/4: paper dependency group declared; kernel-install and render recipe in paper/README.md; ordered reproduce-everything section in the repo README.
+- Red-team 1 (CRITICAL), in part: routed-bucket composition disclosed in the text (region mix incl. ~18% unattributable and ~4% high-income priced at LMIC anchors), upward-bias channel added to limitations, conclusion's "low-income countries" corrected to "delivered abroad," abstract notes the pricing assumption.
+
+## Declined, with reasons
+
+- Red-team 1, remainder (recast the result as a named scenario only, not an estimate): the manuscript already labels every headline a model output under stated priors, reports the full stance range, and now discloses the routed bucket's composition; renaming the exercise would not add information the framing does not already carry.
+- Red-team 6 (delete the 105.5M counterfactual): kept, with "arithmetic, not a forecast" added; the deflation is immediate and the marginal/total distinction is the point of the passage.
+- Methodology 5 (harmonize all anchors to one convention): declined in favor of accurate per-source description; harmonization would overwrite sources' own conventions.
+
+## Deferred to future work (documented, not silently dropped)
+
+- Methodology 1: per-archetype uncertainty ledger auditing the credibility/realization partition (language softened; limitation added).
+- Methodology 2: bootstrap/hierarchical propagation of pipeline uncertainty into allocation (parameterization and semantics now stated; limitation added).
+- Methodology 3: clustered/robust elasticity inference and held-out checks (estimand restated with sample-flow caveats).
+- Reproducibility 3: CI render-replication job (claim narrowed; recipe documented).
+- Reproducibility 5: committing all 827 990-audit verdicts (claim narrowed to the applied overlay).
+- Red-team 14: re-deriving allocation shares in real dollars (limitation added; effect ~hundredths of a point).
+- Red-team 5, remainder: normalizing geo_audit scalar vs regional fields to one denominator (limitation added).
