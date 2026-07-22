@@ -25,7 +25,7 @@ US; a bare `global` counts as fully non-US), **$3.57B of the $17.46B disclosed
 — 20.4% — goes to organizations serving outside the US**, led by environment
 (~$0.64B), health (~$0.61B), and funding intermediaries (~$0.54B). The model
 prices only the health-and-development slice by geography (the
-`global_health` routing, ~4.9% of the full ledger); other categories keep
+`global_health` routing, ~4.8% of the full ledger under the audited v1.1 allocation); other categories keep
 their US-study anchors regardless of delivery location.
 
 ## area_map.json

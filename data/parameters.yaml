@@ -284,7 +284,7 @@ archetypes:
 
   health_mental:
     label: "Health - mental & behavioral"
-    allocation_share: 0.021
+    allocation_share: 0.022
     method: cost_per_qaly
     causal_credibility: randomized
     identification: >-
@@ -312,7 +312,7 @@ archetypes:
 
   global_health:
     label: "Global health & development (non-US delivery)"
-    allocation_share: 0.049
+    allocation_share: 0.048
     method: cost_per_qaly
     causal_credibility: strong_quasi
     identification: >-

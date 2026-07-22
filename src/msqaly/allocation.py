@@ -160,9 +160,13 @@ def derive_shares(
     data_dir: str | Path | None = None,
     params_path: str | Path | None = None,
     impute: bool = True,
-    geo_overlay: bool = False,
+    geo_overlay: bool = True,
 ) -> tuple[dict[str, float], dict]:
-    """Compute archetype -> share (3-decimal, sums to exactly 1.0) and stats."""
+    """Compute archetype -> share (3-decimal, sums to exactly 1.0) and stats.
+
+    ``geo_overlay=True`` (default since v1.1) applies the cross-checked
+    audit of 'global'-listed organizations' non-US fractions; pass False
+    to reproduce the v1.0 (July 13) allocation."""
     orgs, leaves, mapping = load_inputs(data_dir)
     overlay = load_geo_overlay(data_dir) if geo_overlay else {}
 

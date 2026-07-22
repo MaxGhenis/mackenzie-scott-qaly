@@ -71,9 +71,11 @@ def test_geo_overlay_loads_and_shares_still_sum():
     assert abs(sum(shares.values()) - 1.0) < 1e-9
 
 
-def test_v11_export_in_sync():
-    from msqaly.exportv11 import build
+def test_version_exports_in_sync():
+    from msqaly.exportversions import build, build_v10
 
-    disk = json.loads((ROOT / "web" / "allocation_v11.json").read_text())
-    assert disk == build()
-    assert abs(sum(disk["allocation_share"].values()) - 1.0) < 1e-9
+    for name, builder in (("allocation_v11.json", build),
+                          ("allocation_v10.json", build_v10)):
+        disk = json.loads((ROOT / "web" / name).read_text())
+        assert disk == builder()
+        assert abs(sum(disk["allocation_share"].values()) - 1.0) < 1e-9
