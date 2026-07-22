@@ -54,10 +54,13 @@ def test_export_in_sync():
 
     orgs, _, _ = load_inputs()
     _, stats = derive_shares()
+    from msqaly.geo import archetype_region_matrix
+
     disk = json.loads((ROOT / "web" / "geo.json").read_text())
     assert disk == {
         "disclosed_nonus": aggregate(orgs),
         "full_ledger": aggregate_full(orgs, stats["org_usd"], load_geo_audit()),
+        "archetype_region_matrix": archetype_region_matrix(),
     }
 
 
