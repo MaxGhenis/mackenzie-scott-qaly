@@ -1,0 +1,19 @@
+{
+  "id": "g23",
+  "name": "Global Industry Hub",
+  "verdict": "refute",
+  "my_class": "global_intermediary",
+  "my_us_share": 0,
+  "my_region_shares": {
+    "sub_saharan_africa": 0,
+    "south_asia": 0,
+    "east_asia_pacific": 0,
+    "latin_america_caribbean": 0,
+    "middle_east_north_africa": 0,
+    "europe_central_asia": 0,
+    "north_america_us": 0,
+    "global_unattributable": 1
+  },
+  "key_evidence_url": "https://www.globalindustryhub.org/post/global-industry-hub-receives-50-million-gift-to-transform-heavy-industry",
+  "note": "GIH reports $50M+ awarded worldwide but no geographic grant split. It operates as a global grantmaking and convening intermediary; equal regional shares are unsupported."
+}

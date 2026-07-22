@@ -1,0 +1,19 @@
+{
+  "id": "g04",
+  "name": "Global Fund for Children",
+  "verdict": "refute",
+  "my_class": "global_intermediary",
+  "my_us_share": 0.002469135802,
+  "my_region_shares": {
+    "sub_saharan_africa": 0.116049382716,
+    "south_asia": 0.113580246914,
+    "east_asia_pacific": 0.061728395062,
+    "latin_america_caribbean": 0.204938271605,
+    "middle_east_north_africa": 0.004938271605,
+    "europe_central_asia": 0.493827160494,
+    "north_america_us": 0.002469135802,
+    "global_unattributable": 0.002469135802
+  },
+  "key_evidence_url": "https://globalfundforchildren.org/2024-2025-annual-report/",
+  "note": "Class refuted: GFC reports 405 partners across 42 countries spanning Africa, Asia, Latin America, Europe/Central Asia, and the US, supporting global intermediary rather than regional."
+}
