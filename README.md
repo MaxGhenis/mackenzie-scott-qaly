@@ -110,8 +110,9 @@ figure fails loudly instead of shipping.
    shrinks QALYs/dollar toward the null of *no health effect*. Credibility is
    **internal validity only**; transport to Scott's grantees belongs to
    realization. The tier levels are AI-proposed, author-reviewed priors — Claude drafted
-   them, and the ordering is the defensible part — and the interactive's evidence-stance slider sweeps
-   them from skeptical to face-value.
+   them, and the ordering is the defensible part — and the interactive's evidence-stance slider treats
+   them as the best-guess midpoint of a two-sided range — from RCT-only
+   (non-randomized tiers shrunk to near zero) to face value.
 
 6. **Realization factor.** One global multiplier (triangular, mode 0.80, range
    0.55–1.10; AI-proposed, author-reviewed) for everything between a real effect and her
