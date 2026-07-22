@@ -10,7 +10,7 @@ constants are limited to externally sourced, cited figures.
 From the repository root:
 
 ```bash
-uv sync --all-groups
+uv sync --all-groups --extra dev
 uv run python -m ipykernel install --user --name msqaly-paper
 cd paper && QUARTO_PYTHON="$(cd .. && pwd)/.venv/bin/python" quarto render
 ```

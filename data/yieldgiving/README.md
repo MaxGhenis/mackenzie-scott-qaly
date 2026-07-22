@@ -48,7 +48,7 @@ organizations matched; the rest are mostly non-US recipients with no 990.
 ## match_audit.jsonl
 
 LLM audit overlay (gpt-5.6-terra via Codex CLI, 2026-07-11) of the fuzzy
-matches: 827 audited items (similarity < 0.95, plausible rejects, and the
+matches: 827 (only the 248 effectful rows — 236 replacements, 12 drops — are committed here; the remaining verdicts were confirmations with no overlay effect and are not committed) audited items (similarity < 0.95, plausible rejects, and the
 highest-revenue undisclosed-gift orgs) verified against the live API.
 Verdicts: 518 correct, 236 newly-found EINs (legal-name/DBA mismatches), 73
 confirmed non-filers, 0 false positives. `msqaly.allocation.load_revenue`

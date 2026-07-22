@@ -2,7 +2,7 @@
 
 **Working paper:** [HTML](https://maxghenis.github.io/mackenzie-scott-qaly/) · [PDF](https://maxghenis.github.io/mackenzie-scott-qaly/index.pdf) — source in [paper/](paper/), rendered from the frozen results so every number in the manuscript is computed, not typed.
 
-**Reproduce everything** (order matters): `uv run msqaly --write` →
+**Reproduce everything** (order matters): `uv sync --all-groups --extra dev`; then `uv run msqaly --write` →
 `uv run msqaly-export-params` → `uv run python -m msqaly.exportversions` →
 `uv run python -m msqaly.geo` → `uv run python -m pytest` (sync guards) →
 render the paper per [paper/README.md](paper/README.md).

@@ -1,0 +1,35 @@
+# Red-team referee report — round 2
+
+## Round-1 finding resolution
+
+| Round-1 finding | Status | Verification against revised manuscript and repository |
+|---:|---|---|
+| 1 | PARTIALLY RESOLVED | The paper now discloses the routed bucket's regional mix and the resulting upward-bias channel, but 4.8% → 69.1% remains a headline impact estimate using the same unvalidated non-U.S.-location-to-global-health routing and still uses “delivered” language; declining a clearly named structural scenario is not defensible when this assumption drives the result. |
+| 2 | PARTIALLY RESOLVED | The introduction correctly says “partial, health-only accounting under positive-effect priors,” but §7 reintroduces the false claim that the estimate is “a floor on total wellbeing,” and no zero/harm or unsupported-archetype-zero scenario was added. |
+| 3 | PARTIALLY RESOLVED | §2.3 now reports the audited-overlay result, 19% ($3.34B of $17.46B), calls locations a proxy, and avoids saying the gift dollars went abroad; however, it still supplies no uncertainty interval or bounds for the heuristic shares. |
+| 4 | PARTIALLY RESOLVED | The sample composition and confidence counts are now disclosed, but there is still no validation against observed expense shares or result by confidence/coder; moreover, `geo_audit.jsonl` records 46 mean reconciliations and four adjudications, whereas “33 agreements … four adjudicated … remainder averaged” implies only 13 averages. |
+| 5 | PARTIALLY RESOLVED | The 95%/93% figures are now correctly labeled later-period organization-wide proxies and the scalar/regional mismatch is disclosed; deferring normalization is tolerable for an SSRN draft if retained as a limitation, but grant-period evidence and a common denominator remain absent. |
+| 6 | PARTIALLY RESOLVED | The 105.5M extrapolation is now explicitly “arithmetic, not a forecast” and unattainable, making the decision to retain it defensible as an illustration; however, §4.2 still falsely says the frontier receives the “same realization and credibility discounts,” and the untested “any diminishing-returns account” claim remains. |
+| 7 | RESOLVED | §4.1 now labels the figures modeled ratios under stipulated priors, gives the actual $9,477 endpoint, and compares it with an interpolated $75,673–$305,164 range for quasi-experimental-or-better U.S. causes. |
+| 8 | PARTIALLY RESOLVED | The manuscript acknowledges four adjacent portfolio analyses and qualifies the claim as the author's belief, but “the first outside” estimate of any individual mega-donor's lifetime giving still lacks a search protocol and is broader than the defensible Scott-specific formulation. |
+| 9 | RESOLVED | The introduction now states Giving USA's own comparison—$6.65B of $19.2B—and distinguishes it from Yield Giving's $7.17B total; the abstract clearly compares 2025 giving, not the lifetime total. |
+| 10 | RESOLVED | The endpoints are renamed near-RCT-only and near-face-value, their 0.01/0.999 definitions are explicit, and the claim is limited to single distributional parameters with structural choices acknowledged as potentially larger. |
+| 11 | PARTIALLY RESOLVED | The canonical render is fresh and many body values are interpolated, but the abstract still hand-types the median, interval, blended ratio, benefit–cost ratio, allocation and impact shares, elasticity, and stance endpoints; the claim that hand-typed constants are limited to external cited figures is therefore false, and no CI render guard exists. |
+| 12 | RESOLVED | Results now call 4.9 the median draw-level benefit–cost ratio under the HHS regulatory valuation distribution and label the interval as joint health-output and valuation uncertainty, with no “repays” language. |
+| 13 | PARTIALLY RESOLVED | A four-row correction table and a definition of revision were added, but the table has no commit/tag, verifier, or evidence link, does not reconcile the asserted eleven rounds with four aggregated rows, and still offers no evidence for detector provenance or “none was caught … unaided.” |
+| 14 | PARTIALLY RESOLVED | §7 now discloses that nominal-dollar shares are applied to the real total and says the effect is only hundredths of a point, so deferring the re-derivation is defensible for an SSRN draft; the paper still calls the May 2026 CPI target merely “2026 dollars” and does not explain disclosure-year booking in the manuscript. |
+| 15 | PARTIALLY RESOLVED | The revised text gives the matched-sample flow and says the result holds “under the imputation model,” but it still calls the disclosed two-thirds “representative” without out-of-sample validation, alternative imputations, or selection bounds; the circular inference has been qualified rather than established. |
+
+## New findings from the revision
+
+1. **SEVERITY: MAJOR**  
+   **LOCATION:** §2.3 and `paper/index.qmd` lines 103–107 and 136.  
+   **Problem:** The new claim that “roughly 4% sits in high-income regions” is not computed from an income classification. `F["gh_hic"]` simply adds the model's `europe&_central_asia` and `canada` buckets. Europe and Central Asia contains non-high-income countries, while high-income countries also occur in East Asia and Pacific and other regional buckets. The repository lacks the country-level allocation needed to identify a high-income share, so the new 4% figure is mislabeled and understates the unquantified composition problem it was added to disclose.  
+   **Fix:** Replace “high-income regions” with the exact observable labels (“Europe and Central Asia plus Canada”), or classify country-level shares by a stated income-year taxonomy; say that the true high-income share is unidentified where only mixed-region labels exist.
+
+2. **SEVERITY: MINOR**  
+   **LOCATION:** Conclusion: the new extension “through the grant listings in public filings, to foundations.”  
+   **Problem:** Public foundation grant listings alone do not provide several inputs this pipeline requires: comparable focus and service-location fields, Scott-style disclosed tranche totals for residual imputation, recipient spending geography, or use-of-grant/outcome data. The added clause re-expands the method's claimed applicability immediately after conditioning it on comparable gift-level disclosure.  
+   **Fix:** Delete the foundation clause or limit applicability to funders whose disclosures contain the specific allocation, geography, timing, and denominator fields required by the model.
+
+RECOMMENDATION: Major revisions
