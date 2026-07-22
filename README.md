@@ -1,6 +1,6 @@
 # MacKenzie Scott giving — QALY cost-effectiveness model
 
-**Working paper:** [HTML](https://maxghenis.github.io/mackenzie-scott-qaly/) · [PDF](https://maxghenis.github.io/mackenzie-scott-qaly/index.pdf) — source in [paper/](paper/), rendered from the frozen results so every number in the manuscript is computed, not typed.
+**Working paper:** [HTML](https://maxghenis.com/mackenzie-scott-qaly/paper/) · [PDF](https://maxghenis.com/mackenzie-scott-qaly/paper/index.pdf) · [mirror](https://maxghenis.github.io/mackenzie-scott-qaly/) — source in [paper/](paper/), rendered from the frozen results so every number in the manuscript is computed, not typed.
 
 **Reproduce everything** (order matters): `uv sync --all-groups --extra dev`; then `uv run msqaly --write` →
 `uv run msqaly-export-params` → `uv run python -m msqaly.exportversions` →
