@@ -28,17 +28,17 @@ Source: Article Notebook
 MacKenzie Scott gave away $7.17 billion in 2025 (Huddleston 2025); Giving USA counts $6.65
 billion of it against $19.2 billion in U.S. megagift dollars — about a third of that year’s megagift
 value (Indiana University Lilly Family School of Philanthropy 2026; Childress 2026). (The bases
-differ: Yield Giving’s own annual total is the larger figure.) Her disclosed lifetime total is $26.39
 ∗
 
 max@maxghenis.com. I am CEO of PolicyEngine and president of the Axiom Foundation; this paper is a personal
 research project and does not represent the views of either organization. Neither I nor the organizations I lead
-have received funding from MacKenzie Scott or Yield Giving. Interactive version, code, data, and full audit
-trail: https://maxghenis.com/mackenzie-scott-qaly and https://github.com/MaxGhenis/mackenzie-scott-qaly.
+have received funding from MacKenzie Scott, Yield Giving, or GiveWell. Interactive version, code, data, and
+full audit trail: https://maxghenis.com/mackenzie-scott-qaly and https://github.com/MaxGhenis/mackenziescott-qaly.
 
 1
 
-billion across 2,711 gifts to 2,545 organizations since 2019 (Yield Giving 2026). Almost none of
+differ: Yield Giving’s own annual total is the larger figure.) Her disclosed lifetime total is $26.39
+billion across 2,711 gifts to 2,545 organizations since 2019 (Yield Giving 2026). Almost none of
 it is denominated in health, and, to my knowledge, no published estimate prices the portfolio in
 outcomes of any kind.
 This paper does so in the unit health economists use to compare a death averted against years
@@ -756,8 +756,8 @@ model, including the reader who identified the original mispricing of internatio
 health dollars. The model, audits, and this manuscript were built with Anthropic’s Claude,
 with additional adversarial review by OpenAI models; all judgments and errors are mine. This
 is a personal research project and does not represent the views of PolicyEngine or the Axiom
-Foundation. Neither I nor those organizations have received funding from MacKenzie Scott or
-Yield Giving.
+Foundation. Neither I nor those organizations have received funding from MacKenzie Scott,
+Yield Giving, or GiveWell.
 
 References
 Source: Article Notebook
