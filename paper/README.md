@@ -20,9 +20,11 @@ a TeX distribution with `tgpagella` and `helvet` (`quarto install tinytex`
 suffices). Output lands in `../docs/` (the GitHub Pages webview + `index.pdf`). Two
 post-render steps: rewrite `../results/` to `results/` in `docs/index.html`
 (quarto copies the figures into `docs/results/` but keeps the source-relative
-src), then copy `docs/{index.html,index.pdf,site_libs,index_files,results}`
-into the site repo at `public/mackenzie-scott-qaly/paper/` — the canonical
-webview is a tab of the interactive page.
+src), then run `node scripts/sync-mackenzie-paper.mjs` in the site repo
+(~/maxghenis.com) — it extracts the paper body into a fragment the site
+renders inside its own page frame at /mackenzie-scott-qaly/paper/, copies
+the figure assets, and refreshes the PDF. The canonical webview is a tab
+of the interactive page.
 
 Regenerating the inputs, in order, when the model changes:
 
