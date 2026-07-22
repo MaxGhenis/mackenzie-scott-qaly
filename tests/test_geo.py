@@ -69,3 +69,11 @@ def test_geo_overlay_loads_and_shares_still_sum():
     assert all(0.0 <= v <= 1.0 for v in overlay.values())
     shares, _ = derive_shares(geo_overlay=True)
     assert abs(sum(shares.values()) - 1.0) < 1e-9
+
+
+def test_v11_export_in_sync():
+    from msqaly.exportv11 import build
+
+    disk = json.loads((ROOT / "web" / "allocation_v11.json").read_text())
+    assert disk == build()
+    assert abs(sum(disk["allocation_share"].values()) - 1.0) < 1e-9
