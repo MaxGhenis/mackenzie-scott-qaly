@@ -1,0 +1,1323 @@
+Reading additional input from stdin...
+OpenAI Codex v0.144.0
+--------
+workdir: /Users/maxghenis/mackenzie-scott-qaly
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: high
+reasoning summaries: none
+session id: 019f8a42-5c7f-71b3-a36f-93d5c69668de
+--------
+user
+ROUND 3 (final confirmation) of a referee cycle. You are the redteam referee. Your round-2 report: paper/review/round2/redteam.md (for 'redteam' the file is redteam.md). The manuscript was revised again; fresh render: paper/review/rendered.txt; source: paper/index.qmd; bibliography: paper/references.bib.
+
+TASK: verify each item you left PARTIALLY RESOLVED or flagged as NEW in round 2 against the fresh text. The author's standing adjudications (declines/deferrals documented in paper/review/round1/response.md) hold unless factually wrong — judge remaining items by the standard of a good SSRN working paper, not a journal publication. One brief regression glance for anything the newest edits broke.
+
+WRITE to paper/review/round3/redteam.md: a short resolution table for your outstanding items, any NEW findings (SEVERITY/LOCATION/fix), and end with 'RECOMMENDATION: Accept|Minor revisions|Major revisions|Reject'. Accept is appropriate when remaining concerns are documented limitations or reasonable working-paper deferrals.
+warning: Skill descriptions were shortened to fit the 2% skills context budget. Codex can still see every skill, but some descriptions are shorter. Disable unused skills or plugins to leave more room for the rest.
+codex
+I’ll run the final referee check against the round-2 outstanding items, honor the standing adjudications, and write only the round-3 report requested.
+exec
+/bin/zsh -lc "git status --short --branch && sed -n '1,240p' paper/review/round2/redteam.md && sed -n '1,260p' paper/review/round1/response.md" in /Users/maxghenis/mackenzie-scott-qaly
+ succeeded in 0ms:
+## main...origin/main
+?? paper/review/sol/citations.round3.log
+?? paper/review/sol/methodology.round3.log
+?? paper/review/sol/neutrality.round3.log
+?? paper/review/sol/redteam.round3.log
+?? paper/review/sol/reproducibility.round3.log
+?? paper/review/sol/worker3.sh
+# Red-team referee report — round 2
+
+## Round-1 finding resolution
+
+| Round-1 finding | Status | Verification against revised manuscript and repository |
+|---:|---|---|
+| 1 | PARTIALLY RESOLVED | The paper now discloses the routed bucket's regional mix and the resulting upward-bias channel, but 4.8% → 69.1% remains a headline impact estimate using the same unvalidated non-U.S.-location-to-global-health routing and still uses “delivered” language; declining a clearly named structural scenario is not defensible when this assumption drives the result. |
+| 2 | PARTIALLY RESOLVED | The introduction correctly says “partial, health-only accounting under positive-effect priors,” but §7 reintroduces the false claim that the estimate is “a floor on total wellbeing,” and no zero/harm or unsupported-archetype-zero scenario was added. |
+| 3 | PARTIALLY RESOLVED | §2.3 now reports the audited-overlay result, 19% ($3.34B of $17.46B), calls locations a proxy, and avoids saying the gift dollars went abroad; however, it still supplies no uncertainty interval or bounds for the heuristic shares. |
+| 4 | PARTIALLY RESOLVED | The sample composition and confidence counts are now disclosed, but there is still no validation against observed expense shares or result by confidence/coder; moreover, `geo_audit.jsonl` records 46 mean reconciliations and four adjudications, whereas “33 agreements … four adjudicated … remainder averaged” implies only 13 averages. |
+| 5 | PARTIALLY RESOLVED | The 95%/93% figures are now correctly labeled later-period organization-wide proxies and the scalar/regional mismatch is disclosed; deferring normalization is tolerable for an SSRN draft if retained as a limitation, but grant-period evidence and a common denominator remain absent. |
+| 6 | PARTIALLY RESOLVED | The 105.5M extrapolation is now explicitly “arithmetic, not a forecast” and unattainable, making the decision to retain it defensible as an illustration; however, §4.2 still falsely says the frontier receives the “same realization and credibility discounts,” and the untested “any diminishing-returns account” claim remains. |
+| 7 | RESOLVED | §4.1 now labels the figures modeled ratios under stipulated priors, gives the actual $9,477 endpoint, and compares it with an interpolated $75,673–$305,164 range for quasi-experimental-or-better U.S. causes. |
+| 8 | PARTIALLY RESOLVED | The manuscript acknowledges four adjacent portfolio analyses and qualifies the claim as the author's belief, but “the first outside” estimate of any individual mega-donor's lifetime giving still lacks a search protocol and is broader than the defensible Scott-specific formulation. |
+| 9 | RESOLVED | The introduction now states Giving USA's own comparison—$6.65B of $19.2B—and distinguishes it from Yield Giving's $7.17B total; the abstract clearly compares 2025 giving, not the lifetime total. |
+| 10 | RESOLVED | The endpoints are renamed near-RCT-only and near-face-value, their 0.01/0.999 definitions are explicit, and the claim is limited to single distributional parameters with structural choices acknowledged as potentially larger. |
+| 11 | PARTIALLY RESOLVED | The canonical render is fresh and many body values are interpolated, but the abstract still hand-types the median, interval, blended ratio, benefit–cost ratio, allocation and impact shares, elasticity, and stance endpoints; the claim that hand-typed constants are limited to external cited figures is therefore false, and no CI render guard exists. |
+| 12 | RESOLVED | Results now call 4.9 the median draw-level benefit–cost ratio under the HHS regulatory valuation distribution and label the interval as joint health-output and valuation uncertainty, with no “repays” language. |
+| 13 | PARTIALLY RESOLVED | A four-row correction table and a definition of revision were added, but the table has no commit/tag, verifier, or evidence link, does not reconcile the asserted eleven rounds with four aggregated rows, and still offers no evidence for detector provenance or “none was caught … unaided.” |
+| 14 | PARTIALLY RESOLVED | §7 now discloses that nominal-dollar shares are applied to the real total and says the effect is only hundredths of a point, so deferring the re-derivation is defensible for an SSRN draft; the paper still calls the May 2026 CPI target merely “2026 dollars” and does not explain disclosure-year booking in the manuscript. |
+| 15 | PARTIALLY RESOLVED | The revised text gives the matched-sample flow and says the result holds “under the imputation model,” but it still calls the disclosed two-thirds “representative” without out-of-sample validation, alternative imputations, or selection bounds; the circular inference has been qualified rather than established. |
+
+## New findings from the revision
+
+1. **SEVERITY: MAJOR**  
+   **LOCATION:** §2.3 and `paper/index.qmd` lines 103–107 and 136.  
+   **Problem:** The new claim that “roughly 4% sits in high-income regions” is not computed from an income classification. `F["gh_hic"]` simply adds the model's `europe&_central_asia` and `canada` buckets. Europe and Central Asia contains non-high-income countries, while high-income countries also occur in East Asia and Pacific and other regional buckets. The repository lacks the country-level allocation needed to identify a high-income share, so the new 4% figure is mislabeled and understates the unquantified composition problem it was added to disclose.  
+   **Fix:** Replace “high-income regions” with the exact observable labels (“Europe and Central Asia plus Canada”), or classify country-level shares by a stated income-year taxonomy; say that the true high-income share is unidentified where only mixed-region labels exist.
+
+2. **SEVERITY: MINOR**  
+   **LOCATION:** Conclusion: the new extension “through the grant listings in public filings, to foundations.”  
+   **Problem:** Public foundation grant listings alone do not provide several inputs this pipeline requires: comparable focus and service-location fields, Scott-style disclosed tranche totals for residual imputation, recipient spending geography, or use-of-grant/outcome data. The added clause re-expands the method's claimed applicability immediately after conditioning it on comparable gift-level disclosure.  
+   **Fix:** Delete the foundation clause or limit applicability to funders whose disclosures contain the specific allocation, geography, timing, and denominator fields required by the model.
+
+RECOMMENDATION: Major revisions
+# Response to reviewers — round 1
+
+Five referees: neutrality (Claude/fable), red-team, methodology, reproducibility, citations (GPT-5.6-sol, high effort). 42 findings adjudicated by the author-side editor (fable). Revision commit: "Paper round 1: revisions from the five-referee review."
+
+## Adopted (fixed as recommended, occasionally reworded)
+
+- Neutrality 1–12 in full: "central fact"→"central contrast"; financial-relationship disclosure added (twice); factual voice softened; "dwarfs" removed; 1,200-fold reframed as partly lens with the spread computed in-document; EA-literature claim cited (Ord 2013); frontier universals tied to cited benchmarks; seminar flourish removed; "publishes better"→"more granular"; priority qualifier added; "any large giver" scoped; representativeness conditioned.
+- Red-team 2 (CRITICAL): "lower bound" corrected to "partial, health-only accounting under positive-effect priors," with the structural-positivity point in intro and limitations.
+- Red-team 3: disclosed-abroad share now computed from the audited overlay (19%, interpolated at render), raw 20.4% given for contrast; delivery verbs replaced with location-proxy language.
+- Red-team 4: audit described exactly (50 largest by global-slice dollars, 20 also list other locations; two independent coders; 33/4/13 reconciliation; 16/17/17 confidence mix).
+- Red-team 5: PP/CTL figures labeled later-period organization-wide proxies.
+- Red-team 7: US contrast recomputed from the cause table (evidenced-tier min–max, interpolated); spread figure interpolated and labeled "under stipulated priors."
+- Red-team 8: priority claim narrowed to outside/independent estimate; funder-run prior art cited (GiveWell, Robin Hood, Constellation Fund, DIV/CEGA).
+- Red-team 9 + Citations 1: megagiving stat restated on Giving USA's own numerator ($6.65B of $19.2B) with the AP citation; CNBC corrected (author/title) and cited only for Yield's annual total; abstract clause re-scoped to 2025 giving.
+- Red-team 10 + Methodology 4: stance endpoints renamed near-RCT-only/near-face-value with exact definitions in caption and prose; the floor's dominant bucket corrected to the randomized-tier mental-health archetype; "any other modeling choice" narrowed to single distributional parameters with the structural counterexample stated.
+- Red-team 12 + Methodology 9: benefit–cost reworded as the median draw-level ratio under the HHS regulatory valuation distribution (Table 3 cited), interpolated from summary.json; interval labeled as joint health-and-valuation uncertainty.
+- Red-team 13: corrections table with before→after and detector added.
+- Red-team 11 + Reproducibility 1/3: manuscript re-rendered; sync claim narrowed to the guards that exist; previously typed model-derived numbers (benefit–cost, abroad shares, contrast ratios, spread) now interpolated.
+- Methodology 5 + Citations 5: common-convention claim replaced with per-source conversion description.
+- Methodology 6: frontier handicapping described exactly (shared realization draw; RCT-grade credibility vs per-archetype tiers); "model conversion, not a GiveWell QALY figure" stated.
+- Methodology 7/8: both table captions restated (ratio of expectations; deterministic post-estimation decomposition, no region-level uncertainty).
+- Methodology 10: interval labeled probabilistic-sensitivity under stated priors; Monte Carlo error on the median noted.
+- Citations 2: Miller/Sommers roles separated; Finkelstein cited where the OHIE component enters; Aizer cited for the cash anchor.
+- Citations 3/4: 20–40× labeled model arithmetic; GiveWell 2024 cited only for its 3–4× re-evaluation; funding-scale claim cited to the impact page.
+- Citations 6/7/8: CEP authors/title corrected and prose limited to self-reported capacity (realization>1 = author judgment); ASPE author/title corrected with Table 3 cite; Oregon Health Study Group added; both formerly orphaned entries now cited in text.
+- Citations 9: EA claim cited; SOURCES.md 13→14 corrected.
+- Reproducibility 2/4: paper dependency group declared; kernel-install and render recipe in paper/README.md; ordered reproduce-everything section in the repo README.
+- Red-team 1 (CRITICAL), in part: routed-bucket composition disclosed in the text (region mix incl. ~18% unattributable and ~4% high-income priced at LMIC anchors), upward-bias channel added to limitations, conclusion's "low-income countries" corrected to "delivered abroad," abstract notes the pricing assumption.
+
+## Declined, with reasons
+
+- Red-team 1, remainder (recast the result as a named scenario only, not an estimate): the manuscript already labels every headline a model output under stated priors, reports the full stance range, and now discloses the routed bucket's composition; renaming the exercise would not add information the framing does not already carry.
+- Red-team 6 (delete the 105.5M counterfactual): kept, with "arithmetic, not a forecast" added; the deflation is immediate and the marginal/total distinction is the point of the passage.
+- Methodology 5 (harmonize all anchors to one convention): declined in favor of accurate per-source description; harmonization would overwrite sources' own conventions.
+
+## Deferred to future work (documented, not silently dropped)
+
+- Methodology 1: per-archetype uncertainty ledger auditing the credibility/realization partition (language softened; limitation added).
+- Methodology 2: bootstrap/hierarchical propagation of pipeline uncertainty into allocation (parameterization and semantics now stated; limitation added).
+- Methodology 3: clustered/robust elasticity inference and held-out checks (estimand restated with sample-flow caveats).
+- Reproducibility 3: CI render-replication job (claim narrowed; recipe documented).
+- Reproducibility 5: committing all 827 990-audit verdicts (claim narrowed to the applied overlay).
+- Red-team 14: re-deriving allocation shares in real dollars (limitation added; effect ~hundredths of a point).
+- Red-team 5, remainder: normalizing geo_audit scalar vs regional fields to one denominator (limitation added).
+
+exec
+/bin/zsh -lc "rg -n -i \"4\\.8|69\\.1|delivered|floor|wellbeing|19%|3\\.34|17\\.46|uncertainty|33|adjudicat|averag|95%|93%|105\\.5|same realization|diminishing|first outside|first independent|hand.?typ|external cited|correction|eleven|11 rounds|unaided|2026 dollars|May 2026|representative|high-income|Europe and Central Asia|foundation|public filings|grant listings\" paper/review/rendered.txt paper/index.qmd" in /Users/maxghenis/mackenzie-scott-qaly
+ succeeded in 0ms:
+paper/review/rendered.txt:15:estimated impact is geographically concentrated: the 4.8% of dollars funding health
+paper/review/rendered.txt:16:and development delivered outside the United States, priced at global-health anchors,
+paper/review/rendered.txt:34:max@maxghenis.com. I am CEO of PolicyEngine and president of the Axiom Foundation; this paper is a personal
+paper/review/rendered.txt:53:The paper makes four contributions. It provides what I believe is the first outside, portfolio-level
+paper/review/rendered.txt:57:Foundation 2023), the Constellation Fund’s portfolio reporting (Constellation Fund 2026), and
+paper/review/rendered.txt:61:QALYs from $26.39 billion nominal ($30.3B in 2026 dollars), a blended $150,067 per QALY, and a
+paper/review/rendered.txt:64:the 4.8% of dollars funding global health and development delivered outside the United States
+paper/review/rendered.txt:65:accounts for 69.1% of estimated health impact. It reports a new empirical regularity in the
+paper/review/rendered.txt:79:wellbeing: the lens omits the primary intended benefits of most of the portfolio, and the model
+paper/review/rendered.txt:88:The model inflates each tranche — booked by disclosure year — to 2026 dollars (CPI-U, anchored
+paper/review/rendered.txt:89:to May 2026), so dollars and cost-effectiveness evidence share one price level: $30.3B total. All
+paper/review/rendered.txt:96:and — for 2,035 of 2,711 gifts ($17.46B, about two-thirds of the nominal total) — the dollar
+paper/review/rendered.txt:112:a third, smaller model against the live IRS API, with corrections committed as a reviewable
+paper/review/rendered.txt:114:under the imputation model, the disclosed two-thirds is representative.
+paper/review/rendered.txt:118:each organization’s locations outside the United States, an estimated 19% of disclosed dollars
+paper/review/rendered.txt:119:($3.34B of $17.46B) sits with organizations reporting non-U.S. service locations — 20.4% under
+paper/review/rendered.txt:130:delivered; if geography changes their effectiveness, the model does not capture it.
+paper/review/rendered.txt:135:second coder confirmed 33 within tolerance and disputed 17; four disputes were adjudicated to
+paper/review/rendered.txt:136:documented filings arithmetic, and final fractions average the two coders everywhere else, with
+paper/review/rendered.txt:139:Parenthood and Crisis Text Line, for example, list “global” service but are roughly 95% and
+paper/review/rendered.txt:140:93% U.S. in their most recent organization-wide reporting — later-period proxies for how earlier
+paper/review/rendered.txt:142:4.82% of the ledger to the global health and development archetype. That routed bucket is itself
+paper/review/rendered.txt:145:plus Canada — regions that are not classified by income here, so the bucket’s true high-income
+paper/review/rendered.txt:169:real and delivered — though the separation is imperfect at the prior boundaries: several anchors
+paper/review/rendered.txt:173:already average over mixed null-and-positive evidence before the credibility discount applies (a
+paper/review/rendered.txt:174:limitation noted below). Allocation uncertainty is a Dirichlet with concentration 60 around the
+paper/review/rendered.txt:176:range on the global-health share — and represents subjective allocation uncertainty rather than
+paper/review/rendered.txt:177:sampling uncertainty propagated from the gift data pipeline. The tier ordering is the defensible
+paper/review/rendered.txt:186:the same framework: GiveWell’s reported recent program averages (GiveWell 2025), converted
+paper/review/rendered.txt:202:health-output and valuation uncertainty). Figure 1 shows the full distribution.
+paper/review/rendered.txt:206:global health and development slice — 4.8% of dollars — contributes 69.1% of estimated QALYs,
+paper/review/rendered.txt:254:19%
+paper/review/rendered.txt:429:geography — no region-level effect or uncertainty is estimated, and geography affects
+paper/review/rendered.txt:496:geography — no region-level effect or uncertainty is estimated, and geography affects
+paper/review/rendered.txt:521:$335M
+paper/review/rendered.txt:539:3,339
+paper/review/rendered.txt:572:frontier would imply on the order of 105.5 million QALYs. That figure is arithmetic, not a forecast,
+paper/review/rendered.txt:608:0. The stance interpolates each tier’s credibility mean piecewise-linearly from a nearRCT-only floor (non-randomized tiers at mean 0.01; randomized tier at its drafted
+paper/review/rendered.txt:614:The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-only floor —
+paper/review/rendered.txt:620:anchors, the median is roughly 70,000 (the pre-correction model in the §5.3 table), so the routing
+paper/review/rendered.txt:628:The geography audit is the largest data correction the model has absorbed since publication, and
+paper/review/rendered.txt:630:share from 4.93% to 4.82%, the median from about 205,000 to 201,923, and the blended figure
+paper/review/rendered.txt:643:5.3 Corrections history
+paper/review/rendered.txt:686:Every correction is documented in the repository and summarized on the public tool; the detector
+paper/review/rendered.txt:687:column is the record, and none of these was caught by the author unaided.
+paper/review/rendered.txt:691:reviewing every parameter and assumption; adversarial review by a second model family (OpenAI’s), plus reader corrections, produced the revision history above. Three mechanisms make
+paper/review/rendered.txt:715:— and any possible harms; it is not a floor on total wellbeing. Credibility shrinks toward zero
+paper/review/rendered.txt:717:scenario is the near-RCT-only stance floor, which drives unsupported archetypes to ~1% credit.
+paper/review/rendered.txt:724:routed global-health bucket prices its unattributable and high-income-region dollars — roughly a
+paper/review/rendered.txt:726:priors average over mixed null-and-positive evidence before the credibility discount applies, so
+paper/review/rendered.txt:728:spread is a subjective prior; uncertainty from the elasticity fit, unmatched filings, the focus-area
+paper/review/rendered.txt:740:health and development delivered abroad. The number is a model output under stated priors,
+paper/review/rendered.txt:743:corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes
+paper/review/rendered.txt:754:I thank readers on LinkedIn and the EA Forum whose corrections materially improved the
+paper/review/rendered.txt:755:model, including the reader who identified the original mispricing of internationally delivered
+paper/review/rendered.txt:759:Foundation. Neither I nor those organizations have received funding from MacKenzie Scott or
+paper/review/rendered.txt:799:Report on Philanthropy for the Year 2025. Giving USA Foundation.
+paper/review/rendered.txt:807:Robin Hood Foundation. 2023. Our Approach: Metrics and Benefit–Cost Analysis. Https://robinhood.org/our-work/our-approach/.
+paper/index.qmd:16:    author: 'Max Ghenis\thanks{max@maxghenis.com. I am CEO of PolicyEngine and president of the Axiom Foundation; this paper is a personal research project and does not represent the views of either organization. Neither I nor the organizations I lead have received funding from MacKenzie Scott or Yield Giving. Interactive version, code, data, and full audit trail: \url{https://maxghenis.com/mackenzie-scott-qaly} and \url{https://github.com/MaxGhenis/mackenzie-scott-qaly}.}'
+paper/index.qmd:18:  MacKenzie Scott has disclosed $26.39 billion in gifts to more than 2,500 organizations since 2019 — her 2025 giving alone was about a third of the value of that year's U.S. megagifts — yet almost none of it is denominated in outcomes. This paper prices the entire portfolio in quality-adjusted life-years. A Monte Carlo model allocates dollars across 14 intervention archetypes using Scott's own gift-level database, imputes the undisclosed third from recipients' pre-gift IRS 990 revenue, assigns each archetype a cost-per-QALY anchor from published causal estimates, and shrinks every effect toward zero in proportion to the causal credibility of its evidence. The best-guess estimate is a median of roughly 202,000 QALYs (90% interval 94,000–419,000), a blended $150,000 per QALY, and a median benefit–cost ratio of 4.9 under the valuation distribution HHS uses for regulatory analysis. Three findings follow. First, estimated impact is geographically concentrated: the 4.8% of dollars funding health and development delivered outside the United States, priced at global-health anchors, accounts for 69% of estimated health impact. Second, gift size scales with recipient size to only the 0.41 power — a 10× larger organization receives about 2.5× more money. Third, the answer is dominated by evidence philosophy rather than arithmetic: restricting credit almost entirely to randomized evidence collapses the median to ~9,000 QALYs while taking every study at near face value raises it to ~415,000 — a 45× range, larger than the spread from any single distributional parameter tested. All parameters, code, data snapshots, and an AI-audit trail are public, and the model runs interactively in the browser.
+paper/index.qmd:116:The paper makes four contributions. It provides what I believe is the first outside, portfolio-level cost-effectiveness estimate of Scott's giving, and I have found no comparable outside estimate for any other individual mega-donor — funder-run portfolio metrics exist, including GiveWell's aggregate impact estimates [@givewell2026impact], Robin Hood's benefit–cost framework [@robinhood2025], the Constellation Fund's portfolio reporting [@constellation2025], and social-rate-of-return analysis of USAID's Development Innovation Ventures portfolio [@cega2023div]; the difference here is independence from the donor, a subject who publishes no outcome data, and explicit evidence weighting: a best-guess median of `{python} F["median_k"]` QALYs from $26.39 billion nominal (`{python} F["giving"]` in 2026 dollars), a blended `{python} F["blended"]` per QALY, and a median benefit–cost ratio of `{python} F["bc"]` under the HHS regulatory value-per-QALY distribution [@aspe2026values]. It estimates extreme geographic concentration of impact under its pricing assumptions: the `{python} F["abroad_share_1"]` of dollars funding global health and development delivered outside the United States accounts for `{python} F["gh_share"]` of estimated health impact. It reports a new empirical regularity in the gift data itself: across `{python} F["n_cal"]` disclosed gift–filing pairs, gift size scales with recipient pre-gift revenue to the power `{python} F["elasticity"]` (R² `{python} F["r2"]`) — Scott's giving is far flatter across organization size than proportional. And it demonstrates a working method for auditable, AI-assisted cost-effectiveness modeling: the model was built with a frontier language model, reviewed and corrected in public through the revision history summarized in the robustness section, audited by two independent model families against primary filings, and ships with versioned parameters, machine-checked citations, and a browser implementation that reruns the full Monte Carlo under any reader's assumptions.
+paper/index.qmd:118:The unit of account deserves a caveat before any number. QALYs measure health. Most of Scott's portfolio aims at other things — education, economic mobility, equity, civic infrastructure — whose primary benefits are not health benefits. A finding that a dollar of education philanthropy produces few QALYs is a statement about the lens, not a verdict on the gift. The estimates are a partial, health-only accounting under positive-effect priors — not a lower bound on total wellbeing: the lens omits the primary intended benefits of most of the portfolio, and the model places no probability on zero or harmful effects, a structural choice the limitations section returns to.
+paper/index.qmd:124:Scott's essays disclose giving in dated tranches totaling $26.39 billion nominal over 2020–2025. The model inflates each tranche — booked by disclosure year — to 2026 dollars (CPI-U, anchored to May 2026), so dollars and cost-effectiveness evidence share one price level: `{python} F["giving"]` total. All derivations below, and the replication repository, start from a verbatim snapshot of the Yield Giving gift database retrieved July 11, 2026 [@yieldgiving2026].
+paper/index.qmd:130:The undisclosed third is imputed rather than dropped. Because the essays give each year's total, the undisclosed residual per period is a known dollar amount; it is distributed across that period's undisclosed gifts in proportion to each recipient's pre-gift IRS Form 990 total revenue [@propublica2026], raised to an elasticity fit on the disclosed pairs. Pre-gift means the latest filing strictly before the gift year, since a Scott gift mechanically inflates receipt-year revenue. The fit is a finding in its own right: across `{python} F["n_cal"]` disclosed gift–filing pairs, log gift size rises with log revenue with slope `{python} F["elasticity"]` (R² `{python} F["r2"]`). A 10× larger organization receives about 2.5× more money, not 10× more. The fit is descriptive and conditional: it is estimated on disclosed gifts with a matched pre-gift filing (1,313 of 2,035 disclosed and 2,711 total gifts), treats repeated gifts to an organization as independent, and pools years; 287 of the 676 undisclosed gifts lack a usable filing and receive their period's median weight. It is a within-sample regularity used for imputation, not a validated prediction rule. Fuzzy name-to-EIN matches were audited by a third, smaller model against the live IRS API, with corrections committed as a reviewable overlay. The imputed third moves each cause share by at most about 1.5 percentage points — under the imputation model, the disclosed two-thirds is representative.
+paper/index.qmd:134:Each organization reports service locations. Weighting disclosed dollars by the audited share of each organization's locations outside the United States, an estimated `{python} F["abroad_disc_audited_pct"]` of disclosed dollars (`{python} F["abroad_disc_audited_b"]` of `{python} F["disclosed_b"]`) sits with organizations reporting non-U.S. service locations — `{python} F["abroad_disc_raw_pct"]` under the raw rule that counts a bare "global" listing as fully non-U.S. — led by environment, health, and funding intermediaries. Locations are an equal-split proxy: a listed location is not an expenditure share, and no organization reports how Scott's own gift was deployed. The model prices geography through a single channel: health-relevant dollars route to a global-health archetype in proportion to the recipient's non-U.S. service share, because global health delivery is the one category with a published cost-per-QALY evidence base an order of magnitude below U.S. anchors. Education and climate dollars keep their U.S.-study anchors wherever they are delivered; if geography changes their effectiveness, the model does not capture it.
+paper/index.qmd:136:The coarsest geographic field is the bare label "global." An audit of the 50 organizations with the most dollars attached to that label — 87% of its dollars; 20 of the 50 also list other locations — replaced the blanket assumption of fully-abroad delivery with fractions coded independently by two model families from each organization's filings and program reports, then reconciled — the second coder confirmed 33 within tolerance and disputed 17; four disputes were adjudicated to documented filings arithmetic, and final fractions average the two coders everywhere else, with per-organization sources and confidence grades — 16 high, 17 medium, 17 low — committed to the repository. Many "global" organizations operate substantially in the United States: Planned Parenthood and Crisis Text Line, for example, list "global" service but are roughly 95% and 93% U.S. in their most recent organization-wide reporting — later-period proxies for how earlier gifts were deployed, since neither reports gift-level allocation. The audited allocation routes `{python} F["abroad_share"]` of the ledger to the global health and development archetype. That routed bucket is itself mixed: its dollars sit `{python} F["gh_ssa"]` in Sub-Saharan Africa, `{python} F["gh_sasia"]` in South Asia, and `{python} F["gh_latam"]` in Latin America, but `{python} F["gh_unattrib"]` is unattributable multi-region activity and roughly `{python} F["gh_hic"]` sits in Europe & Central Asia plus Canada — regions that are not classified by income here, so the bucket's true high-income share is unidentified — all priced at the same low-and-middle-income anchors, a coarseness the limitations section flags.
+paper/index.qmd:142:The two multipliers are designed to partition the doubt — transportability concerns in realization, identification concerns in credibility, cost-per-QALY priors stated conditional on the effect being real and delivered — though the separation is imperfect at the prior boundaries: several anchors already average over mixed null-and-positive evidence before the credibility discount applies (a limitation noted below). Allocation uncertainty is a Dirichlet with concentration 60 around the derived centers — a judgment prior, implying for example a roughly 1.3–10% ninety-percent range on the global-health share — and represents subjective allocation uncertainty rather than sampling uncertainty propagated from the gift data pipeline. The tier ordering is the defensible part; the levels are judgment, proposed by a language model and reviewed by the author, and the results section reports the full consequence of disagreeing with them.
+paper/index.qmd:144:Health effects arrive in different natural units — lives saved, life-years, depression-free days — and are converted to discounted QALYs at a 3% annual rate under source-specific conventions: adult mortality anchors sample roughly 26 remaining life-years at a utility draw centered near 0.78, the frontier's child-mortality benchmark uses a fixed ~65 remaining years at utility 0.87, and direct cost-per-QALY anchors keep their sources' conventions. Every parameter's unit and dollar vintage is machine-validated at load. The global-health frontier benchmark is handicapped within the same framework: GiveWell's reported recent program averages [@givewell2026impact], converted to roughly $175–$241 per discounted QALY-equivalent under this model's own conventions (a model conversion, not a GiveWell QALY figure), modeled as loguniform $150–$260, sharing each draw's realization multiplier, and receiving RCT-grade credibility — the strongest tier — where portfolio archetypes receive their own.
+paper/index.qmd:187:At the best-guess defaults (100,000 draws), the portfolio produces a median of `{python} F["median"]` QALYs, with a 90% interval of `{python} F["p05"]` to `{python} F["p95"]` and a mean of `{python} F["mean"]`. The interval is a probabilistic-sensitivity range under the stated priors, not a confidence interval; Monte Carlo error on the median is a few hundred QALYs. The blended cost-effectiveness — dollars given over QALYs produced, at the median — is `{python} F["blended"]` per QALY. Monetized under the value-per-QALY distribution HHS recommends for regulatory analysis (central $726,000 at 3%; @aspe2026values, Table 3), the median draw-level benefit–cost ratio is `{python} F["bc"]` (90% interval `{python} F["bc_p05"]`–`{python} F["bc_p95"]`, reflecting both health-output and valuation uncertainty). @fig-dist shows the full distribution.
+paper/index.qmd:234:#| tbl-cap: "A deterministic post-estimation decomposition of mean archetype QALYs by delivery geography — no region-level effect or uncertainty is estimated, and geography affects pricing only through the global-health routing. Asterisked rows are reporting granularity (national or multi-region listings), not places. Geography derives from each organization's reported service locations, equal-split, with audited fractions for the 50 largest \"global\"-listed organizations."
+paper/index.qmd:248:#| fig-cap: "Median total QALYs across the evidence-stance range, 100,000 draws per point, seed 0. The stance interpolates each tier's credibility mean piecewise-linearly from a near-RCT-only floor (non-randomized tiers at mean 0.01; randomized tier at its drafted mean) through the drafted best-guess tiers (0.5) to near face value (all means 0.999). A scenario path, not a bound; tier concentrations are held fixed."
+paper/index.qmd:256:        floor = base if name == "randomized" else 0.01
+paper/index.qmd:257:        m = floor + (s_val/0.5)*(base-floor) if s_val <= 0.5 else base + ((s_val-0.5)/0.5)*(0.999-base)
+paper/index.qmd:282:The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-only floor — non-randomized tiers shrunk to a credibility mean of 0.01, the randomized tier kept at its drafted mean — the median collapses to `{python} F_rct` QALYs, dominated by the randomized-tier mental-health bucket; at near face value (all tier means 0.999) it rises to `{python} F_face` (@fig-stance). That 45-fold range exceeds the spread from any single distributional parameter — though structural choices can move the headline more: with no geographic repricing at all, every health dollar at U.S. anchors, the median is roughly 70,000 (the pre-correction model in the §5.3 table), so the routing assumption alone spans ~3× — and the gap between the face-value and best-guess estimates is a direct reading of how much of the estimated impact rests on evidence below randomized or strong quasi-experimental identification standards. The Spearman tornado (@fig-tornado) tells the same story within the default stance: the top three drivers are the global-health allocation share, the realization factor, and global-health credibility.
+paper/index.qmd:288:The geography audit is the largest data correction the model has absorbed since publication, and its effect is small: recentering the allocation on audited service geographies moved the abroad share from 4.93% to `{python} F["abroad_share"]`, the median from about 205,000 to `{python} F["median"]`, and the blended figure from about $148,000 to `{python} F["blended"]` per QALY. Both allocations ship with the model, the browser version exposes them as a version toggle, and the pre-audit parameters remain pinned at tag `v2026.07.20` (audited: `v2026.07.22`).
+paper/index.qmd:290:## Corrections history
+paper/index.qmd:301:Every correction is documented in the repository and summarized on the public tool; the detector column is the record, and none of these was caught by the author unaided.
+paper/index.qmd:305:The model was built with a frontier language model (Anthropic's Claude), with the author reviewing every parameter and assumption; adversarial review by a second model family (OpenAI's), plus reader corrections, produced the revision history above. Three mechanisms make the result checkable rather than merely stated. Parameters live in one typed file in which every value carries its unit, dollar vintage, and inline citation, machine-validated at load; an annotated bibliography maps each quantitative input to its primary source and price-level conversion. Sync tests force the published web parameters, allocation shares, and geography exports to equal fresh derivations from the committed data snapshots, and the body of this manuscript interpolates its model-derived numbers from those same artifacts at render time (the abstract's figures are typed copies of the interpolated values; externally sourced constants carry citations). And the audit trail is data: the 990 match audit ships as its applied per-row overlay, and the 50-organization geography audit ships with per-organization sources and confidence grades — both applied by the pipeline rather than folded silently into parameters.
+paper/index.qmd:311:The credibility tiers and realization distribution are judgment priors with no literature calibration; the ordering is defensible, the levels are not measured, and the stance sweep is the honest bound on their influence. The QALY lens counts only health, so the estimate is a partial accounting that omits both the non-health benefits where Scott concentrates — education, mobility, equity — and any possible harms; it is not a floor on total wellbeing. Credibility shrinks toward zero but never below it, so the model places no mass on harmful giving; the closest available zero scenario is the near-RCT-only stance floor, which drives unsupported archetypes to ~1% credit. Allocation splits each organization's dollars equally across its focus areas and service locations; both are coarse, and the geography audit covers only the 50 largest "global"-listed organizations. Realization is one global draw, so it cannot vary by cause. Archetype anchors treat heterogeneous organizations as draws from one distribution. Within each cause, delivery regions are priced identically, so the geographic decomposition exposes assumptions rather than measuring regional differences. The undisclosed third of dollars is imputed from a fitted elasticity, not observed. The routed global-health bucket prices its unattributable and high-income-region dollars — roughly a fifth of the bucket — at low-and-middle-income anchors, an upward-bias channel. Several cost priors average over mixed null-and-positive evidence before the credibility discount applies, so the two-multiplier separation of doubts is imperfect at those boundaries. The Dirichlet allocation spread is a subjective prior; uncertainty from the elasticity fit, unmatched filings, the focus-area crosswalk, and the geography audit is not propagated. Allocation shares are derived in nominal dollars and applied to the real total; re-deriving in real dollars moves shares by hundredths of a percentage point. The geography audit's scalar U.S. shares and regional decompositions were reconciled separately and can differ by fractions of a point per organization. Finally, several anchors rest on a small number of quasi-experimental papers whose external validity to Scott's grantees is exactly what the realization factor is guessing at.
+paper/index.qmd:315:Measured in health, MacKenzie Scott's $26 billion buys an estimated median of about `{python} F["median_k"]` quality-adjusted life-years — several times its cost under the government's own regulatory valuation — and most of that estimated health comes from the twentieth of her dollars funding health and development delivered abroad. The number is a model output under stated priors, not a fact, and the model's most important output is not the point estimate but the machinery around it: explicit evidence weights, a 45-fold stance range that any reader can traverse, versioned corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes without waiting for donors to publish outcome data — their own gift lists, recipients' tax filings, and the published causal literature suffice — and the same machinery applies to any large giver whose public disclosures carry comparable gift-level allocation and geography fields. The invitation of the interactive version is the paper's real conclusion: disagree with a parameter, move it, and watch what survives.
+paper/index.qmd:319:I thank readers on LinkedIn and the EA Forum whose corrections materially improved the model, including the reader who identified the original mispricing of internationally delivered health dollars. The model, audits, and this manuscript were built with Anthropic's Claude, with additional adversarial review by OpenAI models; all judgments and errors are mine. This is a personal research project and does not represent the views of PolicyEngine or the Axiom Foundation. Neither I nor those organizations have received funding from MacKenzie Scott or Yield Giving.
+
+exec
+/bin/zsh -lc "sed -n '540,735p' paper/review/rendered.txt && sed -n '275,318p' paper/index.qmd && sed -n '1,220p' paper/references.bib" in /Users/maxghenis/mackenzie-scott-qaly
+ succeeded in 0ms:
+1,535
+1,435
+439
+
+% of QALYs
+
+$/QALY
+
+4%
+3%
+2%
+2%
+2%
+1%
+1%
+<1%
+
+$351,406
+$390,341
+$54,776
+$36,670
+$100,390
+$454,724
+$27,621
+$323,208
+
+Source: Article Notebook
+
+4.2 Against the global-health frontier
+Handicapped within the same framework — sharing each draw’s realization multiplier, with
+RCT-grade credibility — the GiveWell-derived frontier benchmark delivers roughly 521× more
+health per marginal dollar than the blended portfolio; the same sum directed entirely to the
+frontier would imply on the order of 105.5 million QALYs. That figure is arithmetic, not a forecast,
+and not an attainable counterfactual: frontier-priced opportunities are scarce — GiveWell’s
+directed funding runs to hundreds of millions of dollars per year, not tens of billions (GiveWell
+2025) — and funding beyond identified room drives toward cash-transfer cost-effectiveness,
+whose GiveWell estimate rose 3–4× in a 2024 re-evaluation (GiveWell 2024). Converting the full
+portfolio at cash-transfer cost-effectiveness under this model’s own conventions leaves a multiple
+in the tens — roughly 20–40×, model arithmetic rather than a GiveWell figure. The defensible
+statement is directional: the frontier multiple is several hundred at today’s margin and remains
+large at any scale the cited benchmarks speak to.
+
+5 Robustness
+5.1 Evidence philosophy dominates everything else
+Source: Article Notebook
+
+8
+
+414,264
+
+Median QALYs (log scale)
+
+201,923
+
+105
+
+104
+
+9,114
+
+RCT-only
+
+best guess
+(default)
+
+face value
+
+Figure 2: Median total QALYs across the evidence-stance range, 100,000 draws per point, seed
+0. The stance interpolates each tier’s credibility mean piecewise-linearly from a nearRCT-only floor (non-randomized tiers at mean 0.01; randomized tier at its drafted
+mean) through the drafted best-guess tiers (0.5) to near face value (all means 0.999).
+A scenario path, not a bound; tier concentrations are held fixed.
+
+Source: Article Notebook
+
+The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-only floor —
+non-randomized tiers shrunk to a credibility mean of 0.01, the randomized tier kept at its drafted
+mean — the median collapses to 9,114 QALYs, dominated by the randomized-tier mental-health
+bucket; at near face value (all tier means 0.999) it rises to 414,264 (Figure 2). That 45-fold
+range exceeds the spread from any single distributional parameter — though structural choices
+can move the headline more: with no geographic repricing at all, every health dollar at U.S.
+anchors, the median is roughly 70,000 (the pre-correction model in the §5.3 table), so the routing
+assumption alone spans ~3× — and the gap between the face-value and best-guess estimates is
+a direct reading of how much of the estimated impact rests on evidence below randomized or
+strong quasi-experimental identification standards. The Spearman tornado (Figure 3) tells the
+same story within the default stance: the top three drivers are the global-health allocation share,
+the realization factor, and global-health credibility.
+
+5.2 The audit moved the headline by less than 2%
+The geography audit is the largest data correction the model has absorbed since publication, and
+its effect is small: recentering the allocation on audited service geographies moved the abroad
+share from 4.93% to 4.82%, the median from about 205,000 to 201,923, and the blended figure
+from about $148,000 to $150,067 per QALY. Both allocations ship with the model, the browser
+
+9
+
+Figure 3: What drives the spread: Spearman rank correlations between each input draw and
+total QALYs at the best-guess defaults.
+
+10
+
+version exposes them as a version toggle, and the pre-audit parameters remain pinned at tag
+v2026.07.20 (audited: v2026.07.22).
+
+5.3 Corrections history
+The model reached this state through a series of public revisions — counting a revision as a
+committed change that moved the headline — and the trajectory is itself evidence about the
+method. As recorded in the repository history:
+Change
+
+Median before → after
+
+Caught by
+
+Cross-model review: dollar
+vintages normalized, a
+life-year→QALY conversion
+made explicit, frontier
+benchmark re-derived, one
+citation re-attributed
+Allocation replaced with the
+derivation from Scott’s own
+gift database
+Health dollars had been
+priced at U.S. anchors
+regardless of delivery location
+Two-model geography audit of
+“global”-listed organizations
+(tags v2026.07.20 →
+v2026.07.22)
+
+~98,000 → ~87,000
+
+second model family
+
+~87,000 → ~70,000
+
+author + model
+
+~70,000 → ~205,000
+
+a reader
+
+~205,000 → 202,000
+
+model audit
+
+Every correction is documented in the repository and summarized on the public tool; the detector
+column is the record, and none of these was caught by the author unaided.
+
+6 Construction and auditability
+The model was built with a frontier language model (Anthropic’s Claude), with the author
+reviewing every parameter and assumption; adversarial review by a second model family (OpenAI’s), plus reader corrections, produced the revision history above. Three mechanisms make
+the result checkable rather than merely stated. Parameters live in one typed file in which every
+value carries its unit, dollar vintage, and inline citation, machine-validated at load; an annotated
+bibliography maps each quantitative input to its primary source and price-level conversion. Sync
+tests force the published web parameters, allocation shares, and geography exports to equal fresh
+derivations from the committed data snapshots, and the body of this manuscript interpolates its
+model-derived numbers from those same artifacts at render time (the abstract’s figures are typed
+copies of the interpolated values; externally sourced constants carry citations). And the audit
+trail is data: the 990 match audit ships as its applied per-row overlay, and the 50-organization
+
+11
+
+geography audit ships with per-organization sources and confidence grades — both applied by
+the pipeline rather than folded silently into parameters.
+The browser implementation is a checked TypeScript port that reruns the full Monte Carlo
+client-side; every figure in this paper can be reproduced, and every assumption overridden, at
+maxghenis.com/mackenzie-scott-qaly. The repository, including this manuscript’s source, is at
+github.com/MaxGhenis/mackenzie-scott-qaly.
+
+7 Limitations
+The credibility tiers and realization distribution are judgment priors with no literature calibration;
+the ordering is defensible, the levels are not measured, and the stance sweep is the honest bound
+on their influence. The QALY lens counts only health, so the estimate is a partial accounting
+that omits both the non-health benefits where Scott concentrates — education, mobility, equity
+— and any possible harms; it is not a floor on total wellbeing. Credibility shrinks toward zero
+but never below it, so the model places no mass on harmful giving; the closest available zero
+scenario is the near-RCT-only stance floor, which drives unsupported archetypes to ~1% credit.
+Allocation splits each organization’s dollars equally across its focus areas and service locations;
+both are coarse, and the geography audit covers only the 50 largest “global”-listed organizations.
+Realization is one global draw, so it cannot vary by cause. Archetype anchors treat heterogeneous
+organizations as draws from one distribution. Within each cause, delivery regions are priced
+identically, so the geographic decomposition exposes assumptions rather than measuring regional
+differences. The undisclosed third of dollars is imputed from a fitted elasticity, not observed. The
+routed global-health bucket prices its unattributable and high-income-region dollars — roughly a
+fifth of the bucket — at low-and-middle-income anchors, an upward-bias channel. Several cost
+priors average over mixed null-and-positive evidence before the credibility discount applies, so
+the two-multiplier separation of doubts is imperfect at those boundaries. The Dirichlet allocation
+spread is a subjective prior; uncertainty from the elasticity fit, unmatched filings, the focus-area
+crosswalk, and the geography audit is not propagated. Allocation shares are derived in nominal
+dollars and applied to the real total; re-deriving in real dollars moves shares by hundredths of a
+percentage point. The geography audit’s scalar U.S. shares and regional decompositions were
+reconciled separately and can differ by fractions of a point per organization. Finally, several
+anchors rest on a small number of quasi-experimental papers whose external validity to Scott’s
+grantees is exactly what the realization factor is guessing at.
+
+plt.tight_layout()
+plt.show()
+
+F_rct = f"{meds[0]:,.0f}"
+F_face = f"{meds[-1]:,.0f}"
+```
+
+The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-only floor — non-randomized tiers shrunk to a credibility mean of 0.01, the randomized tier kept at its drafted mean — the median collapses to `{python} F_rct` QALYs, dominated by the randomized-tier mental-health bucket; at near face value (all tier means 0.999) it rises to `{python} F_face` (@fig-stance). That 45-fold range exceeds the spread from any single distributional parameter — though structural choices can move the headline more: with no geographic repricing at all, every health dollar at U.S. anchors, the median is roughly 70,000 (the pre-correction model in the §5.3 table), so the routing assumption alone spans ~3× — and the gap between the face-value and best-guess estimates is a direct reading of how much of the estimated impact rests on evidence below randomized or strong quasi-experimental identification standards. The Spearman tornado (@fig-tornado) tells the same story within the default stance: the top three drivers are the global-health allocation share, the realization factor, and global-health credibility.
+
+![What drives the spread: Spearman rank correlations between each input draw and total QALYs at the best-guess defaults.](../results/sensitivity.png){#fig-tornado}
+
+## The audit moved the headline by less than 2%
+
+The geography audit is the largest data correction the model has absorbed since publication, and its effect is small: recentering the allocation on audited service geographies moved the abroad share from 4.93% to `{python} F["abroad_share"]`, the median from about 205,000 to `{python} F["median"]`, and the blended figure from about $148,000 to `{python} F["blended"]` per QALY. Both allocations ship with the model, the browser version exposes them as a version toggle, and the pre-audit parameters remain pinned at tag `v2026.07.20` (audited: `v2026.07.22`).
+
+## Corrections history
+
+The model reached this state through a series of public revisions — counting a revision as a committed change that moved the headline — and the trajectory is itself evidence about the method. As recorded in the repository history:
+
+| Change | Median before → after | Caught by |
+|---|---|---|
+| Cross-model review: dollar vintages normalized, a life-year→QALY conversion made explicit, frontier benchmark re-derived, one citation re-attributed | ~98,000 → ~87,000 | second model family |
+| Allocation replaced with the derivation from Scott's own gift database | ~87,000 → ~70,000 | author + model |
+| Health dollars had been priced at U.S. anchors regardless of delivery location | ~70,000 → ~205,000 | a reader |
+| Two-model geography audit of "global"-listed organizations (tags v2026.07.20 → v2026.07.22) | ~205,000 → `{python} F["median_k"]` | model audit |
+
+Every correction is documented in the repository and summarized on the public tool; the detector column is the record, and none of these was caught by the author unaided.
+
+# Construction and auditability
+
+The model was built with a frontier language model (Anthropic's Claude), with the author reviewing every parameter and assumption; adversarial review by a second model family (OpenAI's), plus reader corrections, produced the revision history above. Three mechanisms make the result checkable rather than merely stated. Parameters live in one typed file in which every value carries its unit, dollar vintage, and inline citation, machine-validated at load; an annotated bibliography maps each quantitative input to its primary source and price-level conversion. Sync tests force the published web parameters, allocation shares, and geography exports to equal fresh derivations from the committed data snapshots, and the body of this manuscript interpolates its model-derived numbers from those same artifacts at render time (the abstract's figures are typed copies of the interpolated values; externally sourced constants carry citations). And the audit trail is data: the 990 match audit ships as its applied per-row overlay, and the 50-organization geography audit ships with per-organization sources and confidence grades — both applied by the pipeline rather than folded silently into parameters.
+
+The browser implementation is a checked TypeScript port that reruns the full Monte Carlo client-side; every figure in this paper can be reproduced, and every assumption overridden, at [maxghenis.com/mackenzie-scott-qaly](https://maxghenis.com/mackenzie-scott-qaly). The repository, including this manuscript's source, is at [github.com/MaxGhenis/mackenzie-scott-qaly](https://github.com/MaxGhenis/mackenzie-scott-qaly).
+
+# Limitations
+
+The credibility tiers and realization distribution are judgment priors with no literature calibration; the ordering is defensible, the levels are not measured, and the stance sweep is the honest bound on their influence. The QALY lens counts only health, so the estimate is a partial accounting that omits both the non-health benefits where Scott concentrates — education, mobility, equity — and any possible harms; it is not a floor on total wellbeing. Credibility shrinks toward zero but never below it, so the model places no mass on harmful giving; the closest available zero scenario is the near-RCT-only stance floor, which drives unsupported archetypes to ~1% credit. Allocation splits each organization's dollars equally across its focus areas and service locations; both are coarse, and the geography audit covers only the 50 largest "global"-listed organizations. Realization is one global draw, so it cannot vary by cause. Archetype anchors treat heterogeneous organizations as draws from one distribution. Within each cause, delivery regions are priced identically, so the geographic decomposition exposes assumptions rather than measuring regional differences. The undisclosed third of dollars is imputed from a fitted elasticity, not observed. The routed global-health bucket prices its unattributable and high-income-region dollars — roughly a fifth of the bucket — at low-and-middle-income anchors, an upward-bias channel. Several cost priors average over mixed null-and-positive evidence before the credibility discount applies, so the two-multiplier separation of doubts is imperfect at those boundaries. The Dirichlet allocation spread is a subjective prior; uncertainty from the elasticity fit, unmatched filings, the focus-area crosswalk, and the geography audit is not propagated. Allocation shares are derived in nominal dollars and applied to the real total; re-deriving in real dollars moves shares by hundredths of a percentage point. The geography audit's scalar U.S. shares and regional decompositions were reconciled separately and can differ by fractions of a point per organization. Finally, several anchors rest on a small number of quasi-experimental papers whose external validity to Scott's grantees is exactly what the realization factor is guessing at.
+
+# Conclusion
+
+Measured in health, MacKenzie Scott's $26 billion buys an estimated median of about `{python} F["median_k"]` quality-adjusted life-years — several times its cost under the government's own regulatory valuation — and most of that estimated health comes from the twentieth of her dollars funding health and development delivered abroad. The number is a model output under stated priors, not a fact, and the model's most important output is not the point estimate but the machinery around it: explicit evidence weights, a 45-fold stance range that any reader can traverse, versioned corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes without waiting for donors to publish outcome data — their own gift lists, recipients' tax filings, and the published causal literature suffice — and the same machinery applies to any large giver whose public disclosures carry comparable gift-level allocation and geography fields. The invitation of the interactive version is the paper's real conclusion: disagree with a parameter, move it, and watch what survives.
+
+# Acknowledgments {.unnumbered}
+
+@article{cesarini2016wealth,
+  author  = {Cesarini, David and Lindqvist, Erik and {\"O}stling, Robert and Wallace, Bj{\"o}rn},
+  title   = {Wealth, Health, and Child Development: Evidence from Administrative Data on {S}wedish Lottery Players},
+  journal = {Quarterly Journal of Economics},
+  year    = {2016},
+  volume  = {131},
+  number  = {2},
+  pages   = {687--738},
+  doi     = {10.1093/qje/qjw001}
+}
+
+@article{miller2021medicaid,
+  author  = {Miller, Sarah and Johnson, Norman and Wherry, Laura R.},
+  title   = {Medicaid and Mortality: New Evidence from Linked Survey and Administrative Data},
+  journal = {Quarterly Journal of Economics},
+  year    = {2021},
+  volume  = {136},
+  number  = {3},
+  pages   = {1783--1829},
+  doi     = {10.1093/qje/qjab004}
+}
+
+@article{sommers2017medicaid,
+  author  = {Sommers, Benjamin D.},
+  title   = {State {M}edicaid Expansions and Mortality, Revisited: A Cost-Benefit Analysis},
+  journal = {American Journal of Health Economics},
+  year    = {2017},
+  volume  = {3},
+  number  = {3},
+  pages   = {392--421},
+  doi     = {10.1162/ajhe_a_00080}
+}
+
+@article{bailey2015war,
+  author  = {Bailey, Martha J. and Goodman-Bacon, Andrew},
+  title   = {The {W}ar on {P}overty's Experiment in Public Medicine: Community Health Centers and the Mortality of Older {A}mericans},
+  journal = {American Economic Review},
+  year    = {2015},
+  volume  = {105},
+  number  = {3},
+  pages   = {1067--1104},
+  doi     = {10.1257/aer.20120070}
+}
+
+@article{finkelstein2012oregon,
+  author  = {Finkelstein, Amy and Taubman, Sarah and Wright, Bill and Bernstein, Mira and Gruber, Jonathan and Newhouse, Joseph P. and Allen, Heidi and Baicker, Katherine and {Oregon Health Study Group}},
+  title   = {The {O}regon Health Insurance Experiment: Evidence from the First Year},
+  journal = {Quarterly Journal of Economics},
+  year    = {2012},
+  volume  = {127},
+  number  = {3},
+  pages   = {1057--1106},
+  doi     = {10.1093/qje/qjs020}
+}
+
+@article{aizer2016cash,
+  author  = {Aizer, Anna and Eli, Shari and Ferrie, Joseph and Lleras-Muney, Adriana},
+  title   = {The Long-Run Impact of Cash Transfers to Poor Families},
+  journal = {American Economic Review},
+  year    = {2016},
+  volume  = {106},
+  number  = {4},
+  pages   = {935--971},
+  doi     = {10.1257/aer.20140529}
+}
+
+@misc{givewell2026impact,
+  author       = {{GiveWell}},
+  title        = {Impact Estimates},
+  year         = {2025},
+  howpublished = {\url{https://www.givewell.org/impact-estimates}},
+  note         = {Accessed July 2026}
+}
+
+@misc{givewell2024cash,
+  author       = {{GiveWell}},
+  title        = {Re-evaluating the Impact of Unconditional Cash Transfers},
+  year         = {2024},
+  howpublished = {\url{https://blog.givewell.org/2024/11/12/re-evaluating-the-impact-of-unconditional-cash-transfers/}},
+  note         = {GiveWell blog, November 12, 2024}
+}
+
+@techreport{aspe2026values,
+  author      = {Kearsley, Aaron},
+  title       = {{HHS} Standard Values for Regulatory Analysis, 2026},
+  institution = {ASPE},
+  year        = {2026},
+  url         = {https://aspe.hhs.gov/reports/standard-ria-values}
+}
+
+@techreport{cep2023gifts,
+  author      = {Buteau, Ellie and Smith Arrillaga, Elisha and Im, Christina},
+  title       = {Emerging Impacts: The Effects of {M}ac{K}enzie {S}cott's Large, Unrestricted Gifts: Results from Year Two of a Three-Year Study},
+  institution = {Center for Effective Philanthropy},
+  year        = {2023},
+  url         = {https://cep.org/wp-content/uploads/2023/11/BigGiftsStudy_Report_Y2_FNL.pdf}
+}
+
+@misc{yieldgiving2026,
+  author       = {{Yield Giving}},
+  title        = {Gifts Database},
+  year         = {2026},
+  howpublished = {\url{https://yieldgiving.com/gifts}},
+  note         = {Snapshot retrieved July 11, 2026; archived in the replication repository}
+}
+
+@misc{cnbc2025scott,
+  author       = {Huddleston, Tom, Jr.},
+  title        = {{M}ac{K}enzie {S}cott Announced Another \$7.1 Billion in 2025 Charitable Donations---She's Now Given Away \$26.3 Billion Since 2019},
+  year         = {2025},
+  howpublished = {\url{https://www.cnbc.com/2025/12/13/mackenzie-scott-revealed-her-total-charitable-donations-for-2025.html}},
+  note         = {CNBC, December 13, 2025}
+}
+
+@techreport{givingusa2026,
+  author      = {{Indiana University Lilly Family School of Philanthropy}},
+  title       = {Giving {USA} 2026: The Annual Report on Philanthropy for the Year 2025},
+  institution = {Giving USA Foundation},
+  year        = {2026}
+}
+
+@misc{propublica2026,
+  author       = {{ProPublica}},
+  title        = {Nonprofit Explorer},
+  year         = {2026},
+  howpublished = {\url{https://projects.propublica.org/nonprofits/}},
+  note         = {IRS Form 990 revenue series; accessed July 2026}
+}
+
+@incollection{ord2013,
+  author    = {Ord, Toby},
+  title     = {The Moral Imperative toward Cost-Effectiveness in Global Health},
+  booktitle = {Essays},
+  publisher = {Center for Global Development},
+  year      = {2013},
+  url       = {https://www.cgdev.org/publication/moral-imperative-toward-cost-effectiveness-global-health}
+}
+
+@misc{ap2026givingusa,
+  author       = {Childress, Rasheeda},
+  title        = {Donors Gave {U.S.} Charities \$617 Billion in 2025, According to the New Giving {USA} Report},
+  year         = {2026},
+  howpublished = {\url{https://apnews.com/article/8363b76bc8cf854f6865c31129e8a4b1}},
+  note         = {Associated Press, June 2026; reports \$6.65B of Scott's 2025 contributions against \$19.2B in U.S. megagift value}
+}
+
+@misc{robinhood2025,
+  author       = {{Robin Hood Foundation}},
+  title        = {Our Approach: Metrics and Benefit--Cost Analysis},
+  year         = {2023},
+  howpublished = {\url{https://robinhood.org/our-work/our-approach/}},
+  note         = {Accessed July 2026}
+}
+
+@misc{constellation2025,
+  author       = {{Constellation Fund}},
+  title        = {2025 Investment Report},
+  year         = {2026},
+  howpublished = {\url{https://constellationfund.org/impact-news-insights/investment-report-2025/}},
+  note         = {Portfolio-level benefit--cost reporting; accessed July 2026}
+}
+
+@misc{cega2023div,
+  author       = {{Center for Effective Global Action}},
+  title        = {Donors Can Spend More Money, Better, with Cost Evidence},
+  year         = {2022},
+  howpublished = {\url{https://cega.berkeley.edu/article/donors-can-spend-more-money-better-with-cost-evidence/}},
+  note         = {Portfolio social-rate-of-return analysis of USAID Development Innovation Ventures}
+}
+
+exec
+/bin/zsh -lc "rg -n -i \"eleven|rounds|revision|detector|caught|unaided|commit|tag|correction\" paper/index.qmd paper/review/rendered.txt README.md web -g '"'!*.png'"' -g '"'!*.pdf'"' | head -240 && rg -n \"high-income-region|high-income|Europe & Central Asia|Europe and Central Asia|Canada\" paper/index.qmd paper/review/rendered.txt" in /Users/maxghenis/mackenzie-scott-qaly
+ succeeded in 0ms:
+paper/index.qmd:116:The paper makes four contributions. It provides what I believe is the first outside, portfolio-level cost-effectiveness estimate of Scott's giving, and I have found no comparable outside estimate for any other individual mega-donor — funder-run portfolio metrics exist, including GiveWell's aggregate impact estimates [@givewell2026impact], Robin Hood's benefit–cost framework [@robinhood2025], the Constellation Fund's portfolio reporting [@constellation2025], and social-rate-of-return analysis of USAID's Development Innovation Ventures portfolio [@cega2023div]; the difference here is independence from the donor, a subject who publishes no outcome data, and explicit evidence weighting: a best-guess median of `{python} F["median_k"]` QALYs from $26.39 billion nominal (`{python} F["giving"]` in 2026 dollars), a blended `{python} F["blended"]` per QALY, and a median benefit–cost ratio of `{python} F["bc"]` under the HHS regulatory value-per-QALY distribution [@aspe2026values]. It estimates extreme geographic concentration of impact under its pricing assumptions: the `{python} F["abroad_share_1"]` of dollars funding global health and development delivered outside the United States accounts for `{python} F["gh_share"]` of estimated health impact. It reports a new empirical regularity in the gift data itself: across `{python} F["n_cal"]` disclosed gift–filing pairs, gift size scales with recipient pre-gift revenue to the power `{python} F["elasticity"]` (R² `{python} F["r2"]`) — Scott's giving is far flatter across organization size than proportional. And it demonstrates a working method for auditable, AI-assisted cost-effectiveness modeling: the model was built with a frontier language model, reviewed and corrected in public through the revision history summarized in the robustness section, audited by two independent model families against primary filings, and ships with versioned parameters, machine-checked citations, and a browser implementation that reruns the full Monte Carlo under any reader's assumptions.
+paper/index.qmd:130:The undisclosed third is imputed rather than dropped. Because the essays give each year's total, the undisclosed residual per period is a known dollar amount; it is distributed across that period's undisclosed gifts in proportion to each recipient's pre-gift IRS Form 990 total revenue [@propublica2026], raised to an elasticity fit on the disclosed pairs. Pre-gift means the latest filing strictly before the gift year, since a Scott gift mechanically inflates receipt-year revenue. The fit is a finding in its own right: across `{python} F["n_cal"]` disclosed gift–filing pairs, log gift size rises with log revenue with slope `{python} F["elasticity"]` (R² `{python} F["r2"]`). A 10× larger organization receives about 2.5× more money, not 10× more. The fit is descriptive and conditional: it is estimated on disclosed gifts with a matched pre-gift filing (1,313 of 2,035 disclosed and 2,711 total gifts), treats repeated gifts to an organization as independent, and pools years; 287 of the 676 undisclosed gifts lack a usable filing and receive their period's median weight. It is a within-sample regularity used for imputation, not a validated prediction rule. Fuzzy name-to-EIN matches were audited by a third, smaller model against the live IRS API, with corrections committed as a reviewable overlay. The imputed third moves each cause share by at most about 1.5 percentage points — under the imputation model, the disclosed two-thirds is representative.
+paper/index.qmd:136:The coarsest geographic field is the bare label "global." An audit of the 50 organizations with the most dollars attached to that label — 87% of its dollars; 20 of the 50 also list other locations — replaced the blanket assumption of fully-abroad delivery with fractions coded independently by two model families from each organization's filings and program reports, then reconciled — the second coder confirmed 33 within tolerance and disputed 17; four disputes were adjudicated to documented filings arithmetic, and final fractions average the two coders everywhere else, with per-organization sources and confidence grades — 16 high, 17 medium, 17 low — committed to the repository. Many "global" organizations operate substantially in the United States: Planned Parenthood and Crisis Text Line, for example, list "global" service but are roughly 95% and 93% U.S. in their most recent organization-wide reporting — later-period proxies for how earlier gifts were deployed, since neither reports gift-level allocation. The audited allocation routes `{python} F["abroad_share"]` of the ledger to the global health and development archetype. That routed bucket is itself mixed: its dollars sit `{python} F["gh_ssa"]` in Sub-Saharan Africa, `{python} F["gh_sasia"]` in South Asia, and `{python} F["gh_latam"]` in Latin America, but `{python} F["gh_unattrib"]` is unattributable multi-region activity and roughly `{python} F["gh_hic"]` sits in Europe & Central Asia plus Canada — regions that are not classified by income here, so the bucket's true high-income share is unidentified — all priced at the same low-and-middle-income anchors, a coarseness the limitations section flags.
+paper/index.qmd:144:Health effects arrive in different natural units — lives saved, life-years, depression-free days — and are converted to discounted QALYs at a 3% annual rate under source-specific conventions: adult mortality anchors sample roughly 26 remaining life-years at a utility draw centered near 0.78, the frontier's child-mortality benchmark uses a fixed ~65 remaining years at utility 0.87, and direct cost-per-QALY anchors keep their sources' conventions. Every parameter's unit and dollar vintage is machine-validated at load. The global-health frontier benchmark is handicapped within the same framework: GiveWell's reported recent program averages [@givewell2026impact], converted to roughly $175–$241 per discounted QALY-equivalent under this model's own conventions (a model conversion, not a GiveWell QALY figure), modeled as loguniform $150–$260, sharing each draw's realization multiplier, and receiving RCT-grade credibility — the strongest tier — where portfolio archetypes receive their own.
+paper/index.qmd:282:The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-only floor — non-randomized tiers shrunk to a credibility mean of 0.01, the randomized tier kept at its drafted mean — the median collapses to `{python} F_rct` QALYs, dominated by the randomized-tier mental-health bucket; at near face value (all tier means 0.999) it rises to `{python} F_face` (@fig-stance). That 45-fold range exceeds the spread from any single distributional parameter — though structural choices can move the headline more: with no geographic repricing at all, every health dollar at U.S. anchors, the median is roughly 70,000 (the pre-correction model in the §5.3 table), so the routing assumption alone spans ~3× — and the gap between the face-value and best-guess estimates is a direct reading of how much of the estimated impact rests on evidence below randomized or strong quasi-experimental identification standards. The Spearman tornado (@fig-tornado) tells the same story within the default stance: the top three drivers are the global-health allocation share, the realization factor, and global-health credibility.
+paper/index.qmd:288:The geography audit is the largest data correction the model has absorbed since publication, and its effect is small: recentering the allocation on audited service geographies moved the abroad share from 4.93% to `{python} F["abroad_share"]`, the median from about 205,000 to `{python} F["median"]`, and the blended figure from about $148,000 to `{python} F["blended"]` per QALY. Both allocations ship with the model, the browser version exposes them as a version toggle, and the pre-audit parameters remain pinned at tag `v2026.07.20` (audited: `v2026.07.22`).
+paper/index.qmd:290:## Corrections history
+paper/index.qmd:292:The model reached this state through a series of public revisions — counting a revision as a committed change that moved the headline — and the trajectory is itself evidence about the method. As recorded in the repository history:
+paper/index.qmd:294:| Change | Median before → after | Caught by |
+paper/index.qmd:296:| Cross-model review: dollar vintages normalized, a life-year→QALY conversion made explicit, frontier benchmark re-derived, one citation re-attributed | ~98,000 → ~87,000 | second model family |
+paper/index.qmd:299:| Two-model geography audit of "global"-listed organizations (tags v2026.07.20 → v2026.07.22) | ~205,000 → `{python} F["median_k"]` | model audit |
+paper/index.qmd:301:Every correction is documented in the repository and summarized on the public tool; the detector column is the record, and none of these was caught by the author unaided.
+paper/index.qmd:305:The model was built with a frontier language model (Anthropic's Claude), with the author reviewing every parameter and assumption; adversarial review by a second model family (OpenAI's), plus reader corrections, produced the revision history above. Three mechanisms make the result checkable rather than merely stated. Parameters live in one typed file in which every value carries its unit, dollar vintage, and inline citation, machine-validated at load; an annotated bibliography maps each quantitative input to its primary source and price-level conversion. Sync tests force the published web parameters, allocation shares, and geography exports to equal fresh derivations from the committed data snapshots, and the body of this manuscript interpolates its model-derived numbers from those same artifacts at render time (the abstract's figures are typed copies of the interpolated values; externally sourced constants carry citations). And the audit trail is data: the 990 match audit ships as its applied per-row overlay, and the 50-organization geography audit ships with per-organization sources and confidence grades — both applied by the pipeline rather than folded silently into parameters.
+paper/index.qmd:311:The credibility tiers and realization distribution are judgment priors with no literature calibration; the ordering is defensible, the levels are not measured, and the stance sweep is the honest bound on their influence. The QALY lens counts only health, so the estimate is a partial accounting that omits both the non-health benefits where Scott concentrates — education, mobility, equity — and any possible harms; it is not a floor on total wellbeing. Credibility shrinks toward zero but never below it, so the model places no mass on harmful giving; the closest available zero scenario is the near-RCT-only stance floor, which drives unsupported archetypes to ~1% credit. Allocation splits each organization's dollars equally across its focus areas and service locations; both are coarse, and the geography audit covers only the 50 largest "global"-listed organizations. Realization is one global draw, so it cannot vary by cause. Archetype anchors treat heterogeneous organizations as draws from one distribution. Within each cause, delivery regions are priced identically, so the geographic decomposition exposes assumptions rather than measuring regional differences. The undisclosed third of dollars is imputed from a fitted elasticity, not observed. The routed global-health bucket prices its unattributable and high-income-region dollars — roughly a fifth of the bucket — at low-and-middle-income anchors, an upward-bias channel. Several cost priors average over mixed null-and-positive evidence before the credibility discount applies, so the two-multiplier separation of doubts is imperfect at those boundaries. The Dirichlet allocation spread is a subjective prior; uncertainty from the elasticity fit, unmatched filings, the focus-area crosswalk, and the geography audit is not propagated. Allocation shares are derived in nominal dollars and applied to the real total; re-deriving in real dollars moves shares by hundredths of a percentage point. The geography audit's scalar U.S. shares and regional decompositions were reconciled separately and can differ by fractions of a point per organization. Finally, several anchors rest on a small number of quasi-experimental papers whose external validity to Scott's grantees is exactly what the realization factor is guessing at.
+paper/index.qmd:315:Measured in health, MacKenzie Scott's $26 billion buys an estimated median of about `{python} F["median_k"]` quality-adjusted life-years — several times its cost under the government's own regulatory valuation — and most of that estimated health comes from the twentieth of her dollars funding health and development delivered abroad. The number is a model output under stated priors, not a fact, and the model's most important output is not the point estimate but the machinery around it: explicit evidence weights, a 45-fold stance range that any reader can traverse, versioned corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes without waiting for donors to publish outcome data — their own gift lists, recipients' tax filings, and the published causal literature suffice — and the same machinery applies to any large giver whose public disclosures carry comparable gift-level allocation and geography fields. The invitation of the interactive version is the paper's real conclusion: disagree with a parameter, move it, and watch what survives.
+paper/index.qmd:319:I thank readers on LinkedIn and the EA Forum whose corrections materially improved the model, including the reader who identified the original mispricing of internationally delivered health dollars. The model, audits, and this manuscript were built with Anthropic's Claude, with additional adversarial review by OpenAI models; all judgments and errors are mine. This is a personal research project and does not represent the views of PolicyEngine or the Axiom Foundation. Neither I nor those organizations have received funding from MacKenzie Scott or Yield Giving.
+paper/review/rendered.txt:70:through the revision history summarized in the robustness section, audited by two independent
+paper/review/rendered.txt:112:a third, smaller model against the live IRS API, with corrections committed as a reviewable
+paper/review/rendered.txt:113:overlay. The imputed third moves each cause share by at most about 1.5 percentage points —
+paper/review/rendered.txt:137:per-organization sources and confidence grades — 16 high, 17 medium, 17 low — committed to
+paper/review/rendered.txt:185:vintage is machine-validated at load. The global-health frontier benchmark is handicapped within
+paper/review/rendered.txt:620:anchors, the median is roughly 70,000 (the pre-correction model in the §5.3 table), so the routing
+paper/review/rendered.txt:628:The geography audit is the largest data correction the model has absorbed since publication, and
+paper/review/rendered.txt:640:version exposes them as a version toggle, and the pre-audit parameters remain pinned at tag
+paper/review/rendered.txt:643:5.3 Corrections history
+paper/review/rendered.txt:644:The model reached this state through a series of public revisions — counting a revision as a
+paper/review/rendered.txt:645:committed change that moved the headline — and the trajectory is itself evidence about the
+paper/review/rendered.txt:651:Caught by
+paper/review/rendered.txt:654:vintages normalized, a
+paper/review/rendered.txt:667:(tags v2026.07.20 →
+paper/review/rendered.txt:686:Every correction is documented in the repository and summarized on the public tool; the detector
+paper/review/rendered.txt:687:column is the record, and none of these was caught by the author unaided.
+paper/review/rendered.txt:691:reviewing every parameter and assumption; adversarial review by a second model family (OpenAI’s), plus reader corrections, produced the revision history above. Three mechanisms make
+paper/review/rendered.txt:693:value carries its unit, dollar vintage, and inline citation, machine-validated at load; an annotated
+paper/review/rendered.txt:696:derivations from the committed data snapshots, and the body of this manuscript interpolates its
+paper/review/rendered.txt:731:percentage point. The geography audit’s scalar U.S. shares and regional decompositions were
+paper/review/rendered.txt:743:corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes
+paper/review/rendered.txt:754:I thank readers on LinkedIn and the EA Forum whose corrections materially improved the
+README.md:42:`--write` is what regenerates the committed [`results/`](results/) artifacts
+README.md:66:   over remaining life expectancy with a half-cycle correction, calibrated to
+README.md:151:the README never drifts from the model. As of the committed run:
+README.md:191:  dollars are split equally across its organization's focus areas (tags are
+README.md:201:  factor is a coarse correction.
+README.md:243:results/                 generated outputs (committed)
+web/params.json:82:      "source": "Populations in the causal mortality studies are low-income adults roughly age 50-64. Remaining life expectancy ~26y is calibrated to [Chetty et al. (2016, JAMA)](https://jamanetwork.com/journals/jama/fullarticle/2513561): bottom-income-quartile life expectancy at 40 is ~78 (men) to ~83 (women), implying mid-20s remaining years around age 55. Utility ~0.78 is calibrated to US EQ-5D population norms (e.g., [Jiang et al. 2021](https://link.springer.com/article/10.1007/s11136-020-02650-y), ages 55-64 ~0.80 overall, lower at low income). Discounted at 3% with a half-cycle correction."
+web/params.json:111:      "source": "Derived from [GiveWell's current impact estimates](https://www.givewell.org/impact-estimates) of cost per life saved, 2022-2024 program averages: ~$4,000 (Malaria Consortium seasonal chemoprevention) to ~$5,500 (AMF nets), figures GiveWell rounds up to the nearest $500. Treating those as ~2023 dollars and inflating by [CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS) 335.123/304.702 = 1.10 gives ~$4,400-$6,050 per life. A child death averted at ~age 1 with ~65 remaining life-years, discounted at 3% with half-cycle correction (annuity ~28.9) and utility ~0.87, is ~25.1 discounted QALYs, giving endpoints of ~$175-$241 per QALY-equivalent; the loguniform {150, 260} widens that for conversion uncertainty (utility, remaining years, price level). An earlier revision also used a 2015 AMF figure ($3,340/life, itself already a discounted-QALY-era calculation, in ~2015 dollars); it is retired here in favor of GiveWell's current program averages."
+web/params.json:173:      "identification": "DD across staggered state Medicaid expansions with linked coverage data (Sommers 2017; Miller, Johnson & Wherry 2021 corroborate with linked administrative mortality for the ACA expansion). Strong; the Oregon HIE RCT (null on 2-yr physical health measures) tempers it, hence not the top tier.",
+web/params.json:196:      "source": "[Bailey & Goodman-Bacon (2015), AER 105(3)](https://www.aeaweb.org/articles?id=10.1257/aer.20120070) ([full text](https://pmc.ncbi.nlm.nih.gov/articles/PMC4436657/)) report \"a cost-per-year-of-life ratio of approximately $54,000\" for CHCs in 2012 dollars (Medicare comparison: $161,373-$459,000 per life-year, i.e. CHCs at 1/8 to 1/3 the cost). Inflated with [FRED CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS) from the 2012 annual average 229.594 to May 2026 335.123 (x1.460): ~$79k per life-year; the loguniform $55k-$115k places ~\u00b145% around that point estimate. The model divides by the utility-weight draw to convert life-years to QALYs (the prior revision skipped that conversion and used an invented Medicare prior; both fixed here)."
+web/params.json:211:      "source": "Anchors are 2000s-era nominal ICERs and are inflated here. The [Community Guide review](https://www.thecommunityguide.org/findings/mental-health-and-mental-illness-collaborative-care-management-depressive-disorders.html) reports the Gilbody-era $17k-$39k/QALY range in 2008 dollars, which [CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS) 335.123/215.303 = 1.56 inflates to ~$26k-$61k; the systematic review at [van Steenbergen-Weijenburg et al. (2010), BMC Health Services Research 10:19](https://link.springer.com/article/10.1186/1472-6963-10-19) reports study ICERs of ~$21.5k-$49.5k without year normalization (similar-era dollars, similar inflated magnitude; an earlier revision misattributed this link to \"Gilbody et al. 2006\" and pooled the two reviews' endpoints as one range). Together the inflated cost-effective case sits around $26k-$77k. The upper tail extends toward [Grochtdreis et al. (2015)](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123078), whose healthcare-perspective ICERs reach $153,299 in 2012 international dollars (not CPI-converted here; international dollars are not US CPI dollars). The 5th/95th prior {25k, 150k} brackets the inflated evidence."
+web/params.json:218:      "identification": "Dollars route here by delivery geography: the non-US share of each organization's reported service locations, applied to its health-relevant focus areas (src/msqaly/allocation.py). The routed portfolio spans GiveWell-grade programs backed by RCTs (Malaria Consortium $10M, Evidence Action $20M, GiveDirectly's global program $50M+$5M) through strong community-health-worker and health-systems organizations (Living Goods $25M+$3.5M, Muso $15M, Amref $50M, Partners In Health $50M, Noora Health $20M, icddr,b $16M) to partial-health-tagged organizations. strong_quasi reflects that mix.",
+web/params.json:226:      "source": "Pricing a non-US health dollar at US anchors understates it by orders of magnitude \u2014 the correction a reader prompted. The 90% CI $300-$4,000 per QALY (2026$) spans [GiveWell's current program averages](https://www.givewell.org/impact-estimates) (~$4,000-5,500 per under-5 life saved ~ $175-241 per discounted QALY, the marquee floor sitting just below this range's low end), community-health-worker and systems programs GiveWell scores in the low single-digit multiples of cash (~$500-2,000 per QALY-equivalent), and [GiveDirectly's global cash program](https://blog.givewell.org/2024/11/12/re-evaluating-the-impact-of-unconditional-cash-transfers/) (child-mortality channel ~ $8,000 per discounted QALY, above this range's high end \u2014 the tail covers it). Gift amounts verified in [Yield Giving's database](https://yieldgiving.com/gifts)."
+web/params.json:271:      "source": "Point anchor: [Holtgrave et al. (2013), AIDS and Behavior 17(5)](https://link.springer.com/article/10.1007/s10461-012-0204-3) report $62,493/QALY for the Housing & Health intervention \u2014 an HIV-positive, unstably-housed cohort (2004-2008 study), NOT general chronic homelessness. The team's [underlying cost analysis](https://shnny.org/uploads/Cost_and_Threshold_Analysis_of_Housing_as_an_HIV_Prevention.pdf) is stated in 2005 dollars; inflating by [CPI-U](https://fred.stlouisfed.org/series/CPIAUCNS) 335.123/195.267 = 1.716 gives ~$107k/QALY (an earlier revision assumed 2008 dollars, ~$97k). The {30k, 220k} prior brackets that with room for cheaper high-need PSH cases (frequent cost offsets) and costlier general populations. [NASEM (2018)](https://nap.nationalacademies.org/read/25133/chapter/6) is cited for the mixed-evidence assessment only."
+web/allocation_v10.json:4: "description": "The allocation as published with the July 13 geographic-routing correction: every 'global'-listed organization treated as fully non-US. Preserved for comparison; superseded by v1.1.",
+paper/index.qmd:136:The coarsest geographic field is the bare label "global." An audit of the 50 organizations with the most dollars attached to that label — 87% of its dollars; 20 of the 50 also list other locations — replaced the blanket assumption of fully-abroad delivery with fractions coded independently by two model families from each organization's filings and program reports, then reconciled — the second coder confirmed 33 within tolerance and disputed 17; four disputes were adjudicated to documented filings arithmetic, and final fractions average the two coders everywhere else, with per-organization sources and confidence grades — 16 high, 17 medium, 17 low — committed to the repository. Many "global" organizations operate substantially in the United States: Planned Parenthood and Crisis Text Line, for example, list "global" service but are roughly 95% and 93% U.S. in their most recent organization-wide reporting — later-period proxies for how earlier gifts were deployed, since neither reports gift-level allocation. The audited allocation routes `{python} F["abroad_share"]` of the ledger to the global health and development archetype. That routed bucket is itself mixed: its dollars sit `{python} F["gh_ssa"]` in Sub-Saharan Africa, `{python} F["gh_sasia"]` in South Asia, and `{python} F["gh_latam"]` in Latin America, but `{python} F["gh_unattrib"]` is unattributable multi-region activity and roughly `{python} F["gh_hic"]` sits in Europe & Central Asia plus Canada — regions that are not classified by income here, so the bucket's true high-income share is unidentified — all priced at the same low-and-middle-income anchors, a coarseness the limitations section flags.
+paper/index.qmd:311:The credibility tiers and realization distribution are judgment priors with no literature calibration; the ordering is defensible, the levels are not measured, and the stance sweep is the honest bound on their influence. The QALY lens counts only health, so the estimate is a partial accounting that omits both the non-health benefits where Scott concentrates — education, mobility, equity — and any possible harms; it is not a floor on total wellbeing. Credibility shrinks toward zero but never below it, so the model places no mass on harmful giving; the closest available zero scenario is the near-RCT-only stance floor, which drives unsupported archetypes to ~1% credit. Allocation splits each organization's dollars equally across its focus areas and service locations; both are coarse, and the geography audit covers only the 50 largest "global"-listed organizations. Realization is one global draw, so it cannot vary by cause. Archetype anchors treat heterogeneous organizations as draws from one distribution. Within each cause, delivery regions are priced identically, so the geographic decomposition exposes assumptions rather than measuring regional differences. The undisclosed third of dollars is imputed from a fitted elasticity, not observed. The routed global-health bucket prices its unattributable and high-income-region dollars — roughly a fifth of the bucket — at low-and-middle-income anchors, an upward-bias channel. Several cost priors average over mixed null-and-positive evidence before the credibility discount applies, so the two-multiplier separation of doubts is imperfect at those boundaries. The Dirichlet allocation spread is a subjective prior; uncertainty from the elasticity fit, unmatched filings, the focus-area crosswalk, and the geography audit is not propagated. Allocation shares are derived in nominal dollars and applied to the real total; re-deriving in real dollars moves shares by hundredths of a percentage point. The geography audit's scalar U.S. shares and regional decompositions were reconciled separately and can differ by fractions of a point per organization. Finally, several anchors rest on a small number of quasi-experimental papers whose external validity to Scott's grantees is exactly what the realization factor is guessing at.
+paper/review/rendered.txt:144:but 18% is unattributable multi-region activity and roughly 4% sits in Europe & Central Asia
+paper/review/rendered.txt:145:plus Canada — regions that are not classified by income here, so the bucket’s true high-income
+paper/review/rendered.txt:510:Europe & Central Asia
+paper/review/rendered.txt:515:Canada
+paper/review/rendered.txt:724:routed global-health bucket prices its unattributable and high-income-region dollars — roughly a
+
+codex
+The newest revision fixes several substantive wording problems. I’m now checking the remaining disclosures for internal consistency, especially the geography limitation and correction-history claims.
+exec
+/bin/zsh -lc "sed -n '1,220p' paper/review/rendered.txt && git diff -- paper/index.qmd paper/references.bib paper/review/rendered.txt && git log --oneline --decorate -12" in /Users/maxghenis/mackenzie-scott-qaly
+ succeeded in 0ms:
+MacKenzie Scott’s giving, in QALYs
+An evidence-weighted, auditable cost-effectiveness model of a $26 billion portfolio
+
+Max Ghenis∗
+
+MacKenzie Scott has disclosed $26.39 billion in gifts to more than 2,500 organizations since 2019 — her 2025 giving alone was about a third of the value of that year’s
+U.S. megagifts — yet almost none of it is denominated in outcomes. This paper prices
+the entire portfolio in quality-adjusted life-years. A Monte Carlo model allocates
+dollars across 14 intervention archetypes using Scott’s own gift-level database, imputes
+the undisclosed third from recipients’ pre-gift IRS 990 revenue, assigns each archetype
+a cost-per-QALY anchor from published causal estimates, and shrinks every effect
+toward zero in proportion to the causal credibility of its evidence. The best-guess
+estimate is a median of roughly 202,000 QALYs (90% interval 94,000–419,000), a
+blended $150,000 per QALY, and a median benefit–cost ratio of 4.9 under the valuation distribution HHS uses for regulatory analysis. Three findings follow. First,
+estimated impact is geographically concentrated: the 4.8% of dollars funding health
+and development delivered outside the United States, priced at global-health anchors,
+accounts for 69% of estimated health impact. Second, gift size scales with recipient
+size to only the 0.41 power — a 10× larger organization receives about 2.5× more
+money. Third, the answer is dominated by evidence philosophy rather than arithmetic:
+restricting credit almost entirely to randomized evidence collapses the median to
+~9,000 QALYs while taking every study at near face value raises it to ~415,000 — a
+45× range, larger than the spread from any single distributional parameter tested.
+All parameters, code, data snapshots, and an AI-audit trail are public, and the model
+runs interactively in the browser.
+Source: Article Notebook
+
+1 Introduction
+MacKenzie Scott gave away $7.17 billion in 2025 (Huddleston 2025); Giving USA counts $6.65
+billion of it against $19.2 billion in U.S. megagift dollars — about a third of that year’s megagift
+value (Indiana University Lilly Family School of Philanthropy 2026; Childress 2026). (The bases
+differ: Yield Giving’s own annual total is the larger figure.) Her disclosed lifetime total is $26.39
+∗
+
+max@maxghenis.com. I am CEO of PolicyEngine and president of the Axiom Foundation; this paper is a personal
+research project and does not represent the views of either organization. Neither I nor the organizations I lead
+have received funding from MacKenzie Scott or Yield Giving. Interactive version, code, data, and full audit
+trail: https://maxghenis.com/mackenzie-scott-qaly and https://github.com/MaxGhenis/mackenzie-scott-qaly.
+
+1
+
+billion across 2,711 gifts to 2,545 organizations since 2019 (Yield Giving 2026). Almost none of
+it is denominated in health, and, to my knowledge, no published estimate prices the portfolio in
+outcomes of any kind.
+This paper does so in the unit health economists use to compare a death averted against years
+lived in better health: the quality-adjusted life-year. The exercise is deliberately in the style
+of a charity evaluator’s cost-effectiveness analysis (GiveWell 2025), scaled from a program to a
+portfolio, with one addition the setting forces: because most of the portfolio funds interventions
+whose health effects have never been causally measured, the model makes its epistemics explicit.
+Every effect is shrunk toward zero in proportion to how well its supporting study identifies
+causation, the shrinkage schedule is a slider rather than a buried constant, and the headline
+is reported across the full range of evidence philosophies — from counting only randomized
+evidence to taking every published estimate at face value.
+The paper makes four contributions. It provides what I believe is the first outside, portfolio-level
+cost-effectiveness estimate of Scott’s giving, and I have found no comparable outside estimate
+for any other individual mega-donor — funder-run portfolio metrics exist, including GiveWell’s
+aggregate impact estimates (GiveWell 2025), Robin Hood’s benefit–cost framework (Robin Hood
+Foundation 2023), the Constellation Fund’s portfolio reporting (Constellation Fund 2026), and
+social-rate-of-return analysis of USAID’s Development Innovation Ventures portfolio (Center
+for Effective Global Action 2022); the difference here is independence from the donor, a subject
+who publishes no outcome data, and explicit evidence weighting: a best-guess median of 202,000
+QALYs from $26.39 billion nominal ($30.3B in 2026 dollars), a blended $150,067 per QALY, and a
+median benefit–cost ratio of 4.9 under the HHS regulatory value-per-QALY distribution (Kearsley
+2026). It estimates extreme geographic concentration of impact under its pricing assumptions:
+the 4.8% of dollars funding global health and development delivered outside the United States
+accounts for 69.1% of estimated health impact. It reports a new empirical regularity in the
+gift data itself: across 1,313 disclosed gift–filing pairs, gift size scales with recipient pre-gift
+revenue to the power 0.41 (R² 0.37) — Scott’s giving is far flatter across organization size than
+proportional. And it demonstrates a working method for auditable, AI-assisted cost-effectiveness
+modeling: the model was built with a frontier language model, reviewed and corrected in public
+through the revision history summarized in the robustness section, audited by two independent
+model families against primary filings, and ships with versioned parameters, machine-checked
+citations, and a browser implementation that reruns the full Monte Carlo under any reader’s
+assumptions.
+The unit of account deserves a caveat before any number. QALYs measure health. Most of Scott’s
+portfolio aims at other things — education, economic mobility, equity, civic infrastructure —
+whose primary benefits are not health benefits. A finding that a dollar of education philanthropy
+produces few QALYs is a statement about the lens, not a verdict on the gift. The estimates
+are a partial, health-only accounting under positive-effect priors — not a lower bound on total
+wellbeing: the lens omits the primary intended benefits of most of the portfolio, and the model
+places no probability on zero or harmful effects, a structural choice the limitations section returns
+to.
+
+2
+
+2 Data
+2.1 The ledger
+Scott’s essays disclose giving in dated tranches totaling $26.39 billion nominal over 2020–2025.
+The model inflates each tranche — booked by disclosure year — to 2026 dollars (CPI-U, anchored
+to May 2026), so dollars and cost-effectiveness evidence share one price level: $30.3B total. All
+derivations below, and the replication repository, start from a verbatim snapshot of the Yield
+Giving gift database retrieved July 11, 2026 (Yield Giving 2026).
+
+2.2 Allocation across causes
+Scott publishes no aggregate dollars-by-cause breakdown, but she publishes something more
+granular: a gift-level database listing every recipient organization, its self-reported focus areas,
+and — for 2,035 of 2,711 gifts ($17.46B, about two-thirds of the nominal total) — the dollar
+amount. Each organization’s dollars are split equally across its focus areas; the database’s
+53 areas map onto the model’s 14 intervention archetypes under a documented, sync-tested
+crosswalk.
+The undisclosed third is imputed rather than dropped. Because the essays give each year’s
+total, the undisclosed residual per period is a known dollar amount; it is distributed across that
+period’s undisclosed gifts in proportion to each recipient’s pre-gift IRS Form 990 total revenue
+(ProPublica 2026), raised to an elasticity fit on the disclosed pairs. Pre-gift means the latest
+filing strictly before the gift year, since a Scott gift mechanically inflates receipt-year revenue.
+The fit is a finding in its own right: across 1,313 disclosed gift–filing pairs, log gift size rises
+with log revenue with slope 0.41 (R² 0.37). A 10× larger organization receives about 2.5× more
+money, not 10× more. The fit is descriptive and conditional: it is estimated on disclosed gifts
+with a matched pre-gift filing (1,313 of 2,035 disclosed and 2,711 total gifts), treats repeated
+gifts to an organization as independent, and pools years; 287 of the 676 undisclosed gifts lack
+a usable filing and receive their period’s median weight. It is a within-sample regularity used
+for imputation, not a validated prediction rule. Fuzzy name-to-EIN matches were audited by
+a third, smaller model against the live IRS API, with corrections committed as a reviewable
+overlay. The imputed third moves each cause share by at most about 1.5 percentage points —
+under the imputation model, the disclosed two-thirds is representative.
+
+2.3 Delivery geography
+Each organization reports service locations. Weighting disclosed dollars by the audited share of
+each organization’s locations outside the United States, an estimated 19% of disclosed dollars
+($3.34B of $17.46B) sits with organizations reporting non-U.S. service locations — 20.4% under
+the raw rule that counts a bare “global” listing as fully non-U.S. — led by environment, health,
+and funding intermediaries. Locations are an equal-split proxy: a listed location is not an
+expenditure share, and no organization reports how Scott’s own gift was deployed. The model
+prices geography through a single channel: health-relevant dollars route to a global-health
+archetype in proportion to the recipient’s non-U.S. service share, because global health delivery
+
+3
+
+is the one category with a published cost-per-QALY evidence base an order of magnitude below
+U.S. anchors. Education and climate dollars keep their U.S.-study anchors wherever they are
+delivered; if geography changes their effectiveness, the model does not capture it.
+The coarsest geographic field is the bare label “global.” An audit of the 50 organizations with the
+most dollars attached to that label — 87% of its dollars; 20 of the 50 also list other locations —
+replaced the blanket assumption of fully-abroad delivery with fractions coded independently by
+two model families from each organization’s filings and program reports, then reconciled — the
+second coder confirmed 33 within tolerance and disputed 17; four disputes were adjudicated to
+documented filings arithmetic, and final fractions average the two coders everywhere else, with
+per-organization sources and confidence grades — 16 high, 17 medium, 17 low — committed to
+the repository. Many “global” organizations operate substantially in the United States: Planned
+Parenthood and Crisis Text Line, for example, list “global” service but are roughly 95% and
+93% U.S. in their most recent organization-wide reporting — later-period proxies for how earlier
+gifts were deployed, since neither reports gift-level allocation. The audited allocation routes
+4.82% of the ledger to the global health and development archetype. That routed bucket is itself
+mixed: its dollars sit 42% in Sub-Saharan Africa, 20% in South Asia, and 11% in Latin America,
+but 18% is unattributable multi-region activity and roughly 4% sits in Europe & Central Asia
+plus Canada — regions that are not classified by income here, so the bucket’s true high-income
+share is unidentified — all priced at the same low-and-middle-income anchors, a coarseness the
+limitations section flags.
+
+3 Model
+Each Monte Carlo draw allocates the giving across archetypes (a Dirichlet centered on the
+derived shares), assigns each archetype a cost per QALY drawn from a distribution anchored in
+published estimates, and multiplies the implied QALYs by two independent discounts. Causal
+credibility asks whether the measured effect is real. Each archetype carries the identification
+tier of its best supporting evidence, and the tier sets a Beta-distributed shrinkage factor toward
+the null: a lottery-randomized wealth shock (Cesarini et al. 2016) or the Medicaid mortality
+quasi-experiments — the ACA expansions (Miller et al. 2021), with cost–benefit arithmetic from
+the pre-ACA state expansions (Sommers 2017) whose spending component draws on the Oregon
+Health Insurance Experiment (Finkelstein et al. 2012) — keeps most of its effect; a child-targeted
+cash quasi-experiment (Aizer et al. 2016), with related designs catalogued in the parameter
+file, anchors the cash bucket; the community-health-center rollout design (Bailey and GoodmanBacon 2015) and similar contested quasi-experiments keep less; associational and assumption-only
+categories are shrunk near zero. Realization asks whether a marginal philanthropic dollar delivers
+the studied effect at all — transport to different populations, overhead, and funging, net of
+possible capacity effects: surveyed Scott recipients report stronger capacity and reach (Buteau
+et al. 2023), self-reports on whose basis the model permits realization above one (an author
+judgment, not a CEP effect estimate). It is one global triangular draw with mode 0.80 on support
+0.55–1.10.
+The two multipliers are designed to partition the doubt — transportability concerns in realization,
+identification concerns in credibility, cost-per-QALY priors stated conditional on the effect being
+real and delivered — though the separation is imperfect at the prior boundaries: several anchors
+
+4
+
+already average over mixed null-and-positive evidence before the credibility discount applies (a
+limitation noted below). Allocation uncertainty is a Dirichlet with concentration 60 around the
+derived centers — a judgment prior, implying for example a roughly 1.3–10% ninety-percent
+range on the global-health share — and represents subjective allocation uncertainty rather than
+sampling uncertainty propagated from the gift data pipeline. The tier ordering is the defensible
+part; the levels are judgment, proposed by a language model and reviewed by the author, and
+the results section reports the full consequence of disagreeing with them.
+Health effects arrive in different natural units — lives saved, life-years, depression-free days —
+and are converted to discounted QALYs at a 3% annual rate under source-specific conventions:
+adult mortality anchors sample roughly 26 remaining life-years at a utility draw centered near
+0.78, the frontier’s child-mortality benchmark uses a fixed ~65 remaining years at utility 0.87, and
+direct cost-per-QALY anchors keep their sources’ conventions. Every parameter’s unit and dollar
+vintage is machine-validated at load. The global-health frontier benchmark is handicapped within
+the same framework: GiveWell’s reported recent program averages (GiveWell 2025), converted
+to roughly $175–$241 per discounted QALY-equivalent under this model’s own conventions (a
+model conversion, not a GiveWell QALY figure), modeled as loguniform $150–$260, sharing each
+draw’s realization multiplier, and receiving RCT-grade credibility — the strongest tier — where
+portfolio archetypes receive their own.
+
+4 Results
+Source: Article Notebook
+Source: Article Notebook
+
+At the best-guess defaults (100,000 draws), the portfolio produces a median of 201,923 QALYs,
+with a 90% interval of 94,000 to 419,000 and a mean of 222,060. The interval is a probabilisticsensitivity range under the stated priors, not a confidence interval; Monte Carlo error on the
+median is a few hundred QALYs. The blended cost-effectiveness — dollars given over QALYs
+produced, at the median — is $150,067 per QALY. Monetized under the value-per-QALY
+distribution HHS recommends for regulatory analysis (central $726,000 at 3%; Kearsley (2026),
+Table 3), the median draw-level benefit–cost ratio is 4.9 (90% interval 2.1–11.0, reflecting both
+health-output and valuation uncertainty). Figure 1 shows the full distribution.
+
+4.1 Where it comes from
+Table 1 decomposes the mean estimate by cause. The result is the paper’s central contrast: the
+global health and development slice — 4.8% of dollars — contributes 69.1% of estimated QALYs,
+at a modeled cost of about $9,477 per QALY against $75,673–$305,164 for the causes with
+quasi-experimental or better U.S. evidence. The 1,278-fold spread in modeled cost-effectiveness
+within a single donor’s portfolio, under stipulated priors, is partly the lens speaking — its low
+end is dominated by assumption-tier buckets whose near-zero credibility is an input, and whose
+main benefits QALYs do not count — but the spread among evidenced health buckets alone
+exceeds an order of magnitude, restating in one column an empirical regularity long emphasized
+
+5
+
+Figure 1: Distribution of total QALYs across 100,000 Monte Carlo draws at the best-guess
+defaults. The dashed line marks the mean; the solid line the median.
+in the effective-altruism literature (Ord 2013): the cheapest health in the world is not bought
+where most philanthropic dollars are spent.
+Source: Article Notebook
+6e3fc9a (HEAD -> main, origin/main, origin/HEAD) Paper round 2: resolution fixes from the verification pass
+4d866e5 Round-1 referee reports and response to reviewers
+840d621 Lint: geo.py variable names and unused assignment; exclude rendered docs/
+fed35e2 Paper round 1: revisions from the five-referee review
+371c6b1 Working paper: Quarto manuscript with HTML webview and PDF
+7d4f66b Include the region matrix in the geo.json sync test
+68c0499 Archetype-by-region dollar matrix for QALY-by-geography decomposition
+fb64b99 README: evidence-stance slider is two-sided around the best guess
+296f21c (tag: v2026.07.22) v1.1: geo-audited allocation becomes the canonical model
+d06d5f2 Export v1.1 geo-audited allocation vector for the site version toggle
+0dae1a9 Reconcile the geo audit with a Sol cross-check
+4c1a529 Apply the top-50 geo audit: overlay flag + chart redistribution
+
+exec
+/bin/zsh -lc 'git show --stat --oneline HEAD && git show --format=fuller --no-ext-diff --unified=3 HEAD -- paper/index.qmd paper/references.bib' in /Users/maxghenis/mackenzie-scott-qaly
+ succeeded in 0ms:
+6e3fc9a Paper round 2: resolution fixes from the verification pass
+ README.md                                          |    2 +-
+ data/yieldgiving/README.md                         |    2 +-
+ docs/_tex/index.tex                                |  265 +-
+ .../index_files/figure-pdf/fig-stance-output-1.pdf |  Bin 14947 -> 14947 bytes
+ docs/_tex/references.bib                           |   12 +-
+ docs/index-preview.html                            |   68 +-
+ docs/index.embed.ipynb                             |  105 +-
+ docs/index.html                                    |   54 +-
+ docs/index.out.ipynb                               |  129 +-
+ docs/index.pdf                                     |  Bin 251436 -> 252559 bytes
+ docs/index.qmd                                     |   22 +-
+ docs/review/round1/response-preview.html           |  611 +++
+ docs/review/round1/response.md                     |   44 +
+ docs/review/round1/response.out.ipynb              |   60 +
+ docs/review/round2/citations-preview.html          |  645 +++
+ docs/review/round2/citations.md                    |   36 +
+ docs/review/round2/citations.out.ipynb             |   52 +
+ docs/review/round2/methodology-preview.html        |  641 +++
+ docs/review/round2/methodology.md                  |   25 +
+ docs/review/round2/methodology.out.ipynb           |   41 +
+ docs/review/round2/neutrality-preview.html         |  647 +++
+ docs/review/round2/neutrality.md                   |   26 +
+ docs/review/round2/neutrality.out.ipynb            |   42 +
+ docs/review/round2/redteam-preview.html            |  670 ++++
+ docs/review/round2/redteam.md                      |   35 +
+ docs/review/round2/redteam.out.ipynb               |   51 +
+ docs/review/round2/reproducibility-preview.html    |  612 +++
+ docs/review/round2/reproducibility.md              |   19 +
+ docs/review/round2/reproducibility.out.ipynb       |   35 +
+ paper/README.md                                    |    2 +-
+ paper/index.qmd                                    |   22 +-
+ paper/references.bib                               |   12 +-
+ paper/review/rendered.txt                          |  425 +-
+ paper/review/round2/citations.md                   |   36 +
+ paper/review/round2/methodology.md                 |   25 +
+ paper/review/round2/neutrality.md                  |   26 +
+ paper/review/round2/redteam.md                     |   35 +
+ paper/review/round2/reproducibility.md             |   19 +
+ paper/review/sol/citations.round2.log              | 4201 ++++++++++++++++++++
+ paper/review/sol/methodology.round2.log            | 2649 ++++++++++++
+ paper/review/sol/neutrality.round2.log             | 1607 ++++++++
+ paper/review/sol/redteam.round2.log                | 2908 ++++++++++++++
+ paper/review/sol/reproducibility.round2.log        | 2364 +++++++++++
+ paper/review/sol/run2.sh                           |    5 +
+ paper/review/sol/worker2.sh                        |   13 +
+ 45 files changed, 18751 insertions(+), 549 deletions(-)
+commit 6e3fc9a3b76854f91540a67a352eeef2afba8fa4
+Author:     Max Ghenis <mghenis@gmail.com>
+AuthorDate: Wed Jul 22 10:36:37 2026 -0400
+Commit:     Max Ghenis <mghenis@gmail.com>
+CommitDate: Wed Jul 22 10:36:37 2026 -0400
+
+    Paper round 2: resolution fixes from the verification pass
+    
+    All round-1 findings verified by the five-seat panel; this commit
+    clears the stragglers: limitations no longer contradicts the intro
+    ('floor on total wellbeing' removed); the routed-bucket regional slice
+    is labeled by its actual regions rather than an unclassified
+    'high-income' claim; the audit reconciliation arithmetic is stated
+    exactly (33 confirmed, 17 disputed, 4 adjudicated, rest averaged);
+    §4.2's frontier handicap wording matches the model section; the §6
+    interpolation claim scopes to the body; the corrections table carries
+    tags and the 'eleven rounds' phrasing is gone; priority claim rescoped
+    to Scott; a no-geographic-repricing structural bracket (~70k) is
+    cross-referenced; bib author/year corrections (Childress; page
+    publication years); reproduce recipe installs the dev extra; the 990
+    audit's committed-vs-total rows stated plainly.
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+diff --git a/paper/index.qmd b/paper/index.qmd
+index b333484..201959e 100644
+--- a/paper/index.qmd
++++ b/paper/index.qmd
+@@ -113,7 +113,7 @@ MacKenzie Scott gave away $7.17 billion in 2025 [@cnbc2025scott]; Giving USA cou
+ 
+ This paper does so in the unit health economists use to compare a death averted against years lived in better health: the quality-adjusted life-year. The exercise is deliberately in the style of a charity evaluator's cost-effectiveness analysis [@givewell2026impact], scaled from a program to a portfolio, with one addition the setting forces: because most of the portfolio funds interventions whose health effects have never been causally measured, the model makes its epistemics explicit. Every effect is shrunk toward zero in proportion to how well its supporting study identifies causation, the shrinkage schedule is a slider rather than a buried constant, and the headline is reported across the full range of evidence philosophies — from counting only randomized evidence to taking every published estimate at face value.
+ 
+-The paper makes four contributions. It provides what I believe is the first outside, portfolio-level cost-effectiveness estimate of an individual mega-donor's disclosed lifetime giving — funder-run portfolio metrics exist, including GiveWell's aggregate impact estimates [@givewell2026impact], Robin Hood's benefit–cost framework [@robinhood2025], the Constellation Fund's portfolio reporting [@constellation2025], and social-rate-of-return analysis of USAID's Development Innovation Ventures portfolio [@cega2023div]; the difference here is independence from the donor, a subject who publishes no outcome data, and explicit evidence weighting: a best-guess median of `{python} F["median_k"]` QALYs from $26.39 billion nominal (`{python} F["giving"]` in 2026 dollars), a blended `{python} F["blended"]` per QALY, and a median benefit–cost ratio of `{python} F["bc"]` under the HHS regulatory value-per-QALY distribution [@aspe2026values]. It estimates extreme geographic concentration of impact under its pricing assumptions: the `{python} F["abroad_share_1"]` of dollars funding global health and development delivered outside the United States accounts for `{python} F["gh_share"]` of estimated health impact. It reports a new empirical regularity in the gift data itself: across `{python} F["n_cal"]` disclosed gift–filing pairs, gift size scales with recipient pre-gift revenue to the power `{python} F["elasticity"]` (R² `{python} F["r2"]`) — Scott's giving is far flatter across organization size than proportional. And it demonstrates a working method for auditable, AI-assisted cost-effectiveness modeling: the model was built with a frontier language model, reviewed and corrected in public across eleven revision rounds, audited by two independent model families against primary filings, and ships with versioned parameters, machine-checked citations, and a browser implementation that reruns the full Monte Carlo under any reader's assumptions.
++The paper makes four contributions. It provides what I believe is the first outside, portfolio-level cost-effectiveness estimate of Scott's giving, and I have found no comparable outside estimate for any other individual mega-donor — funder-run portfolio metrics exist, including GiveWell's aggregate impact estimates [@givewell2026impact], Robin Hood's benefit–cost framework [@robinhood2025], the Constellation Fund's portfolio reporting [@constellation2025], and social-rate-of-return analysis of USAID's Development Innovation Ventures portfolio [@cega2023div]; the difference here is independence from the donor, a subject who publishes no outcome data, and explicit evidence weighting: a best-guess median of `{python} F["median_k"]` QALYs from $26.39 billion nominal (`{python} F["giving"]` in 2026 dollars), a blended `{python} F["blended"]` per QALY, and a median benefit–cost ratio of `{python} F["bc"]` under the HHS regulatory value-per-QALY distribution [@aspe2026values]. It estimates extreme geographic concentration of impact under its pricing assumptions: the `{python} F["abroad_share_1"]` of dollars funding global health and development delivered outside the United States accounts for `{python} F["gh_share"]` of estimated health impact. It reports a new empirical regularity in the gift data itself: across `{python} F["n_cal"]` disclosed gift–filing pairs, gift size scales with recipient pre-gift revenue to the power `{python} F["elasticity"]` (R² `{python} F["r2"]`) — Scott's giving is far flatter across organization size than proportional. And it demonstrates a working method for auditable, AI-assisted cost-effectiveness modeling: the model was built with a frontier language model, reviewed and corrected in public through the revision history summarized in the robustness section, audited by two independent model families against primary filings, and ships with versioned parameters, machine-checked citations, and a browser implementation that reruns the full Monte Carlo under any reader's assumptions.
+ 
+ The unit of account deserves a caveat before any number. QALYs measure health. Most of Scott's portfolio aims at other things — education, economic mobility, equity, civic infrastructure — whose primary benefits are not health benefits. A finding that a dollar of education philanthropy produces few QALYs is a statement about the lens, not a verdict on the gift. The estimates are a partial, health-only accounting under positive-effect priors — not a lower bound on total wellbeing: the lens omits the primary intended benefits of most of the portfolio, and the model places no probability on zero or harmful effects, a structural choice the limitations section returns to.
+ 
+@@ -121,7 +121,7 @@ The unit of account deserves a caveat before any number. QALYs measure health. M
+ 
+ ## The ledger
+ 
+-Scott's essays disclose giving in dated tranches totaling $26.39 billion nominal over 2020–2025. The model inflates each tranche to 2026 dollars with CPI-U, so dollars and cost-effectiveness evidence share one price level: `{python} F["giving"]` total. All derivations below, and the replication repository, start from a verbatim snapshot of the Yield Giving gift database retrieved July 11, 2026 [@yieldgiving2026].
++Scott's essays disclose giving in dated tranches totaling $26.39 billion nominal over 2020–2025. The model inflates each tranche — booked by disclosure year — to 2026 dollars (CPI-U, anchored to May 2026), so dollars and cost-effectiveness evidence share one price level: `{python} F["giving"]` total. All derivations below, and the replication repository, start from a verbatim snapshot of the Yield Giving gift database retrieved July 11, 2026 [@yieldgiving2026].
+ 
+ ## Allocation across causes
+ 
+@@ -133,11 +133,11 @@ The undisclosed third is imputed rather than dropped. Because the essays give ea
+ 
+ Each organization reports service locations. Weighting disclosed dollars by the audited share of each organization's locations outside the United States, an estimated `{python} F["abroad_disc_audited_pct"]` of disclosed dollars (`{python} F["abroad_disc_audited_b"]` of `{python} F["disclosed_b"]`) sits with organizations reporting non-U.S. service locations — `{python} F["abroad_disc_raw_pct"]` under the raw rule that counts a bare "global" listing as fully non-U.S. — led by environment, health, and funding intermediaries. Locations are an equal-split proxy: a listed location is not an expenditure share, and no organization reports how Scott's own gift was deployed. The model prices geography through a single channel: health-relevant dollars route to a global-health archetype in proportion to the recipient's non-U.S. service share, because global health delivery is the one category with a published cost-per-QALY evidence base an order of magnitude below U.S. anchors. Education and climate dollars keep their U.S.-study anchors wherever they are delivered; if geography changes their effectiveness, the model does not capture it.
+ 
+-The coarsest geographic field is the bare label "global." An audit of the 50 organizations with the most dollars attached to that label — 87% of its dollars; 20 of the 50 also list other locations — replaced the blanket assumption of fully-abroad delivery with fractions coded independently by two model families from each organization's filings and program reports, then reconciled (33 agreements within tolerance; four adjudicated to documented filings arithmetic; the remainder averaged), with per-organization sources and confidence grades — 16 high, 17 medium, 17 low — committed to the repository. Many "global" organizations operate substantially in the United States: Planned Parenthood and Crisis Text Line, for example, list "global" service but are roughly 95% and 93% U.S. in their most recent organization-wide reporting — later-period proxies for how earlier gifts were deployed, since neither reports gift-level allocation. The audited allocation routes `{python} F["abroad_share"]` of the ledger to the global health and development archetype. That routed bucket is itself mixed: its dollars sit `{python} F["gh_ssa"]` in Sub-Saharan Africa, `{python} F["gh_sasia"]` in South Asia, and `{python} F["gh_latam"]` in Latin America, but `{python} F["gh_unattrib"]` is unattributable multi-region activity and roughly `{python} F["gh_hic"]` sits in high-income regions — all priced at the same low-and-middle-income anchors, a coarseness the limitations section flags.
++The coarsest geographic field is the bare label "global." An audit of the 50 organizations with the most dollars attached to that label — 87% of its dollars; 20 of the 50 also list other locations — replaced the blanket assumption of fully-abroad delivery with fractions coded independently by two model families from each organization's filings and program reports, then reconciled — the second coder confirmed 33 within tolerance and disputed 17; four disputes were adjudicated to documented filings arithmetic, and final fractions average the two coders everywhere else, with per-organization sources and confidence grades — 16 high, 17 medium, 17 low — committed to the repository. Many "global" organizations operate substantially in the United States: Planned Parenthood and Crisis Text Line, for example, list "global" service but are roughly 95% and 93% U.S. in their most recent organization-wide reporting — later-period proxies for how earlier gifts were deployed, since neither reports gift-level allocation. The audited allocation routes `{python} F["abroad_share"]` of the ledger to the global health and development archetype. That routed bucket is itself mixed: its dollars sit `{python} F["gh_ssa"]` in Sub-Saharan Africa, `{python} F["gh_sasia"]` in South Asia, and `{python} F["gh_latam"]` in Latin America, but `{python} F["gh_unattrib"]` is unattributable multi-region activity and roughly `{python} F["gh_hic"]` sits in Europe & Central Asia plus Canada — regions that are not classified by income here, so the bucket's true high-income share is unidentified — all priced at the same low-and-middle-income anchors, a coarseness the limitations section flags.
+ 
+ # Model
+ 
+-Each Monte Carlo draw allocates the giving across archetypes (a Dirichlet centered on the derived shares), assigns each archetype a cost per QALY drawn from a distribution anchored in published estimates, and multiplies the implied QALYs by two independent discounts. **Causal credibility** asks whether the measured effect is real. Each archetype carries the identification tier of its best supporting evidence, and the tier sets a Beta-distributed shrinkage factor toward the null: a lottery-randomized wealth shock [@cesarini2016wealth] or the Medicaid mortality quasi-experiments — the ACA expansions [@miller2021medicaid], with cost–benefit arithmetic from the pre-ACA state expansions [@sommers2017medicaid] whose spending component draws on the Oregon Health Insurance Experiment [@finkelstein2012oregon] — keeps most of its effect; replicated child-targeted cash quasi-experiments [@aizer2016cash] anchor the cash bucket; the community-health-center rollout design [@bailey2015war] and similar contested quasi-experiments keep less; associational and assumption-only categories are shrunk near zero. **Realization** asks whether a marginal philanthropic dollar delivers the studied effect at all — transport to different populations, overhead, and funging, net of possible capacity effects: surveyed Scott recipients report stronger capacity and reach [@cep2023gifts], self-reports on whose basis the model permits realization above one (an author judgment, not a CEP effect estimate). It is one global triangular draw with mode 0.80 on support 0.55–1.10.
++Each Monte Carlo draw allocates the giving across archetypes (a Dirichlet centered on the derived shares), assigns each archetype a cost per QALY drawn from a distribution anchored in published estimates, and multiplies the implied QALYs by two independent discounts. **Causal credibility** asks whether the measured effect is real. Each archetype carries the identification tier of its best supporting evidence, and the tier sets a Beta-distributed shrinkage factor toward the null: a lottery-randomized wealth shock [@cesarini2016wealth] or the Medicaid mortality quasi-experiments — the ACA expansions [@miller2021medicaid], with cost–benefit arithmetic from the pre-ACA state expansions [@sommers2017medicaid] whose spending component draws on the Oregon Health Insurance Experiment [@finkelstein2012oregon] — keeps most of its effect; a child-targeted cash quasi-experiment [@aizer2016cash], with related designs catalogued in the parameter file, anchors the cash bucket; the community-health-center rollout design [@bailey2015war] and similar contested quasi-experiments keep less; associational and assumption-only categories are shrunk near zero. **Realization** asks whether a marginal philanthropic dollar delivers the studied effect at all — transport to different populations, overhead, and funging, net of possible capacity effects: surveyed Scott recipients report stronger capacity and reach [@cep2023gifts], self-reports on whose basis the model permits realization above one (an author judgment, not a CEP effect estimate). It is one global triangular draw with mode 0.80 on support 0.55–1.10.
+ 
+ The two multipliers are designed to partition the doubt — transportability concerns in realization, identification concerns in credibility, cost-per-QALY priors stated conditional on the effect being real and delivered — though the separation is imperfect at the prior boundaries: several anchors already average over mixed null-and-positive evidence before the credibility discount applies (a limitation noted below). Allocation uncertainty is a Dirichlet with concentration 60 around the derived centers — a judgment prior, implying for example a roughly 1.3–10% ninety-percent range on the global-health share — and represents subjective allocation uncertainty rather than sampling uncertainty propagated from the gift data pipeline. The tier ordering is the defensible part; the levels are judgment, proposed by a language model and reviewed by the author, and the results section reports the full consequence of disagreeing with them.
+ 
+@@ -237,7 +237,7 @@ Markdown(geo_df.to_markdown(index=False))
+ 
+ ## Against the global-health frontier
+ 
+-Handicapped with the same realization and credibility discounts, the GiveWell-derived frontier benchmark delivers roughly `{python} F["frontier_mult"]`× more health per marginal dollar than the blended portfolio; the same sum directed entirely to the frontier would imply on the order of `{python} F["frontier_q"]` QALYs. That figure is arithmetic, not a forecast, and not an attainable counterfactual: frontier-priced opportunities are scarce — GiveWell's directed funding runs to hundreds of millions of dollars per year, not tens of billions [@givewell2026impact] — and funding beyond identified room drives toward cash-transfer cost-effectiveness, whose GiveWell estimate rose 3–4× in a 2024 re-evaluation [@givewell2024cash]. Converting the full portfolio at cash-transfer cost-effectiveness under this model's own conventions leaves a multiple in the tens — roughly 20–40×, model arithmetic rather than a GiveWell figure. The defensible statement is directional: the frontier multiple is several hundred at today's margin and remains large under any diminishing-returns account consistent with these benchmarks.
++Handicapped within the same framework — sharing each draw's realization multiplier, with RCT-grade credibility — the GiveWell-derived frontier benchmark delivers roughly `{python} F["frontier_mult"]`× more health per marginal dollar than the blended portfolio; the same sum directed entirely to the frontier would imply on the order of `{python} F["frontier_q"]` QALYs. That figure is arithmetic, not a forecast, and not an attainable counterfactual: frontier-priced opportunities are scarce — GiveWell's directed funding runs to hundreds of millions of dollars per year, not tens of billions [@givewell2026impact] — and funding beyond identified room drives toward cash-transfer cost-effectiveness, whose GiveWell estimate rose 3–4× in a 2024 re-evaluation [@givewell2024cash]. Converting the full portfolio at cash-transfer cost-effectiveness under this model's own conventions leaves a multiple in the tens — roughly 20–40×, model arithmetic rather than a GiveWell figure. The defensible statement is directional: the frontier multiple is several hundred at today's margin and remains large at any scale the cited benchmarks speak to.
+ 
+ # Robustness
+ 
+@@ -279,7 +279,7 @@ F_rct = f"{meds[0]:,.0f}"
+ F_face = f"{meds[-1]:,.0f}"
+ ```
+ 
+-The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-only floor — non-randomized tiers shrunk to a credibility mean of 0.01, the randomized tier kept at its drafted mean — the median collapses to `{python} F_rct` QALYs, dominated by the randomized-tier mental-health bucket; at near face value (all tier means 0.999) it rises to `{python} F_face` (@fig-stance). That 45-fold range exceeds the spread from any single distributional parameter — though structural choices can move the headline more; the geographic-routing correction alone tripled it — and the gap between the face-value and best-guess estimates is a direct reading of how much of the estimated impact rests on evidence below randomized or strong quasi-experimental identification standards. The Spearman tornado (@fig-tornado) tells the same story within the default stance: the top three drivers are the global-health allocation share, the realization factor, and global-health credibility.
++The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-only floor — non-randomized tiers shrunk to a credibility mean of 0.01, the randomized tier kept at its drafted mean — the median collapses to `{python} F_rct` QALYs, dominated by the randomized-tier mental-health bucket; at near face value (all tier means 0.999) it rises to `{python} F_face` (@fig-stance). That 45-fold range exceeds the spread from any single distributional parameter — though structural choices can move the headline more: with no geographic repricing at all, every health dollar at U.S. anchors, the median is roughly 70,000 (the pre-correction model in the §5.3 table), so the routing assumption alone spans ~3× — and the gap between the face-value and best-guess estimates is a direct reading of how much of the estimated impact rests on evidence below randomized or strong quasi-experimental identification standards. The Spearman tornado (@fig-tornado) tells the same story within the default stance: the top three drivers are the global-health allocation share, the realization factor, and global-health credibility.
+ 
+ ![What drives the spread: Spearman rank correlations between each input draw and total QALYs at the best-guess defaults.](../results/sensitivity.png){#fig-tornado}
+ 
+@@ -296,23 +296,23 @@ The model reached this state through a series of public revisions — counting a
+ | Cross-model review: dollar vintages normalized, a life-year→QALY conversion made explicit, frontier benchmark re-derived, one citation re-attributed | ~98,000 → ~87,000 | second model family |
+ | Allocation replaced with the derivation from Scott's own gift database | ~87,000 → ~70,000 | author + model |
+ | Health dollars had been priced at U.S. anchors regardless of delivery location | ~70,000 → ~205,000 | a reader |
+-| Two-model geography audit of "global"-listed organizations (v1.1) | ~205,000 → `{python} F["median_k"]` | model audit |
++| Two-model geography audit of "global"-listed organizations (tags v2026.07.20 → v2026.07.22) | ~205,000 → `{python} F["median_k"]` | model audit |
+ 
+-Every correction is documented in the repository and summarized on the public tool. None was caught by the author unaided.
++Every correction is documented in the repository and summarized on the public tool; the detector column is the record, and none of these was caught by the author unaided.
+ 
+ # Construction and auditability
+ 
+-The model was built with a frontier language model (Anthropic's Claude), with the author reviewing every parameter and assumption; adversarial review by a second model family (OpenAI's), plus reader corrections, produced the revision history above. Three mechanisms make the result checkable rather than merely stated. Parameters live in one typed file in which every value carries its unit, dollar vintage, and inline citation, machine-validated at load; an annotated bibliography maps each quantitative input to its primary source and price-level conversion. Sync tests force the published web parameters, allocation shares, and geography exports to equal fresh derivations from the committed data snapshots, and this manuscript interpolates its model-derived numbers from those same artifacts at render time — hand-typed constants are limited to externally sourced figures, which carry citations. And the audit trail is data: the 990 match audit ships as its applied per-row overlay, and the 50-organization geography audit ships with per-organization sources and confidence grades — both applied by the pipeline rather than folded silently into parameters.
++The model was built with a frontier language model (Anthropic's Claude), with the author reviewing every parameter and assumption; adversarial review by a second model family (OpenAI's), plus reader corrections, produced the revision history above. Three mechanisms make the result checkable rather than merely stated. Parameters live in one typed file in which every value carries its unit, dollar vintage, and inline citation, machine-validated at load; an annotated bibliography maps each quantitative input to its primary source and price-level conversion. Sync tests force the published web parameters, allocation shares, and geography exports to equal fresh derivations from the committed data snapshots, and the body of this manuscript interpolates its model-derived numbers from those same artifacts at render time (the abstract's figures are typed copies of the interpolated values; externally sourced constants carry citations). And the audit trail is data: the 990 match audit ships as its applied per-row overlay, and the 50-organization geography audit ships with per-organization sources and confidence grades — both applied by the pipeline rather than folded silently into parameters.
+ 
+ The browser implementation is a checked TypeScript port that reruns the full Monte Carlo client-side; every figure in this paper can be reproduced, and every assumption overridden, at [maxghenis.com/mackenzie-scott-qaly](https://maxghenis.com/mackenzie-scott-qaly). The repository, including this manuscript's source, is at [github.com/MaxGhenis/mackenzie-scott-qaly](https://github.com/MaxGhenis/mackenzie-scott-qaly).
+ 
+ # Limitations
+ 
+-The credibility tiers and realization distribution are judgment priors with no literature calibration; the ordering is defensible, the levels are not measured, and the stance sweep is the honest bound on their influence. The QALY lens counts only health, so the estimate is a floor on total wellbeing, and the causes where Scott concentrates — education, mobility, equity — are precisely those whose main benefits the lens excludes. Credibility shrinks toward zero but never below it, so the model places no mass on harmful giving. Allocation splits each organization's dollars equally across its focus areas and service locations; both are coarse, and the geography audit covers only the 50 largest "global"-listed organizations. Realization is one global draw, so it cannot vary by cause. Archetype anchors treat heterogeneous organizations as draws from one distribution. Within each cause, delivery regions are priced identically, so the geographic decomposition exposes assumptions rather than measuring regional differences. The undisclosed third of dollars is imputed from a fitted elasticity, not observed. The routed global-health bucket prices its unattributable and high-income-region dollars — roughly a fifth of the bucket — at low-and-middle-income anchors, an upward-bias channel. Several cost priors average over mixed null-and-positive evidence before the credibility discount applies, so the two-multiplier separation of doubts is imperfect at those boundaries. The Dirichlet allocation spread is a subjective prior; uncertainty from the elasticity fit, unmatched filings, the focus-area crosswalk, and the geography audit is not propagated. Allocation shares are derived in nominal dollars and applied to the real total; re-deriving in real dollars moves shares by hundredths of a percentage point. The geography audit's scalar U.S. shares and regional decompositions were reconciled separately and can differ by fractions of a point per organization. Finally, several anchors rest on a small number of quasi-experimental papers whose external validity to Scott's grantees is exactly what the realization factor is guessing at.
++The credibility tiers and realization distribution are judgment priors with no literature calibration; the ordering is defensible, the levels are not measured, and the stance sweep is the honest bound on their influence. The QALY lens counts only health, so the estimate is a partial accounting that omits both the non-health benefits where Scott concentrates — education, mobility, equity — and any possible harms; it is not a floor on total wellbeing. Credibility shrinks toward zero but never below it, so the model places no mass on harmful giving; the closest available zero scenario is the near-RCT-only stance floor, which drives unsupported archetypes to ~1% credit. Allocation splits each organization's dollars equally across its focus areas and service locations; both are coarse, and the geography audit covers only the 50 largest "global"-listed organizations. Realization is one global draw, so it cannot vary by cause. Archetype anchors treat heterogeneous organizations as draws from one distribution. Within each cause, delivery regions are priced identically, so the geographic decomposition exposes assumptions rather than measuring regional differences. The undisclosed third of dollars is imputed from a fitted elasticity, not observed. The routed global-health bucket prices its unattributable and high-income-region dollars — roughly a fifth of the bucket — at low-and-middle-income anchors, an upward-bias channel. Several cost priors average over mixed null-and-positive evidence before the credibility discount applies, so the two-multiplier separation of doubts is imperfect at those boundaries. The Dirichlet allocation spread is a subjective prior; uncertainty from the elasticity fit, unmatched filings, the focus-area crosswalk, and the geography audit is not propagated. Allocation shares are derived in nominal dollars and applied to the real total; re-deriving in real dollars moves shares by hundredths of a percentage point. The geography audit's scalar U.S. shares and regional decompositions were reconciled separately and can differ by fractions of a point per organization. Finally, several anchors rest on a small number of quasi-experimental papers whose external validity to Scott's grantees is exactly what the realization factor is guessing at.
+ 
+ # Conclusion
+ 
+-Measured in health, MacKenzie Scott's $26 billion buys an estimated median of about `{python} F["median_k"]` quality-adjusted life-years — several times its cost under the government's own regulatory valuation — and most of that estimated health comes from the twentieth of her dollars funding health and development delivered abroad. The number is a model output under stated priors, not a fact, and the model's most important output is not the point estimate but the machinery around it: explicit evidence weights, a 45-fold stance range that any reader can traverse, versioned corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes without waiting for donors to publish outcome data — their own gift lists, recipients' tax filings, and the published causal literature suffice — and the same machinery applies to any large giver with comparable gift-level disclosure — or, through the grant listings in public filings, to foundations. The invitation of the interactive version is the paper's real conclusion: disagree with a parameter, move it, and watch what survives.
++Measured in health, MacKenzie Scott's $26 billion buys an estimated median of about `{python} F["median_k"]` quality-adjusted life-years — several times its cost under the government's own regulatory valuation — and most of that estimated health comes from the twentieth of her dollars funding health and development delivered abroad. The number is a model output under stated priors, not a fact, and the model's most important output is not the point estimate but the machinery around it: explicit evidence weights, a 45-fold stance range that any reader can traverse, versioned corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes without waiting for donors to publish outcome data — their own gift lists, recipients' tax filings, and the published causal literature suffice — and the same machinery applies to any large giver whose public disclosures carry comparable gift-level allocation and geography fields. The invitation of the interactive version is the paper's real conclusion: disagree with a parameter, move it, and watch what survives.
+ 
+ # Acknowledgments {.unnumbered}
+ 
+diff --git a/paper/references.bib b/paper/references.bib
+index 92615ff..1385da5 100644
+--- a/paper/references.bib
++++ b/paper/references.bib
+@@ -67,7 +67,7 @@
+ @misc{givewell2026impact,
+   author       = {{GiveWell}},
+   title        = {Impact Estimates},
+-  year         = {2026},
++  year         = {2025},
+   howpublished = {\url{https://www.givewell.org/impact-estimates}},
+   note         = {Accessed July 2026}
+ }
+@@ -137,8 +137,8 @@
+ }
+ 
+ @misc{ap2026givingusa,
+-  author       = {Gamboa, Glenn},
+-  title        = {Giving {USA}: Charitable Giving Rose to a Record \$617 Billion in 2025},
++  author       = {Childress, Rasheeda},
++  title        = {Donors Gave {U.S.} Charities \$617 Billion in 2025, According to the New Giving {USA} Report},
+   year         = {2026},
+   howpublished = {\url{https://apnews.com/article/8363b76bc8cf854f6865c31129e8a4b1}},
+   note         = {Associated Press, June 2026; reports \$6.65B of Scott's 2025 contributions against \$19.2B in U.S. megagift value}
+@@ -147,7 +147,7 @@
+ @misc{robinhood2025,
+   author       = {{Robin Hood Foundation}},
+   title        = {Our Approach: Metrics and Benefit--Cost Analysis},
+-  year         = {2025},
++  year         = {2023},
+   howpublished = {\url{https://robinhood.org/our-work/our-approach/}},
+   note         = {Accessed July 2026}
+ }
+@@ -155,7 +155,7 @@
+ @misc{constellation2025,
+   author       = {{Constellation Fund}},
+   title        = {2025 Investment Report},
+-  year         = {2025},
++  year         = {2026},
+   howpublished = {\url{https://constellationfund.org/impact-news-insights/investment-report-2025/}},
+   note         = {Portfolio-level benefit--cost reporting; accessed July 2026}
+ }
+@@ -163,7 +163,7 @@
+ @misc{cega2023div,
+   author       = {{Center for Effective Global Action}},
+   title        = {Donors Can Spend More Money, Better, with Cost Evidence},
+-  year         = {2023},
++  year         = {2022},
+   howpublished = {\url{https://cega.berkeley.edu/article/donors-can-spend-more-money-better-with-cost-evidence/}},
+   note         = {Portfolio social-rate-of-return analysis of USAID Development Innovation Ventures}
+ }
+
+exec
+/bin/zsh -lc "ls -la paper/review/round3 2>/dev/null || true && rg -n \"F\\[\\\"(median|p05|p95|blended|bc|abroad_share|gh_share|elasticity)\" paper/index.qmd | head -80" in /Users/maxghenis/mackenzie-scott-qaly
+ succeeded in 0ms:
+total 8
+drwxr-xr-x  3 maxghenis  staff    96 Jul 22 10:38 .
+drwxr-xr-x  7 maxghenis  staff   224 Jul 22 10:37 ..
+-rw-r--r--  1 maxghenis  staff  1080 Jul 22 10:38 neutrality.md
+77:F["gh_share"] = f"{100*per[gh_label]/mean_total:.1f}%"
+79:F["bc"] = f"{S['bc_ratio']['median']:.1f}"
+80:F["bc_p05"] = f"{S['bc_ratio']['p05']:.1f}"
+81:F["bc_p95"] = f"{S['bc_ratio']['p95']:.1f}"
+116:The paper makes four contributions. It provides what I believe is the first outside, portfolio-level cost-effectiveness estimate of Scott's giving, and I have found no comparable outside estimate for any other individual mega-donor — funder-run portfolio metrics exist, including GiveWell's aggregate impact estimates [@givewell2026impact], Robin Hood's benefit–cost framework [@robinhood2025], the Constellation Fund's portfolio reporting [@constellation2025], and social-rate-of-return analysis of USAID's Development Innovation Ventures portfolio [@cega2023div]; the difference here is independence from the donor, a subject who publishes no outcome data, and explicit evidence weighting: a best-guess median of `{python} F["median_k"]` QALYs from $26.39 billion nominal (`{python} F["giving"]` in 2026 dollars), a blended `{python} F["blended"]` per QALY, and a median benefit–cost ratio of `{python} F["bc"]` under the HHS regulatory value-per-QALY distribution [@aspe2026values]. It estimates extreme geographic concentration of impact under its pricing assumptions: the `{python} F["abroad_share_1"]` of dollars funding global health and development delivered outside the United States accounts for `{python} F["gh_share"]` of estimated health impact. It reports a new empirical regularity in the gift data itself: across `{python} F["n_cal"]` disclosed gift–filing pairs, gift size scales with recipient pre-gift revenue to the power `{python} F["elasticity"]` (R² `{python} F["r2"]`) — Scott's giving is far flatter across organization size than proportional. And it demonstrates a working method for auditable, AI-assisted cost-effectiveness modeling: the model was built with a frontier language model, reviewed and corrected in public through the revision history summarized in the robustness section, audited by two independent model families against primary filings, and ships with versioned parameters, machine-checked citations, and a browser implementation that reruns the full Monte Carlo under any reader's assumptions.
+130:The undisclosed third is imputed rather than dropped. Because the essays give each year's total, the undisclosed residual per period is a known dollar amount; it is distributed across that period's undisclosed gifts in proportion to each recipient's pre-gift IRS Form 990 total revenue [@propublica2026], raised to an elasticity fit on the disclosed pairs. Pre-gift means the latest filing strictly before the gift year, since a Scott gift mechanically inflates receipt-year revenue. The fit is a finding in its own right: across `{python} F["n_cal"]` disclosed gift–filing pairs, log gift size rises with log revenue with slope `{python} F["elasticity"]` (R² `{python} F["r2"]`). A 10× larger organization receives about 2.5× more money, not 10× more. The fit is descriptive and conditional: it is estimated on disclosed gifts with a matched pre-gift filing (1,313 of 2,035 disclosed and 2,711 total gifts), treats repeated gifts to an organization as independent, and pools years; 287 of the 676 undisclosed gifts lack a usable filing and receive their period's median weight. It is a within-sample regularity used for imputation, not a validated prediction rule. Fuzzy name-to-EIN matches were audited by a third, smaller model against the live IRS API, with corrections committed as a reviewable overlay. The imputed third moves each cause share by at most about 1.5 percentage points — under the imputation model, the disclosed two-thirds is representative.
+136:The coarsest geographic field is the bare label "global." An audit of the 50 organizations with the most dollars attached to that label — 87% of its dollars; 20 of the 50 also list other locations — replaced the blanket assumption of fully-abroad delivery with fractions coded independently by two model families from each organization's filings and program reports, then reconciled — the second coder confirmed 33 within tolerance and disputed 17; four disputes were adjudicated to documented filings arithmetic, and final fractions average the two coders everywhere else, with per-organization sources and confidence grades — 16 high, 17 medium, 17 low — committed to the repository. Many "global" organizations operate substantially in the United States: Planned Parenthood and Crisis Text Line, for example, list "global" service but are roughly 95% and 93% U.S. in their most recent organization-wide reporting — later-period proxies for how earlier gifts were deployed, since neither reports gift-level allocation. The audited allocation routes `{python} F["abroad_share"]` of the ledger to the global health and development archetype. That routed bucket is itself mixed: its dollars sit `{python} F["gh_ssa"]` in Sub-Saharan Africa, `{python} F["gh_sasia"]` in South Asia, and `{python} F["gh_latam"]` in Latin America, but `{python} F["gh_unattrib"]` is unattributable multi-region activity and roughly `{python} F["gh_hic"]` sits in Europe & Central Asia plus Canada — regions that are not classified by income here, so the bucket's true high-income share is unidentified — all priced at the same low-and-middle-income anchors, a coarseness the limitations section flags.
+187:At the best-guess defaults (100,000 draws), the portfolio produces a median of `{python} F["median"]` QALYs, with a 90% interval of `{python} F["p05"]` to `{python} F["p95"]` and a mean of `{python} F["mean"]`. The interval is a probabilistic-sensitivity range under the stated priors, not a confidence interval; Monte Carlo error on the median is a few hundred QALYs. The blended cost-effectiveness — dollars given over QALYs produced, at the median — is `{python} F["blended"]` per QALY. Monetized under the value-per-QALY distribution HHS recommends for regulatory analysis (central $726,000 at 3%; @aspe2026values, Table 3), the median draw-level benefit–cost ratio is `{python} F["bc"]` (90% interval `{python} F["bc_p05"]`–`{python} F["bc_p95"]`, reflecting both health-output and valuation uncertainty). @fig-dist shows the full distribution.
+193:@tbl-cause decomposes the mean estimate by cause. The result is the paper's central contrast: the global health and development slice — `{python} F["abroad_share_1"]` of dollars — contributes `{python} F["gh_share"]` of estimated QALYs, at a modeled cost of about `{python} F2["gh_cpq"]` per QALY against `{python} F2["ev_lo"]`–`{python} F2["ev_hi"]` for the causes with quasi-experimental or better U.S. evidence. The `{python} F2["spread"]`-fold spread in modeled cost-effectiveness within a single donor's portfolio, under stipulated priors, is partly the lens speaking — its low end is dominated by assumption-tier buckets whose near-zero credibility is an input, and whose main benefits QALYs do not count — but the spread among evidenced health buckets alone exceeds an order of magnitude, restating in one column an empirical regularity long emphasized in the effective-altruism literature [@ord2013]: the cheapest health in the world is not bought where most philanthropic dollars are spent.
+288:The geography audit is the largest data correction the model has absorbed since publication, and its effect is small: recentering the allocation on audited service geographies moved the abroad share from 4.93% to `{python} F["abroad_share"]`, the median from about 205,000 to `{python} F["median"]`, and the blended figure from about $148,000 to `{python} F["blended"]` per QALY. Both allocations ship with the model, the browser version exposes them as a version toggle, and the pre-audit parameters remain pinned at tag `v2026.07.20` (audited: `v2026.07.22`).
+299:| Two-model geography audit of "global"-listed organizations (tags v2026.07.20 → v2026.07.22) | ~205,000 → `{python} F["median_k"]` | model audit |
+315:Measured in health, MacKenzie Scott's $26 billion buys an estimated median of about `{python} F["median_k"]` quality-adjusted life-years — several times its cost under the government's own regulatory valuation — and most of that estimated health comes from the twentieth of her dollars funding health and development delivered abroad. The number is a model output under stated priors, not a fact, and the model's most important output is not the point estimate but the machinery around it: explicit evidence weights, a 45-fold stance range that any reader can traverse, versioned corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes without waiting for donors to publish outcome data — their own gift lists, recipients' tax filings, and the published causal literature suffice — and the same machinery applies to any large giver whose public disclosures carry comparable gift-level allocation and geography fields. The invitation of the interactive version is the paper's real conclusion: disagree with a parameter, move it, and watch what survives.
+
+exec
+/bin/zsh -lc "sed -n '1,220p' paper/review/round3/neutrality.md" in /Users/maxghenis/mackenzie-scott-qaly
+ succeeded in 0ms:
+# Neutrality review — round 3
+
+| Round-2 item | Status | Verification against fresh text |
+|---:|---|---|
+| 4 | NOT RESOLVED | §5.1 is still headed “Evidence philosophy dominates everything else,” while the paragraph immediately concedes that structural choices can move the headline more. The abstract and body remain appropriately narrowed to the tested single-parameter sensitivities, but the heading retains the overstatement. Rename it along the lines of “Evidence stance dominates single-parameter sensitivity.” |
+| 7 | RESOLVED | §4.2 deletes the unsupported full-scale universal and now limits the directional claim to “any scale the cited benchmarks speak to.” This matches the evidence and preserves the stated scarcity/attainability caveat. |
+
+## New findings
+
+None. A brief regression review of the newest edits found no new neutrality problem. The revised priority, regional-classification, structural-sensitivity, audit, limitations, and transferability language is appropriately qualified for an SSRN working paper.
+
+RECOMMENDATION: Minor revisions
+
+apply patch
+patch: completed
+/Users/maxghenis/mackenzie-scott-qaly/paper/review/round3/redteam.md
+diff --git a/paper/review/round3/redteam.md b/paper/review/round3/redteam.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..a8424c976b40def35e85fc75fe96e45c40314084
+--- /dev/null
++++ b/paper/review/round3/redteam.md
+@@ -0,0 +1,23 @@
++# Red-team referee report — round 3
++
++| Round-2 item | Status | Verification against fresh text |
++|---:|---|---|
++| 1 | RESOLVED FOR WORKING PAPER | The standing decision to retain the headline estimate is now supported by explicit proxy/mixture caveats, an upward-bias limitation, and a no-geographic-repricing comparison of roughly 70,000 versus 202,000 QALYs. This is adequate scenario disclosure at SSRN stage. |
++| 2 | RESOLVED | The limitations now expressly say the estimate is not a floor on total wellbeing, identifies omitted harms, and explains that the near-RCT-only case is only the closest available zero scenario. |
++| 3 | RESOLVED FOR WORKING PAPER | The 19% audited-overlay estimate remains a heuristic without sampling bounds, but the paper now distinguishes the Dirichlet judgment prior from pipeline uncertainty and explicitly lists geography-audit uncertainty as unpropagated. This is a documented limitation. |
++| 4 | RESOLVED FOR WORKING PAPER | The reconciliation arithmetic is now internally correct: 33 were confirmed within tolerance, 17 disputed, four adjudicated, and all other final fractions average the coders. Confidence grades and source records are disclosed; further external validation can reasonably be deferred. |
++| 5 | RESOLVED FOR WORKING PAPER | The 95%/93% figures remain clearly labeled later-period, organization-wide proxies, and the scalar/regional-denominator mismatch remains disclosed as a limitation. The standing deferral is reasonable. |
++| 6 | RESOLVED | The frontier now shares only the realization draw and receives its stated RCT-grade credibility. The unsupported universal diminishing-returns claim is replaced by the narrower claim that the multiple remains large only at scales addressed by the cited benchmarks. |
++| 8 | RESOLVED | Priority is now Scott-specific (“first outside ... estimate of Scott's giving”), while the broader comparison is framed as the author's search result rather than an established universal. This is adequate for a working paper. |
++| 11 | RESOLVED FOR WORKING PAPER | Section 6 now accurately limits interpolation to the body and discloses that abstract figures are typed copies. A CI render guard remains deferred rather than falsely claimed. |
++| 13 | RESOLVED FOR WORKING PAPER | The unsupported “eleven rounds” count is gone, the latest transition has reproducible tags, and the table defines revisions and records the detector. Direct evidence links for every earlier row would improve the audit trail, but their absence is not material enough to block this working paper. |
++| 14 | RESOLVED FOR WORKING PAPER | Section 2.1 now specifies disclosure-year booking and the May 2026 CPI-U anchor; the nominal-share application and its very small effect remain disclosed in limitations. |
++| 15 | RESOLVED FOR WORKING PAPER | The elasticity is now called a within-sample regularity rather than a validated prediction rule, the full matched/unmatched flow is reported, and “representative” is explicitly conditional on the imputation model. |
++| New finding 1 | PARTIALLY RESOLVED | Section 2.3 correctly replaces “high-income regions” with “Europe & Central Asia plus Canada” and says the true high-income share is unidentified. Section 7, however, still calls those same dollars “high-income-region dollars,” contradicting that correction. Replace that phrase with “Europe & Central Asia plus Canada dollars” (or “possibly high-income dollars”) and keep the unidentified-share qualification. |
++| New finding 2 | RESOLVED | The foundation/public-filings extension is deleted. Transferability is now conditioned on disclosures carrying comparable gift-level allocation and geography fields. |
++
++## New findings
++
++None. A brief regression glance found no additional problem introduced by the newest edits. The one remaining factual wording mismatch is the unresolved tail of round 2's regional-classification finding above.
++
++RECOMMENDATION: Minor revisions
+
+diff --git a/paper/review/round3/redteam.md b/paper/review/round3/redteam.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..a8424c976b40def35e85fc75fe96e45c40314084
+--- /dev/null
++++ b/paper/review/round3/redteam.md
+@@ -0,0 +1,23 @@
++# Red-team referee report — round 3
++
++| Round-2 item | Status | Verification against fresh text |
++|---:|---|---|
++| 1 | RESOLVED FOR WORKING PAPER | The standing decision to retain the headline estimate is now supported by explicit proxy/mixture caveats, an upward-bias limitation, and a no-geographic-repricing comparison of roughly 70,000 versus 202,000 QALYs. This is adequate scenario disclosure at SSRN stage. |
++| 2 | RESOLVED | The limitations now expressly say the estimate is not a floor on total wellbeing, identifies omitted harms, and explains that the near-RCT-only case is only the closest available zero scenario. |
++| 3 | RESOLVED FOR WORKING PAPER | The 19% audited-overlay estimate remains a heuristic without sampling bounds, but the paper now distinguishes the Dirichlet judgment prior from pipeline uncertainty and explicitly lists geography-audit uncertainty as unpropagated. This is a documented limitation. |
++| 4 | RESOLVED FOR WORKING PAPER | The reconciliation arithmetic is now internally correct: 33 were confirmed within tolerance, 17 disputed, four adjudicated, and all other final fractions average the coders. Confidence grades and source records are disclosed; further external validation can reasonably be deferred. |
++| 5 | RESOLVED FOR WORKING PAPER | The 95%/93% figures remain clearly labeled later-period, organization-wide proxies, and the scalar/regional-denominator mismatch remains disclosed as a limitation. The standing deferral is reasonable. |
++| 6 | RESOLVED | The frontier now shares only the realization draw and receives its stated RCT-grade credibility. The unsupported universal diminishing-returns claim is replaced by the narrower claim that the multiple remains large only at scales addressed by the cited benchmarks. |
++| 8 | RESOLVED | Priority is now Scott-specific (“first outside ... estimate of Scott's giving”), while the broader comparison is framed as the author's search result rather than an established universal. This is adequate for a working paper. |
++| 11 | RESOLVED FOR WORKING PAPER | Section 6 now accurately limits interpolation to the body and discloses that abstract figures are typed copies. A CI render guard remains deferred rather than falsely claimed. |
++| 13 | RESOLVED FOR WORKING PAPER | The unsupported “eleven rounds” count is gone, the latest transition has reproducible tags, and the table defines revisions and records the detector. Direct evidence links for every earlier row would improve the audit trail, but their absence is not material enough to block this working paper. |
++| 14 | RESOLVED FOR WORKING PAPER | Section 2.1 now specifies disclosure-year booking and the May 2026 CPI-U anchor; the nominal-share application and its very small effect remain disclosed in limitations. |
++| 15 | RESOLVED FOR WORKING PAPER | The elasticity is now called a within-sample regularity rather than a validated prediction rule, the full matched/unmatched flow is reported, and “representative” is explicitly conditional on the imputation model. |
++| New finding 1 | PARTIALLY RESOLVED | Section 2.3 correctly replaces “high-income regions” with “Europe & Central Asia plus Canada” and says the true high-income share is unidentified. Section 7, however, still calls those same dollars “high-income-region dollars,” contradicting that correction. Replace that phrase with “Europe & Central Asia plus Canada dollars” (or “possibly high-income dollars”) and keep the unidentified-share qualification. |
++| New finding 2 | RESOLVED | The foundation/public-filings extension is deleted. Transferability is now conditioned on disclosures carrying comparable gift-level allocation and geography fields. |
++
++## New findings
++
++None. A brief regression glance found no additional problem introduced by the newest edits. The one remaining factual wording mismatch is the unresolved tail of round 2's regional-classification finding above.
++
++RECOMMENDATION: Minor revisions
+
+exec
+/bin/zsh -lc "sed -n '1,240p' paper/review/round3/redteam.md && git diff --check -- paper/review/round3/redteam.md && git status --short --branch" in /Users/maxghenis/mackenzie-scott-qaly
+ succeeded in 0ms:
+# Red-team referee report — round 3
+
+| Round-2 item | Status | Verification against fresh text |
+|---:|---|---|
+| 1 | RESOLVED FOR WORKING PAPER | The standing decision to retain the headline estimate is now supported by explicit proxy/mixture caveats, an upward-bias limitation, and a no-geographic-repricing comparison of roughly 70,000 versus 202,000 QALYs. This is adequate scenario disclosure at SSRN stage. |
+| 2 | RESOLVED | The limitations now expressly say the estimate is not a floor on total wellbeing, identifies omitted harms, and explains that the near-RCT-only case is only the closest available zero scenario. |
+| 3 | RESOLVED FOR WORKING PAPER | The 19% audited-overlay estimate remains a heuristic without sampling bounds, but the paper now distinguishes the Dirichlet judgment prior from pipeline uncertainty and explicitly lists geography-audit uncertainty as unpropagated. This is a documented limitation. |
+| 4 | RESOLVED FOR WORKING PAPER | The reconciliation arithmetic is now internally correct: 33 were confirmed within tolerance, 17 disputed, four adjudicated, and all other final fractions average the coders. Confidence grades and source records are disclosed; further external validation can reasonably be deferred. |
+| 5 | RESOLVED FOR WORKING PAPER | The 95%/93% figures remain clearly labeled later-period, organization-wide proxies, and the scalar/regional-denominator mismatch remains disclosed as a limitation. The standing deferral is reasonable. |
+| 6 | RESOLVED | The frontier now shares only the realization draw and receives its stated RCT-grade credibility. The unsupported universal diminishing-returns claim is replaced by the narrower claim that the multiple remains large only at scales addressed by the cited benchmarks. |
+| 8 | RESOLVED | Priority is now Scott-specific (“first outside ... estimate of Scott's giving”), while the broader comparison is framed as the author's search result rather than an established universal. This is adequate for a working paper. |
+| 11 | RESOLVED FOR WORKING PAPER | Section 6 now accurately limits interpolation to the body and discloses that abstract figures are typed copies. A CI render guard remains deferred rather than falsely claimed. |
+| 13 | RESOLVED FOR WORKING PAPER | The unsupported “eleven rounds” count is gone, the latest transition has reproducible tags, and the table defines revisions and records the detector. Direct evidence links for every earlier row would improve the audit trail, but their absence is not material enough to block this working paper. |
+| 14 | RESOLVED FOR WORKING PAPER | Section 2.1 now specifies disclosure-year booking and the May 2026 CPI-U anchor; the nominal-share application and its very small effect remain disclosed in limitations. |
+| 15 | RESOLVED FOR WORKING PAPER | The elasticity is now called a within-sample regularity rather than a validated prediction rule, the full matched/unmatched flow is reported, and “representative” is explicitly conditional on the imputation model. |
+| New finding 1 | PARTIALLY RESOLVED | Section 2.3 correctly replaces “high-income regions” with “Europe & Central Asia plus Canada” and says the true high-income share is unidentified. Section 7, however, still calls those same dollars “high-income-region dollars,” contradicting that correction. Replace that phrase with “Europe & Central Asia plus Canada dollars” (or “possibly high-income dollars”) and keep the unidentified-share qualification. |
+| New finding 2 | RESOLVED | The foundation/public-filings extension is deleted. Transferability is now conditioned on disclosures carrying comparable gift-level allocation and geography fields. |
+
+## New findings
+
+None. A brief regression glance found no additional problem introduced by the newest edits. The one remaining factual wording mismatch is the unresolved tail of round 2's regional-classification finding above.
+
+RECOMMENDATION: Minor revisions
+## main...origin/main
+?? paper/review/round3/
+?? paper/review/sol/citations.round3.log
+?? paper/review/sol/methodology.round3.log
+?? paper/review/sol/neutrality.round3.log
+?? paper/review/sol/redteam.round3.log
+?? paper/review/sol/reproducibility.round3.log
+?? paper/review/sol/worker3.sh
+
+diff --git a/paper/review/round3/redteam.md b/paper/review/round3/redteam.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..a8424c976b40def35e85fc75fe96e45c40314084
+--- /dev/null
++++ b/paper/review/round3/redteam.md
+@@ -0,0 +1,23 @@
++# Red-team referee report — round 3
++
++| Round-2 item | Status | Verification against fresh text |
++|---:|---|---|
++| 1 | RESOLVED FOR WORKING PAPER | The standing decision to retain the headline estimate is now supported by explicit proxy/mixture caveats, an upward-bias limitation, and a no-geographic-repricing comparison of roughly 70,000 versus 202,000 QALYs. This is adequate scenario disclosure at SSRN stage. |
++| 2 | RESOLVED | The limitations now expressly say the estimate is not a floor on total wellbeing, identifies omitted harms, and explains that the near-RCT-only case is only the closest available zero scenario. |
++| 3 | RESOLVED FOR WORKING PAPER | The 19% audited-overlay estimate remains a heuristic without sampling bounds, but the paper now distinguishes the Dirichlet judgment prior from pipeline uncertainty and explicitly lists geography-audit uncertainty as unpropagated. This is a documented limitation. |
++| 4 | RESOLVED FOR WORKING PAPER | The reconciliation arithmetic is now internally correct: 33 were confirmed within tolerance, 17 disputed, four adjudicated, and all other final fractions average the coders. Confidence grades and source records are disclosed; further external validation can reasonably be deferred. |
++| 5 | RESOLVED FOR WORKING PAPER | The 95%/93% figures remain clearly labeled later-period, organization-wide proxies, and the scalar/regional-denominator mismatch remains disclosed as a limitation. The standing deferral is reasonable. |
++| 6 | RESOLVED | The frontier now shares only the realization draw and receives its stated RCT-grade credibility. The unsupported universal diminishing-returns claim is replaced by the narrower claim that the multiple remains large only at scales addressed by the cited benchmarks. |
++| 8 | RESOLVED | Priority is now Scott-specific (“first outside ... estimate of Scott's giving”), while the broader comparison is framed as the author's search result rather than an established universal. This is adequate for a working paper. |
++| 11 | RESOLVED FOR WORKING PAPER | Section 6 now accurately limits interpolation to the body and discloses that abstract figures are typed copies. A CI render guard remains deferred rather than falsely claimed. |
++| 13 | RESOLVED FOR WORKING PAPER | The unsupported “eleven rounds” count is gone, the latest transition has reproducible tags, and the table defines revisions and records the detector. Direct evidence links for every earlier row would improve the audit trail, but their absence is not material enough to block this working paper. |
++| 14 | RESOLVED FOR WORKING PAPER | Section 2.1 now specifies disclosure-year booking and the May 2026 CPI-U anchor; the nominal-share application and its very small effect remain disclosed in limitations. |
++| 15 | RESOLVED FOR WORKING PAPER | The elasticity is now called a within-sample regularity rather than a validated prediction rule, the full matched/unmatched flow is reported, and “representative” is explicitly conditional on the imputation model. |
++| New finding 1 | PARTIALLY RESOLVED | Section 2.3 correctly replaces “high-income regions” with “Europe & Central Asia plus Canada” and says the true high-income share is unidentified. Section 7, however, still calls those same dollars “high-income-region dollars,” contradicting that correction. Replace that phrase with “Europe & Central Asia plus Canada dollars” (or “possibly high-income dollars”) and keep the unidentified-share qualification. |
++| New finding 2 | RESOLVED | The foundation/public-filings extension is deleted. Transferability is now conditioned on disclosures carrying comparable gift-level allocation and geography fields. |
++
++## New findings
++
++None. A brief regression glance found no additional problem introduced by the newest edits. The one remaining factual wording mismatch is the unresolved tail of round 2's regional-classification finding above.
++
++RECOMMENDATION: Minor revisions
+
+codex
+Completed the final red-team review and wrote [redteam.md](/Users/maxghenis/mackenzie-scott-qaly/paper/review/round3/redteam.md).
+
+Recommendation: **Minor revisions**, due solely to the remaining “high-income-region dollars” wording inconsistency in §7.
+diff --git a/paper/review/round3/redteam.md b/paper/review/round3/redteam.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..a8424c976b40def35e85fc75fe96e45c40314084
+--- /dev/null
++++ b/paper/review/round3/redteam.md
+@@ -0,0 +1,23 @@
++# Red-team referee report — round 3
++
++| Round-2 item | Status | Verification against fresh text |
++|---:|---|---|
++| 1 | RESOLVED FOR WORKING PAPER | The standing decision to retain the headline estimate is now supported by explicit proxy/mixture caveats, an upward-bias limitation, and a no-geographic-repricing comparison of roughly 70,000 versus 202,000 QALYs. This is adequate scenario disclosure at SSRN stage. |
++| 2 | RESOLVED | The limitations now expressly say the estimate is not a floor on total wellbeing, identifies omitted harms, and explains that the near-RCT-only case is only the closest available zero scenario. |
++| 3 | RESOLVED FOR WORKING PAPER | The 19% audited-overlay estimate remains a heuristic without sampling bounds, but the paper now distinguishes the Dirichlet judgment prior from pipeline uncertainty and explicitly lists geography-audit uncertainty as unpropagated. This is a documented limitation. |
++| 4 | RESOLVED FOR WORKING PAPER | The reconciliation arithmetic is now internally correct: 33 were confirmed within tolerance, 17 disputed, four adjudicated, and all other final fractions average the coders. Confidence grades and source records are disclosed; further external validation can reasonably be deferred. |
++| 5 | RESOLVED FOR WORKING PAPER | The 95%/93% figures remain clearly labeled later-period, organization-wide proxies, and the scalar/regional-denominator mismatch remains disclosed as a limitation. The standing deferral is reasonable. |
++| 6 | RESOLVED | The frontier now shares only the realization draw and receives its stated RCT-grade credibility. The unsupported universal diminishing-returns claim is replaced by the narrower claim that the multiple remains large only at scales addressed by the cited benchmarks. |
++| 8 | RESOLVED | Priority is now Scott-specific (“first outside ... estimate of Scott's giving”), while the broader comparison is framed as the author's search result rather than an established universal. This is adequate for a working paper. |
++| 11 | RESOLVED FOR WORKING PAPER | Section 6 now accurately limits interpolation to the body and discloses that abstract figures are typed copies. A CI render guard remains deferred rather than falsely claimed. |
++| 13 | RESOLVED FOR WORKING PAPER | The unsupported “eleven rounds” count is gone, the latest transition has reproducible tags, and the table defines revisions and records the detector. Direct evidence links for every earlier row would improve the audit trail, but their absence is not material enough to block this working paper. |
++| 14 | RESOLVED FOR WORKING PAPER | Section 2.1 now specifies disclosure-year booking and the May 2026 CPI-U anchor; the nominal-share application and its very small effect remain disclosed in limitations. |
++| 15 | RESOLVED FOR WORKING PAPER | The elasticity is now called a within-sample regularity rather than a validated prediction rule, the full matched/unmatched flow is reported, and “representative” is explicitly conditional on the imputation model. |
++| New finding 1 | PARTIALLY RESOLVED | Section 2.3 correctly replaces “high-income regions” with “Europe & Central Asia plus Canada” and says the true high-income share is unidentified. Section 7, however, still calls those same dollars “high-income-region dollars,” contradicting that correction. Replace that phrase with “Europe & Central Asia plus Canada dollars” (or “possibly high-income dollars”) and keep the unidentified-share qualification. |
++| New finding 2 | RESOLVED | The foundation/public-filings extension is deleted. Transferability is now conditioned on disclosures carrying comparable gift-level allocation and geography fields. |
++
++## New findings
++
++None. A brief regression glance found no additional problem introduced by the newest edits. The one remaining factual wording mismatch is the unresolved tail of round 2's regional-classification finding above.
++
++RECOMMENDATION: Minor revisions
+
+tokens used
+59,916
+Completed the final red-team review and wrote [redteam.md](/Users/maxghenis/mackenzie-scott-qaly/paper/review/round3/redteam.md).
+
+Recommendation: **Minor revisions**, due solely to the remaining “high-income-region dollars” wording inconsistency in §7.
