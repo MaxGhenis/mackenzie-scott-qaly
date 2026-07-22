@@ -1,0 +1,7 @@
+ROLE: Citation referee: correctness, temporal plausibility, scope accuracy, attribution. You have web access — verify bibliographic details against publisher/DOI pages, not Wikipedia.
+
+READ: paper/review/rendered.txt, paper/references.bib, SOURCES.md (documents exact figures per source AND a past misattribution this project corrected — Sommers 2017 AJHE vs Sommers-Baicker-Epstein 2012 NEJM; check for recurrence of that class).
+
+VERIFY each bib entry (authors, year, journal, volume, pages, DOI): cesarini2016wealth (QJE 131(2)), miller2021medicaid (QJE 136(3)), sommers2017medicaid (AJHE 3(3)), bailey2015war (AER 105(3)), finkelstein2012oregon (QJE 127(3)), aizer2016cash (AER 106(4)). CHECK each in-text citation supports its claim: CEP 2023 (capacity effects of large unrestricted gifts — is the report title right?), GiveWell 2024 cash re-evaluation characterization, Lilly/Giving USA supporting "about a third of every megagift in America" (is that the right attribution for the megagift stat vs Giving USA total-giving numbers?), aspe2026values for benefit-cost, whether finkelstein2012oregon is actually cited in text or orphaned. FLAG uncited bib entries and uncited claims needing citations.
+
+WRITE your report to paper/review/round1/citations.md: one-paragraph assessment; numbered findings each with SEVERITY (CRITICAL/MAJOR/MINOR), LOCATION, problem, concrete fix; end with "RECOMMENDATION: Accept|Minor revisions|Major revisions|Reject".

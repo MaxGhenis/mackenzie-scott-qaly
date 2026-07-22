@@ -29,7 +29,7 @@ inputs are expressed in 2026 dollars; CPI-U index values from
   organizations, 2,711 gifts, dollar amounts disclosed for 2,035 gifts
   ($17.46B nominal, ~two-thirds of the $26.39B total), org-reported focus
   areas on every disclosed dollar. Each gift's dollars are split equally
-  across its organization's areas; the 53 areas map onto the model's 13
+  across its organization's areas; the 53 areas map onto the model's 14
   archetypes per [`leaf_to_archetype.yaml`](data/yieldgiving/leaf_to_archetype.yaml),
   enforced by a sync test. Scott publishes no *aggregate* dollars-by-cause
   breakdown; this derivation is ours. Qualitative corroboration: [HBS Working

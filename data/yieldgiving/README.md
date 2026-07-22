@@ -21,12 +21,14 @@ carries at least one focus-area tag.
 
 Geography: weighting each organization's disclosed dollars by
 `nonus_fraction(locations)` (share of reported service locations outside the
-US; a bare `global` counts as fully non-US), **$3.57B of the $17.46B disclosed
+US; a bare `global` counts as fully non-US under this raw rule), **$3.57B of the $17.46B disclosed
 — 20.4% — goes to organizations serving outside the US**, led by environment
 (~$0.64B), health (~$0.61B), and funding intermediaries (~$0.54B). The model
 prices only the health-and-development slice by geography (the
 `global_health` routing, ~4.8% of the full ledger under the audited v1.1 allocation); other categories keep
-their US-study anchors regardless of delivery location.
+their US-study anchors regardless of delivery location. Applying the audited
+us_share overlay (geo_audit/) instead of the raw global-counts-as-abroad rule
+gives ~$3.34B / ~19.1% for the same disclosed-dollar calculation.
 
 ## area_map.json
 

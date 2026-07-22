@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="generator" content="quarto-1.9.36">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+    <title>citations</title>
+    <style>
+      /* Default styles provided by pandoc.
+      ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+      */
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      div.columns{display: flex; gap: min(4vw, 1.5em);}
+      div.column{flex: auto; overflow-x: auto;}
+      div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+      ul.task-list{list-style: none;}
+      ul.task-list li input[type="checkbox"] {
+        width: 0.8em;
+        margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+        vertical-align: middle;
+      }
+    </style>
+
+    <style>
+      body.hypothesis-enabled #quarto-embed-header {
+        padding-right: 36px;
+      }
+
+      #quarto-embed-header {
+        height: 3em;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: solid 1px;
+      }
+
+      #quarto-embed-header h6 {
+        font-size: 1.1em;
+        padding-top: 0.6em;
+        margin-left: 1em;
+        margin-right: 1em;
+        font-weight: 400;
+      }
+
+      #quarto-embed-header a.quarto-back-link,
+      #quarto-embed-header a.quarto-download-embed {
+        font-size: 0.8em;
+        margin-top: 1em;
+        margin-bottom: 1em;
+        margin-left: 1em;
+        margin-right: 1em;
+      }
+
+      .quarto-back-container {
+        padding-left: 0.5em;
+        display: flex;
+      }
+
+      .headroom {
+          will-change: transform;
+          transition: transform 200ms linear;
+      }
+
+      .headroom--pinned {
+          transform: translateY(0%);
+      }
+
+      .headroom--unpinned {
+          transform: translateY(-100%);
+      }      
+    </style>
+
+    <script>
+    window.document.addEventListener("DOMContentLoaded", function () {
+
+      var header = window.document.querySelector("#quarto-embed-header");
+      const titleBannerEl = window.document.querySelector("body > #title-block-header");
+      if (titleBannerEl) {
+        titleBannerEl.style.paddingTop = header.clientHeight + "px";
+      }
+      const contentEl = window.document.getElementById('quarto-content');
+      for (const child of contentEl.children) {
+        child.style.paddingTop = header.clientHeight + "px";
+        child.style.marginTop = "1em";
+      }
+
+      // Use the article root if the `back` call doesn't work. This isn't perfect
+      // but should typically work
+      window.quartoBackToArticle = () => {
+        var currentUrl = window.location.href;
+        window.history.back();
+        setTimeout(() => {
+            // if location was not changed in 100 ms, then there is no history back
+            if(currentUrl === window.location.href){              
+                // redirect to site root
+                window.location.href = "../../index.html";
+            }
+        }, 100);
+      }
+
+      const headroom = new window.Headroom(header, {
+        tolerance: 5,
+        onPin: function () {
+        },
+        onUnpin: function () {
+        },
+      });
+      headroom.init();
+    });
+    </script>
+
+    
+<script src="../../site_libs/manuscript-notebook/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-170b94ad9e322df11de454cd5eb05b1b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+     
+      </head>
+
+  <body class="quarto-notebook quarto-light">
+    <div id="quarto-embed-header" class="headroom fixed-top bg-primary">
+      
+      <a onclick="window.quartoBackToArticle(); return false;" class="btn btn-primary quarto-back-link" href=""><i class="bi bi-caret-left"></i> Back to Article</a>
+      <h6><i class="bi bi-journal-code"></i> citations.md</h6>
+
+            <a href="../../review/round1/citations.md" class="btn btn-primary quarto-download-embed" download="citations.md">Download Notebook</a>
+          </div>
+
+     <div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content quarto-banner-title-block" id="quarto-document-content">    <p>The six requested journal records were checked against DOI/publisher metadata. <code>cesarini2016wealth</code>, <code>miller2021medicaid</code>, <code>sommers2017medicaid</code>, <code>bailey2015war</code>, and <code>aizer2016cash</code> have the correct named authors, year, journal, volume/issue, page span, and DOI; <code>finkelstein2012oregon</code> has the correct eight named authors and all other requested fields but omits the corporate coauthor, the Oregon Health Study Group. The manuscript nevertheless needs major citation revision: the megagiving statistic is attached to a temporally incapable and bibliographically misidentified CNBC article, Sommers (2017) is inaccurately grouped with an ACA mortality study despite the exact misattribution warning in <code>SOURCES.md</code>, and the GiveWell cash citation does not establish the manuscript’s portfolio-scale multiple or diminishing-returns claims. The CEP evidence and HHS valuation are directionally usable after narrower attribution and corrected bibliographic details, while two journal entries are orphaned and several quantitative conventions or literature claims lack in-text support.</p>
+<ol type="1">
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> Abstract, p.&nbsp;1, “roughly a third of American megagiving in 2025”; Introduction, p.&nbsp;1, “by the Indiana University Lilly Family School of Philanthropy’s accounting, about a third of every megagift in America that year”; <code>references.bib</code>, <code>cnbc2025scott</code>.<br>
+<strong>Problem:</strong> The underlying statistic is about dollars, not the number of gifts: $6.65 billion of Scott’s contributions represented about one-third of the $19.2 billion <em>value</em> of 2025 megagifts. The current wording “a third of every megagift” is scope-inaccurate. More seriously, the cited December 2025 CNBC story predates Giving USA 2026 and contains neither the $19.2 billion denominator nor the one-third comparison; it discusses Scott’s $7.17 billion and Giving USA’s <em>2024 total-giving</em> figure. Its BibTeX is also misattributed: the <a href="https://www.cnbc.com/2025/12/13/mackenzie-scott-revealed-her-total-charitable-donations-for-2025.html">CNBC publisher page</a> names Tom Huddleston Jr., not Lorie Konish, and its title is “MacKenzie Scott announced another $7.1 billion in 2025 charitable donations—she’s now given away $26.3 billion since 2019.” The one-third statistic appears in contemporaneous 2026 reporting based on Giving USA/Lilly data, including <a href="https://fortune.com/2026/06/25/mackenzie-scott-largest-megadonor-2025-7-billion-donations-giving-usa-iu-report/">Fortune</a> and the <a href="https://apnews.com/article/giving-usa-report-philanthropy-2025-8363b76bc8cf854f6865c31129e8a4b1">Associated Press/Chronicle of Philanthropy</a>; the <a href="https://givingusa.org/giving-usa-charitable-giving-rose-to-617-20-billion-in-2025-surpassing-the-600-billion-mark-for-the-first-time/">Giving USA release</a> verifies the distinct $617.20 billion total-giving figure and the report’s formal title. This is the same class of source/claim mismatch that the project previously corrected.<br>
+<strong>Concrete fix:</strong> Replace the sentence with, for example, “Scott’s $6.65 billion in qualifying contributions represented about one-third of the $19.2 billion value of U.S. megagifts in 2025,” and cite a source that actually states those figures (or give the exact Giving USA 2026 page/table). Remove CNBC from this claim. If CNBC remains for the $7.17 billion annual total, correct its author and title. Preserve the distinction between megagift value and total charitable giving.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> Model, p.&nbsp;3, “the ACA Medicaid mortality quasi-experiment (Miller et al.&nbsp;2021; Sommers 2017).”<br>
+<strong>Problem:</strong> <a href="https://doi.org/10.1093/qje/qjab004">Miller, Johnson, and Wherry (2021)</a> studies mortality after Affordable Care Act Medicaid expansions. <a href="https://doi.org/10.1162/ajhe_a_00080">Sommers (2017)</a> is a cost-benefit reanalysis of the earlier Arizona, Maine, and New York expansions; it supplies the $327,000–$867,000 cost-per-life-saved arithmetic documented in <code>SOURCES.md</code>, not a second ACA mortality design. Grouping both citations under “the ACA … experiment” recurs in substance the attribution problem that <code>SOURCES.md</code> expressly warns against, even though it does not repeat the old NEJM citation verbatim.<br>
+<strong>Concrete fix:</strong> Separate the roles: cite Miller et al.&nbsp;(2021) for ACA-expansion mortality identification, and cite Sommers (2017) specifically for the cost-benefit reanalysis of pre-ACA state expansions. If the underlying pre-ACA mortality estimate itself is discussed, cite Sommers, Baicker, and Epstein (2012) for that estimate while retaining Sommers (2017) for the cost arithmetic.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> Section 4.2, p.&nbsp;7, “funding beyond identified room drives toward cash-transfer cost-effectiveness” and “the 20–40× range implied by GiveWell’s cash-transfer benchmark (GiveWell 2024).”<br>
+<strong>Problem:</strong> <a href="https://blog.givewell.org/2024/11/12/re-evaluating-the-impact-of-unconditional-cash-transfers/">GiveWell’s 2024 post</a> says that its revised estimate of GiveDirectly’s flagship cash program is 3–4 times its <em>previous estimate</em> and that GiveWell’s current top programs are at least twice as cost-effective as the revised cash estimate. It does not report a 20–40× comparison with Scott’s portfolio, does not convert cash-transfer welfare into QALYs, and does not say that tens of billions of additional funding converge to cash-transfer cost-effectiveness. Thus the citation is accurate for the fact of a cash re-evaluation but not for the characterization or numerical range attached to it here.<br>
+<strong>Concrete fix:</strong> Label 20–40× as an author/model-derived scenario and show the complete like-for-like arithmetic, including how GiveWell’s units are translated into health-only QALYs; otherwise remove the range. Cite the 2024 post only for its actual 3–4× re-evaluation. Do not describe cash as an empirically established portfolio-scale “floor” without a source and a unit-comparability argument.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> Section 4.2, p.&nbsp;7, “frontier-priced opportunities are scarce, GiveWell directs hundreds of millions — not tens of billions — per year at these prices,” and the closing reference to “diminishing returns accounts in the cited literature.”<br>
+<strong>Problem:</strong> These are externally checkable claims but no cited source in the manuscript establishes GiveWell’s annual directed amount, the amount available at the quoted frontier prices, or a portfolio-scale diminishing-returns curve. <code>givewell2024cash</code> does none of those things. Calling the material “cited literature” overstates the citation coverage.<br>
+<strong>Concrete fix:</strong> Add separate citations to GiveWell’s annual metrics/grantmaking totals and its room-for-more-funding or funding-bar methodology, quote the relevant year and amount, and characterize the portfolio-scale compression explicitly as a scenario unless a source quantifies it. If no source supplies a 20–40× curve, delete that precision.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> Model, p.&nbsp;3, “Health effects … are converted to discounted QALYs under a common set of conventions (about 65 remaining life-years at baseline utility 0.87, 3% annual discounting).”<br>
+<strong>Problem:</strong> The values are uncited in the manuscript and are not a common conversion across the model. <code>data/parameters.yaml</code> uses roughly 26 remaining years and a 0.60/0.78/0.92 utility distribution for adult premature deaths, while 65 years and 0.87 are fixed child-death assumptions used for the global-health frontier; a third pair calibrates HHS VQALY discount-rate rescaling. The sentence therefore both overgeneralizes and conceals which conversion drives which result. GiveWell reports cost per life saved, not the 65-year or 0.87 inputs.<br>
+<strong>Concrete fix:</strong> Replace “common set” with separate adult and child conversion descriptions. Cite the adult life-expectancy and utility anchors already named in <code>SOURCES.md</code>, add an authoritative life-table source and health-utility source for the child values, and cite the normative source for the 3% rate. Identify 65 and 0.87 as author calibration assumptions if that is what they remain.</p></li>
+<li><p><strong>SEVERITY: MINOR</strong><br>
+<strong>LOCATION:</strong> Model, p.&nbsp;3, CEP capacity-effects sentence; <code>references.bib</code>, <code>cep2023gifts</code>.<br>
+<strong>Problem:</strong> The report title is not exact, and the entry suppresses the named authors. The publisher’s title page gives Ellie Buteau, Elisha Smith Arrillaga, and Christina Im as authors and the title/subtitle as <em>Emerging Impacts: The Effects of MacKenzie Scott’s Large, Unrestricted Gifts: Results from Year Two of a Three-Year Study</em>, not “(Year 2).” The <a href="https://cep.org/wp-content/uploads/2023/11/BigGiftsStudy_Report_Y2_FNL.pdf">CEP report</a> does document recipient leaders’ reports of stronger operational capacity, staffing, financial stability, and expanded programs, but it is a 41%-response survey plus interviews, not a causal estimate of marginal delivery or a measured realization multiplier above one.<br>
+<strong>Concrete fix:</strong> Correct the title and authors in BibTeX. Revise the prose to “self-reported capacity changes among surveyed Scott recipients,” and state that using those reports to permit a realization factor above one is an author judgment rather than an effect size estimated by CEP.</p></li>
+<li><p><strong>SEVERITY: MINOR</strong><br>
+<strong>LOCATION:</strong> Introduction, p.&nbsp;2, and Results, p.&nbsp;4, benefit-cost ratio language; <code>references.bib</code>, <code>aspe2026values</code>.<br>
+<strong>Problem:</strong> The <a href="https://aspe.hhs.gov/reports/standard-ria-values">ASPE landing page and 2026 PDF</a> identify Aaron Kearsley as author and the title as <em>HHS Standard Values for Regulatory Analysis, 2026</em>, not <em>Standard Values for Regulatory Impact Analysis</em>. The source does support the valuation input: Table 3 gives a 3%-discount VQALY range of $339,000/$726,000/$1,105,000 for 2026 impacts in constant 2025 dollars. It does not itself report the manuscript’s 4.9 benefit-cost ratio, and “the U.S. government’s value” is broader than the source’s status as HHS default recommendations for HHS regulatory impact analyses.<br>
+<strong>Concrete fix:</strong> Correct the author/title and cite Table 3. Say “using HHS’s 2026 central regulatory-analysis VQALY at a 3% discount rate” (and disclose the manuscript’s CPI conversion); label 4.9 and its interval as model outputs, not ASPE results.</p></li>
+<li><p><strong>SEVERITY: MINOR</strong><br>
+<strong>LOCATION:</strong> <code>references.bib</code>, <code>finkelstein2012oregon</code> and <code>aizer2016cash</code>; rendered reference list, pp.&nbsp;11–12.<br>
+<strong>Problem:</strong> Both entries are uncited in the manuscript and therefore absent from the rendered reference list. Finkelstein et al.&nbsp;(2012) is relevant to the Oregon spending effects used inside Sommers’s cost calculation, and Aizer et al.&nbsp;(2016) appears relevant to the cash-transfer archetype, but neither role is stated in the paper. In addition, <a href="https://doi.org/10.1093/qje/qjs020">DOI metadata for Finkelstein et al.</a> lists the Oregon Health Study Group after the eight named authors; the BibTeX omits it. All requested fields for <a href="https://doi.org/10.1257/aer.20140529">Aizer et al.</a> are correct.<br>
+<strong>Concrete fix:</strong> Either cite each where its evidence actually enters the model (Finkelstein for the OHIE expenditure component; Aizer for long-run child outcomes from Mothers’ Pensions) or remove it from the paper bibliography. Add <code>{Oregon Health Study Group}</code> as Finkelstein’s corporate coauthor if retaining the entry.</p></li>
+<li><p><strong>SEVERITY: MINOR</strong><br>
+<strong>LOCATION:</strong> Section 4.1, pp.&nbsp;4–5, “the central empirical claim of the effective-altruism literature”; <code>SOURCES.md</code>, Allocation across causes.<br>
+<strong>Problem:</strong> The broad literature attribution—“the cheapest health in the world is not bought where most philanthropic dollars are spent”—has no in-text citation in <code>rendered.txt</code>. Separately, <code>SOURCES.md</code> says that the 53 focus areas map to 13 archetypes, whereas the manuscript and <code>data/parameters.yaml</code> contain 14.<br>
+<strong>Concrete fix:</strong> Cite a specific source that documents the cross-intervention cost-effectiveness distribution and, separately, evidence on where philanthropic dollars are spent; otherwise present the sentence as the author’s interpretation of Table 1 rather than a literature claim. Change “13 archetypes” to “14 archetypes” in <code>SOURCES.md</code>.</p></li>
+</ol>
+<p>RECOMMENDATION: Major revisions</p>
+     </main>
+<!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>  </div> <!-- /content --> 
+  
+</body></html>

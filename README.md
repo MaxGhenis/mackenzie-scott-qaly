@@ -2,6 +2,11 @@
 
 **Working paper:** [HTML](https://maxghenis.github.io/mackenzie-scott-qaly/) · [PDF](https://maxghenis.github.io/mackenzie-scott-qaly/index.pdf) — source in [paper/](paper/), rendered from the frozen results so every number in the manuscript is computed, not typed.
 
+**Reproduce everything** (order matters): `uv run msqaly --write` →
+`uv run msqaly-export-params` → `uv run python -m msqaly.exportversions` →
+`uv run python -m msqaly.geo` → `uv run python -m pytest` (sync guards) →
+render the paper per [paper/README.md](paper/README.md).
+
 [![CI](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml)
 
 **▶ Interactive version: [maxghenis.com/mackenzie-scott-qaly](https://maxghenis.com/mackenzie-scott-qaly)** — drag the assumptions and watch the model rerun in your browser (a TypeScript port of this package, reading the same `parameters.yaml`).

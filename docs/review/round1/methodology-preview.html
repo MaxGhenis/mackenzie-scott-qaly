@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="generator" content="quarto-1.9.36">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+    <title>methodology</title>
+    <style>
+      /* Default styles provided by pandoc.
+      ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+      */
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      div.columns{display: flex; gap: min(4vw, 1.5em);}
+      div.column{flex: auto; overflow-x: auto;}
+      div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+      ul.task-list{list-style: none;}
+      ul.task-list li input[type="checkbox"] {
+        width: 0.8em;
+        margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+        vertical-align: middle;
+      }
+    </style>
+
+    <style>
+      body.hypothesis-enabled #quarto-embed-header {
+        padding-right: 36px;
+      }
+
+      #quarto-embed-header {
+        height: 3em;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: solid 1px;
+      }
+
+      #quarto-embed-header h6 {
+        font-size: 1.1em;
+        padding-top: 0.6em;
+        margin-left: 1em;
+        margin-right: 1em;
+        font-weight: 400;
+      }
+
+      #quarto-embed-header a.quarto-back-link,
+      #quarto-embed-header a.quarto-download-embed {
+        font-size: 0.8em;
+        margin-top: 1em;
+        margin-bottom: 1em;
+        margin-left: 1em;
+        margin-right: 1em;
+      }
+
+      .quarto-back-container {
+        padding-left: 0.5em;
+        display: flex;
+      }
+
+      .headroom {
+          will-change: transform;
+          transition: transform 200ms linear;
+      }
+
+      .headroom--pinned {
+          transform: translateY(0%);
+      }
+
+      .headroom--unpinned {
+          transform: translateY(-100%);
+      }      
+    </style>
+
+    <script>
+    window.document.addEventListener("DOMContentLoaded", function () {
+
+      var header = window.document.querySelector("#quarto-embed-header");
+      const titleBannerEl = window.document.querySelector("body > #title-block-header");
+      if (titleBannerEl) {
+        titleBannerEl.style.paddingTop = header.clientHeight + "px";
+      }
+      const contentEl = window.document.getElementById('quarto-content');
+      for (const child of contentEl.children) {
+        child.style.paddingTop = header.clientHeight + "px";
+        child.style.marginTop = "1em";
+      }
+
+      // Use the article root if the `back` call doesn't work. This isn't perfect
+      // but should typically work
+      window.quartoBackToArticle = () => {
+        var currentUrl = window.location.href;
+        window.history.back();
+        setTimeout(() => {
+            // if location was not changed in 100 ms, then there is no history back
+            if(currentUrl === window.location.href){              
+                // redirect to site root
+                window.location.href = "../../index.html";
+            }
+        }, 100);
+      }
+
+      const headroom = new window.Headroom(header, {
+        tolerance: 5,
+        onPin: function () {
+        },
+        onUnpin: function () {
+        },
+      });
+      headroom.init();
+    });
+    </script>
+
+    
+<script src="../../site_libs/manuscript-notebook/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-170b94ad9e322df11de454cd5eb05b1b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+     
+      </head>
+
+  <body class="quarto-notebook quarto-light">
+    <div id="quarto-embed-header" class="headroom fixed-top bg-primary">
+      
+      <a onclick="window.quartoBackToArticle(); return false;" class="btn btn-primary quarto-back-link" href=""><i class="bi bi-caret-left"></i> Back to Article</a>
+      <h6><i class="bi bi-journal-code"></i> Technical methods referee report</h6>
+
+            <a href="../../review/round1/methodology.md" class="btn btn-primary quarto-download-embed" download="methodology.md">Download Notebook</a>
+          </div>
+
+     <div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#technical-methods-referee-report" id="toc-technical-methods-referee-report" class="nav-link active" data-scroll-target="#technical-methods-referee-report">Technical methods referee report</a>
+  <ul class="collapse">
+  <li><a href="#assessment" id="toc-assessment" class="nav-link" data-scroll-target="#assessment">Assessment</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content quarto-banner-title-block" id="quarto-document-content">      <section id="technical-methods-referee-report" class="level1">
+<h1>Technical methods referee report</h1>
+<section id="assessment" class="level2">
+<h2 class="anchored" data-anchor-id="assessment">Assessment</h2>
+<p>The implementation is unusually transparent and is numerically reproducible: with 100,000 draws and seed 0 I recover 201,922.7 median QALYs, the reported interval and benefit-cost ratio, and all 64 tests pass. The core accounting is also internally coherent in several important respects: each draw sums archetype QALYs exactly, the code multiplies by one realization draw and one credibility draw per archetype, the cause table uses additive means, and the benefit-cost ratio is formed draw by draw. The paper nevertheless overstates what this coherence establishes. The allocation distribution is an uncalibrated judgment prior rather than uncertainty propagated from the gift data; the disclosure regression is selected on both amount disclosure and 990 matching; the “RCT-only” endpoint is neither RCT-only nor correctly attributed in the prose; the claimed common QALY convention is used only for the frontier; and the frontier does not receive the “same” credibility adjustment as the portfolio. These issues materially affect interpretation of the headline and robustness range, but they are repairable with clearer estimands, additional sensitivity analyses, and corrected labels rather than a wholesale redesign.</p>
+<ol type="1">
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> <code>paper/index.qmd</code> lines 111–115; rendered paper lines 118–145; <code>src/msqaly/model.py</code> lines 137–189; <code>data/parameters.yaml</code> lines 155–203, 343–403, 465–482, and 529–548.<br>
+<strong>Problem:</strong> The code does literally apply each of the two explicit multipliers once: (Q_{ij}=D S_{ij}R_i C_{ij}/K_{ij}). That establishes absence of a duplicated line of code, not the stronger claim that “each doubt enters exactly one layer.” Several cost-per-QALY priors already mix concerns assigned elsewhere. The cash prior spans adult RCT null results and positive child quasi-experiments and is then assigned a <code>strong_quasi</code> credibility multiplier; the education range is anchored to a contested literature including null findings and is then discounted again as <code>moderate_quasi</code>; and the global-health prior blends program types and GiveWell-style modeled effectiveness before receiving both credibility and realization multipliers. Conversely, the model omits harmful effects and does not propagate uncertainty about the tier means. Calling realization a “discount” is also imprecise because it can reach 1.10. The intended partition is sensible, but it is not presently demonstrated parameter by parameter and may both double-count and omit uncertainty.<br>
+<strong>Concrete fix:</strong> Add an uncertainty ledger for every archetype stating (i) the conditional estimand represented by its cost prior, (ii) which internal-validity concerns are excluded because credibility handles them, (iii) which transport, implementation, overhead, and funging concerns are excluded because realization handles them, and (iv) any remaining model uncertainty. Rebuild priors that already average over null-versus-positive evidence as explicitly conditional priors, or remove the overlapping credibility discount. Until that audit is complete, replace “each doubt enters exactly one layer” with “the model is intended to separate these doubts,” and report one-factor-off sensitivity runs.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> <code>paper/index.qmd</code> lines 99–111; rendered paper lines 81–97 and 118–124; <code>src/msqaly/model.py</code> lines 140–146; <code>data/parameters.yaml</code> lines 205–213.<br>
+<strong>Problem:</strong> The Dirichlet is described but not statistically identified. The implementation uses (_j=60s_j), where (s_j) is the rounded allocation center. Concentration 60 is an AI-proposed prior, not a posterior effective sample size derived from 2,711 gifts, the disclosure process, or the imputation regression. It is consequential: under the implemented distribution, the global-health share has an approximate 5th–95th percentile range of 1.29%–9.99% around its 4.8% center, and its sampled allocation is the largest reported uncertainty driver. At the same time, this generic compositional spread does not propagate uncertainty from the elasticity, unmatched 990s, focus-area crosswalk, geographic audit, or equal-split assumptions. The resulting interval can therefore be wide in an arbitrary direction while omitting the allocation uncertainties actually created by the data pipeline.<br>
+<strong>Concrete fix:</strong> State the exact Dirichlet parameterization and its implied marginal intervals in the methods. Prefer a clustered bootstrap or hierarchical allocation procedure that resamples organizations/gifts, refits the imputation model, and propagates matching, crosswalk, and geographic-fraction uncertainty. At minimum, show headline and interval results over a preregistered range of concentrations (including fixed shares) and describe this component as a subjective probabilistic sensitivity distribution, not sampling uncertainty.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> <code>paper/index.qmd</code> line 101 and lines 258–260; rendered paper lines 87–97 and 606–623; <code>src/msqaly/allocation.py</code> lines 125–143 and 226–263.<br>
+<strong>Problem:</strong> The paper does not give the necessary caveats for the elasticity regression. The slope is estimated only among positive disclosed gifts that also have a usable pre-gift 990: 1,313 pairs versus 2,035 disclosed gifts and 2,711 gifts overall. Amount disclosure can be selective, and 990 survival/matching is plainly non-random, especially for non-U.S. organizations. For the target undisclosed group, 287 of 676 gifts (42.5%) lack a revenue weight and receive the within-window median fallback. The pooled log-log OLS additionally treats repeated gifts to an organization as independent, supplies no uncertainty interval, includes no period effects, does not test nonlinearities or influential observations, and reports in-sample R-squared only. A pooled slope can also absorb nominal time trends even though the imputation is normalized within year windows. Thus “a 10× larger organization receives about 2.5× more” is valid only as a descriptive fit in a selected matched-disclosed sample, not as a general regularity or validated prediction for the missing amounts.<br>
+<strong>Concrete fix:</strong> Report a sample-flow table and restate the estimand as conditional on amount disclosure and a matched pre-gift 990. Add organization-clustered or organization-bootstrap uncertainty, period fixed effects, robust/influence diagnostics, nonlinear alternatives, and held-out prediction checks. Compare observable cause, geography, year, and recipient characteristics across disclosed/matched, disclosed/unmatched, and undisclosed groups. Propagate the slope and fallback uncertainty into the allocation rather than fixing beta at 0.4065.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> Abstract and <code>paper/index.qmd</code> lines 85, 202–240, and 258–260; rendered paper lines 18–20 and 524–560; <code>data/parameters.yaml</code> lines 197–203 and 285–294.<br>
+<strong>Problem:</strong> The stance endpoint is mislabeled and one substantive attribution is wrong. At stance 0, the code leaves the randomized-tier mean at 0.85 and sets every other tier to 0.01, not zero; it therefore represents “default credit for the randomized tier plus a small positive floor elsewhere,” not restriction to randomized evidence. In the reproduced run, the endpoint has median 9,114 QALYs and mean 13,090; the largest mean contribution is 8,806 QALYs from the randomized collaborative-care mental-health bucket. It is not “dominated by the one lottery-randomized bucket”: the cash bucket containing the lottery evidence is classified <code>strong_quasi</code> and is pushed to the 0.01 floor. At stance 1 all tier means are 0.999, not exactly one. The piecewise-linear path also has a kink at 0.5 and, because concentration is held fixed, changes Beta variances mechanically as means approach zero or one. Calling this arbitrary scenario path an “honest bound” is too strong.<br>
+<strong>Concrete fix:</strong> Correct the bucket attribution immediately. Either call the left endpoint “near-RCT-only” and disclose its residual non-randomized contribution, or implement a genuine RCT-only scenario with deterministic zero weights for non-randomized tiers and a clearly chosen weight for randomized evidence. Describe the exact piecewise formula, the fixed-concentration variance artifact, and the fact that 0.5 reproduces the drafted tier means. Call the curve a scenario analysis rather than a bound; supplement it with discrete, interpretable evidence-inclusion scenarios.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> <code>paper/index.qmd</code> line 115; rendered paper lines 140–145; <code>src/msqaly/model.py</code> lines 131–165 and 195–218; <code>data/parameters.yaml</code> lines 66–153.<br>
+<strong>Problem:</strong> The statement that outcomes are converted under a common convention of about 65 remaining years, utility 0.87, and 3% discounting is false. The 65/0.87 convention is used only for the frontier child calculation, yielding 25.12 discounted QALYs. The mortality-based health-coverage archetype instead samples 26 remaining years and utility 0.60–0.92 (mode 0.78), producing median 13.82 QALYs per death averted. Community health centers divide cost per life-year by that same adult utility draw but do not use 65 years. Direct cost-per-QALY archetypes retain their source/judgmental conventions and are not re-expressed under a common life expectancy, utility, or discount rate. Moreover, changing the discount-rate setting affects mortality conversion, VQALY, and the frontier, but leaves direct cost-per-QALY and cost-per-life-year archetypes unchanged. This is not a common-convention model outside the 3% default.<br>
+<strong>Concrete fix:</strong> Replace the common-convention claim with a table giving the conversion rule for every archetype and source. Either harmonize all convertible anchors to a declared 3% convention and define how direct QALY estimates respond to alternative rates, or state that the paper reports a fixed 3% analysis with source-specific QALY conventions and restrict/remove the global discount slider. Explain and justify reusing the adult mortality utility draw for the community-health-center conversion.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> <code>paper/index.qmd</code> lines 115 and 196–198; rendered paper lines 143–145 and 513–522; <code>src/msqaly/model.py</code> lines 209–227; <code>results/summary.md</code> line 12.<br>
+<strong>Problem:</strong> “Handicapped with the same realization and credibility discounts” is not an exact description. The frontier uses the identical realization draw, which cancels algebraically from the paired frontier/portfolio multiple, but it receives a newly and independently drawn randomized-tier credibility weight. The portfolio receives a different credibility draw for every archetype at tier-specific means. Thus the comparison uses the same realization shock and the same adjustment architecture, not the same credibility discount. There is also a possible overlap requiring defense: the frontier cost prior is derived from GiveWell modeled cost per life saved, after which the model applies another generic realization factor and an RCT-grade credibility shrinkage. If the source estimates already incorporate implementation performance or evidence adjustments, this is double handicapping. The diminishing-returns caveat is strong, but it does not resolve this measurement issue.<br>
+<strong>Concrete fix:</strong> Change the wording to identify the exact treatment: common realization draw, independent randomized-tier frontier credibility, and tier-weighted portfolio credibility. Document which GiveWell adjustments are already embedded in the $150–$260 prior. Report raw, realization-only, and realization-plus-credibility frontier variants, and explain which is the primary like-for-like estimand. Label 521× as the median of paired draw-level multiples; the ratio of the two separately reported medians is about 523×.</p></li>
+<li><p><strong>SEVERITY: MINOR</strong><br>
+<strong>LOCATION:</strong> <code>paper/index.qmd</code> lines 74–78 and 125–155; rendered paper lines 151–174 and Table 1; <code>results/summary.md</code> lines 14–33; <code>src/msqaly/cli.py</code> lines 92–108.<br>
+<strong>Problem:</strong> The paper is mostly disciplined about means and medians: Table 1 uses mean archetype contributions and these sum exactly to the mean total, while the headline uses the median total. However, Table 1’s $/QALY is center allocation dollars divided by mean QALYs—a ratio of expectations—not a generic “realized ratio.” The 69.1% impact share is likewise a ratio of mean contributions. Separately, <code>results/summary.md</code> reports medians of each archetype’s QALYs and raw cost-per-QALY draws; those medians are nonadditive and do not reconcile with either the table’s dollars or its realized ratios. The summary rows are also ordered by mean contribution while displaying medians. These are defensible quantities, but the mixed conventions invite incorrect addition or comparison.<br>
+<strong>Concrete fix:</strong> Label Table 1 explicitly as “ratio of center/expected dollars to expected QALYs” and call 69.1% the share of mean modeled QALYs. Add a warning that archetype medians in <code>results/summary.md</code> neither sum to the portfolio median nor define the displayed realized cost-effectiveness; either order that table by its displayed statistic or disclose the ordering rule.</p></li>
+<li><p><strong>SEVERITY: MINOR</strong><br>
+<strong>LOCATION:</strong> <code>paper/index.qmd</code> lines 160–193; rendered paper lines 369–379 and Table 2; <code>src/msqaly/geo.py</code> lines 220–297.<br>
+<strong>Problem:</strong> The geographic scope claim is substantively correct but should be narrower. The displayed regional QALYs are not geographic outcomes carried through each Monte Carlo draw. The notebook takes each archetype’s mean QALYs and deterministically apportions them using a fixed regional dollar matrix. Hence the rows sum by construction conditional on the location equal-split rules, audited fractions, prior reclassification of selected non-U.S. health-relevant dollars into <code>global_health</code>, and the assumption of identical effectiveness within each resulting archetype. No geographic, audit, or within-archetype regional uncertainty is represented. “The same run decomposed” can be read more strongly than the code warrants.<br>
+<strong>Concrete fix:</strong> Call Table 2 a deterministic post-estimation decomposition of mean archetype QALYs. State in the caption that no region-level effect or uncertainty is estimated and that geography affects pricing only earlier, when selected non-U.S. dollars are reclassified into the global-health archetype.</p></li>
+<li><p><strong>SEVERITY: MINOR</strong><br>
+<strong>LOCATION:</strong> <code>paper/index.qmd</code> line 145; rendered paper lines 151–155; <code>src/msqaly/model.py</code> lines 195–208 and 96–121; <code>results/summary.md</code> lines 10–12.<br>
+<strong>Problem:</strong> The benefit-cost arithmetic is correct but underdescribed. The code samples VQALY and QALYs in each draw, computes benefit and benefit/cost per draw, and then takes the median. Because giving is constant, the median of the draw-level ratios equals median health value divided by giving exactly: $148.763B / $30.303B = 4.909×. It is not the product of median QALYs and median VQALY divided by giving, which is about 5.019×. The reported 2.1–11.0 interval jointly reflects both health-output and VQALY uncertainty, not only uncertainty in QALYs.<br>
+<strong>Concrete fix:</strong> State that 4.9 is the median of the joint draw-level benefit-cost distribution and that the interval includes the sampled triangular HHS VQALY. Avoid wording that suggests evaluation at a single central HHS value.</p></li>
+<li><p><strong>SEVERITY: MAJOR</strong><br>
+<strong>LOCATION:</strong> <code>paper/index.qmd</code> lines 18, 145–147, 206–221, and 258–260; rendered paper lines 6–22, 151–166, and 549–560; <code>src/msqaly/model.py</code> lines 125–227.<br>
+<strong>Problem:</strong> The computational mechanics are reproducible but the uncertainty interval lacks a clear inferential label. The headline uses 100,000 draws and seed 0; p05, median, mean, and p95 are summaries across draws; cause contributions are draw means; blended cost, value, benefit-cost, frontier QALYs, and the frontier multiple are separate draw-level transformations followed by medians. Realization is shared globally within a draw, Dirichlet shares are compositional, credibility is independently redrawn by archetype even for common tiers, and all other sampled priors are treated as independent. The 90% range is therefore a conditional probabilistic-sensitivity interval under stipulated priors, not a confidence interval and not a posterior credible interval. It excludes uncertainty in the fitted elasticity, source selection, tier means, crosswalk, and model structure. Reusing seed 0 at every stance point provides reproducibility but does not by itself create a formally coupled common-random-number comparison when Beta parameters change. Across ten 100,000-draw seeds, I find an SD of about 259 QALYs for the estimated median, so reporting 201,923 as though exact also exceeds Monte Carlo precision, although rounding to 202,000 is adequate.<br>
+<strong>Concrete fix:</strong> Add a compact simulation-specification table covering distributions, dependence, fixed versus sampled inputs, seed, and the statistic used for every headline/table entry. Call the interval a “90% model-input uncertainty interval conditional on the stated priors.” Report a convergence or Monte Carlo standard-error check, round simulation outputs accordingly, and distinguish parameter uncertainty, allocation/imputation uncertainty, and structural scenario uncertainty.</p></li>
+</ol>
+<p>RECOMMENDATION: Major revisions</p>
+</section>
+</section>
+     </main>
+<!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>  </div> <!-- /content --> 
+  
+</body></html>

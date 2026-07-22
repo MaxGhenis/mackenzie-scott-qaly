@@ -1,0 +1,7 @@
+ROLE: Adversarial referee (red team) for an SSRN working paper. Your job is to BREAK it: hunt for fabrication, unsupported claims, overreach, internal inconsistencies a hostile expert would find. You have web access — verify externally where possible.
+
+READ: paper/review/rendered.txt (rendered paper, canonical), paper/index.qmd (source: typed-in-prose numbers are the fabrication-risk surface; {python} interpolations are computed), data/parameters.yaml, SOURCES.md, results/summary.json, data/yieldgiving/README.md. Run code with .venv/bin/python if useful.
+
+PRIORITY ATTACKS: (a) typed numbers in prose that could be wrong or drift ("4.9 benefit-cost", "2.1–11.0", "$3.57 billion", "20%", "45×", "1,200-fold", "$175–$241", "hundreds of millions", "about $10,000 per QALY", "$350,000–$450,000"); (b) the "first portfolio-level cost-effectiveness estimate" priority claim — search for prior art; (c) "about a third of American megagiving in 2025" — verify sourcing; (d) Planned Parenthood ~95% / Crisis Text Line ~93% US figures vs data/yieldgiving/geo_audit/geo_audit.jsonl; (e) corrections-history numbers; (f) overstatement in the geographic decomposition and frontier sections; (g) the CPI/tranche accounting description vs SOURCES.md.
+
+WRITE your report to paper/review/round1/red-team.md: one-paragraph assessment; numbered findings each with SEVERITY (CRITICAL/MAJOR/MINOR), LOCATION (section + quote), problem, concrete fix; end with "RECOMMENDATION: Accept|Minor revisions|Major revisions|Reject".

@@ -1,0 +1,100 @@
+# Reproducibility referee report
+
+## Assessment
+
+The computational core is reproducible from the present checkout: the exact requested test command passes all 64 tests, the allocation/geography/version sync guards pass, a fresh parameter export is byte-identical to `web/params.json`, all checked paper numbers reconcile to committed artifacts or fresh seeded calculations, all named data snapshots are tracked and parse successfully, and both dated tags exist with the described model states. The paper artifact itself is not yet reproducible by a stranger, however: the current manuscript source differs from the rendered and published copies, the custom Jupyter kernel and full paper environment are neither declared nor documented, and no guard enforces manuscript-to-render synchronization. These are material but repairable packaging failures, so I recommend major revisions rather than rejection.
+
+## Verification record
+
+### Tests and sync guards
+
+I ran the requested command verbatim:
+
+```text
+.venv/bin/python -m pytest tests/
+64 passed in 1.94s
+```
+
+The sync guards are:
+
+| Guard | Fresh derivation checked | Result |
+|---|---|---|
+| `tests/test_allocation.py::test_parameters_match_derivation` | `data/parameters.yaml` allocation shares versus `derive_shares()` | PASS |
+| `tests/test_geo.py::test_export_in_sync` | `web/geo.json` versus fresh disclosed, full-ledger, and archetype-region aggregation | PASS |
+| `tests/test_geo.py::test_version_exports_in_sync` | `web/allocation_v10.json` and `web/allocation_v11.json` versus `build_v10()` and `build()` | PASS |
+| CI step `Params export stays in sync` | `web/params.json` versus `msqaly-export-params` | PASS when reproduced to a temporary file (`cmp` exit 0), but this is a CI shell guard, not a pytest test |
+
+There is no corresponding test or CI step for the manuscript inputs, rendered HTML/PDF, `docs/index.qmd`, or `paper/review/rendered.txt`.
+
+### Numeric spot-checks
+
+I independently loaded the committed JSON files and reran `derive_shares()` from `.venv/bin/python`. For the geography rows, I applied the committed archetype-region matrix to `allocation_v11` shares and `results/summary.json` exactly as the notebook does. I also reran the seeded 100,000-draw stance endpoints. No checked numeric discrepancy was found.
+
+| Rendered-paper value | Verified value before paper rounding | Verification source |
+|---|---:|---|
+| Median 201,923 QALYs | 201,922.6826 | `results/summary.json` |
+| 90% lower endpoint 94,000 | 93,844.8065 | `results/summary.json` |
+| 90% upper endpoint 419,000 | 418,851.7093 | `results/summary.json` |
+| Mean 222,060 QALYs | 222,060.2079 | `results/summary.json` |
+| Blended $150,067/QALY | $150,067.2553 | `results/summary.json` |
+| Benefit-cost ratio 4.9 (2.1–11.0) | 4.9094 (2.0669–11.0409) | `results/summary.json` |
+| 2026-dollar giving $30.3B | $30,301,982,771 | `results/summary.json` |
+| Frontier 521× and 105.5 million QALYs | 521.1338× and 105,535,819 | `results/summary.json` |
+| Global-health mean 153,469 QALYs and 69.1% | 153,469.1117 and 69.1115% | `results/summary.json` |
+| 2,711 gifts to 2,545 organizations | 2,711 and 2,545 | fresh `derive_shares()` diagnostics |
+| 2,035 disclosed gifts totaling $17.46B | 2,035 and $17,460,132,000 | fresh `derive_shares()` diagnostics |
+| Calibration n=1,313, elasticity 0.41, R² 0.37 | 1,313, 0.4065155, 0.3732970 | fresh `derive_shares()` diagnostics |
+| Audited abroad allocation 4.82% | 4.8182219% | fresh `derive_shares()` diagnostics |
+| Disclosed non-US $3.57B, about 20% | $3,566,230,000 and 20.4250% | `web/geo.json` |
+| Sub-Saharan Africa 6% of dollars, 30% of QALYs, $27,031/QALY | 5.9774%, 30.1751%, $27,031.08 | `web/geo.json` matrix plus `results/summary.json` |
+| US national 27% of dollars, 9% of QALYs, $403,000/QALY | 27.1883%, 9.2061%, $403,000.36 | `web/geo.json` matrix plus `results/summary.json` |
+| RCT-only 9,114; face-value 414,264 | 9,113.8753; 414,264.0043 | fresh execution of `paper/index.qmd`'s seeded stance calculation |
+
+### Data availability
+
+All requested files are tracked in git and parse successfully:
+
+| File | Validation |
+|---|---|
+| `data/yieldgiving/organisations.json` | Valid JSON list; 2,545 organizations; 1.1 MB |
+| `data/yieldgiving/propublica_revenue.jsonl` | Valid JSONL; 2,545 rows; 606 KB |
+| `data/yieldgiving/match_audit.jsonl` | Valid JSONL; 248 effectful overlay rows; 83 KB |
+| `data/yieldgiving/geo_audit/geo_audit.jsonl` | Valid JSONL; 50 rows; 40 KB |
+
+### Version tags
+
+After `git fetch origin --tags --prune`, both tags exist. `git tag -n99` and `git show <tag> --stat` agree with the paper's description:
+
+| Tag | Commit | Artifact check | Assessment |
+|---|---|---|---|
+| `v2026.07.20` | `92b6c85347e2e34522e35cab060b7751aee5f1cf` | Median 203,949; 90% interval 94,361–423,647; $148,577/QALY; global-health share 4.9% | Matches “about 205,000,” “about $148,000,” and the pre-audit allocation |
+| `v2026.07.22` | `296f21c26c03faaada25fe24e1d592aca1b2d15a` | Median 201,923; 90% interval 93,845–418,852; $150,067/QALY; global-health share 4.8% | Matches the audited figures and description |
+
+## Findings
+
+1. **SEVERITY: MAJOR**  
+   **LOCATION:** `paper/index.qmd`; `docs/index.qmd`; `docs/index.html`; `docs/index.pdf`; `paper/review/rendered.txt`  
+   **Problem:** The current source is not the source of the available render. A direct comparison finds 11 changed lines in `paper/index.qmd` relative to `docs/index.qmd`; `paper/review/rendered.txt` matches the older wording. Differences affect the funding disclosure, strength of novelty and geographic claims, the 20–40× frontier statement, robustness interpretation, and conclusion—not merely formatting. Thus the numerical outputs agree, but a stranger cannot reproduce the supplied paper from the supplied source.  
+   **Concrete fix:** Render the current `paper/index.qmd` to both HTML and PDF, refresh every committed derivative (including any review text extraction), inspect the resulting diff, and add an automated clean-tree check that fails when committed renders differ from a fresh render.
+
+2. **SEVERITY: MAJOR**  
+   **LOCATION:** `paper/index.qmd:5,28,156-157,207`; `paper/_quarto.yml`; `pyproject.toml:6-15`; `README.md:26-38`  
+   **Problem:** The render environment is personal and undeclared. The notebook requires the custom kernel `msqaly-paper`; on this machine its user-level kernelspec points to the absolute path `/Users/maxghenis/mackenzie-scott-qaly/.venv/bin/python`. No repository document explains how to create it or gives a render command. `pyproject.toml` declares matplotlib, numpy, and PyYAML, but not Jupyter/ipykernel, IPython, pandas, or tabulate (required by `DataFrame.to_markdown`). The current environment happens to contain those undeclared packages, while Quarto itself is absent (`quarto render paper` exits 127). A PDF render additionally depends on a TeX installation and the `tgpagella` and `helvet` packages, also undocumented. Because `paper/_freeze/` is ignored, a clone cannot rely on the author's execution cache.  
+   **Concrete fix:** Add a locked `paper` optional dependency group containing at least `jupyter`, `ipykernel`, `ipython`, `pandas`, and `tabulate` (matplotlib may remain a core dependency); document a tested kernel-install command such as `uv run --extra paper python -m ipykernel install --user --name msqaly-paper`; state and pin/test a Quarto version; document the TeX/TinyTeX setup and required packages; and give exact root-level HTML/PDF render commands.
+
+3. **SEVERITY: MAJOR**  
+   **LOCATION:** `paper/index.qmd:254`; `tests/test_allocation.py`; `tests/test_geo.py`; `.github/workflows/ci.yml`  
+   **Problem:** The paper says sync tests force “published web parameters, allocation shares, geography exports, and this manuscript's inputs” to equal fresh derivations. Only part of that statement is implemented. Pytest covers parameter allocation shares, geography, and version exports; a separate CI shell step covers `web/params.json`. Nothing checks manuscript inputs or rendered artifacts, and the present source/render drift demonstrates the missing guard.  
+   **Concrete fix:** Either narrow the paper's claim to the guards that exist or implement the missing checks. Prefer a CI replication job that creates the paper environment, regenerates params/allocation/geography/results, renders the manuscript, and runs `git diff --exit-code` on all committed derivatives.
+
+4. **SEVERITY: MINOR**  
+   **LOCATION:** `README.md:26-38`; module docstrings in `src/msqaly/geo.py` and `src/msqaly/exportversions.py`  
+   **Problem:** There is no single, stranger-facing end-to-end replication recipe. The README explains `msqaly --write` for results, but not the required ordering or commands for `web/params.json`, allocation version exports, `web/geo.json`, and the manuscript render. The remaining commands are discoverable only by reading module docstrings and agent-only instructions. This invites partial regeneration and stale mixed artifacts.  
+   **Concrete fix:** Add a “Reproduce everything” section and preferably one script/task that runs, in order, parameter export, allocation/version export, geography export, seeded results generation, paper render, tests, and a final clean-tree/diff check.
+
+5. **SEVERITY: MINOR**  
+   **LOCATION:** `data/yieldgiving/README.md:46-54`; `data/yieldgiving/match_audit.jsonl`; `scripts/audit_matches.py`; `paper/index.qmd:254`  
+   **Problem:** The numerical overlay is available, but the claimed 990 “full audit trail” is not. The README reports 827 audited items (518 correct, 236 recovered, 73 non-filers), while the committed `match_audit.jsonl` contains only 248 effectful rows (236 replacements and 12 drops). The per-item verdict files consumed from an external work directory are not committed, and the overlay rows have notes but no source URL or confidence grade. By contrast, the 50-row geography audit does contain sources and confidence. A replicator can reproduce the calculation but cannot independently inspect all 827 reported audit judgments from repository data.  
+   **Concrete fix:** Commit a complete per-item 990 audit verdict dataset with stable evidence links and confidence fields, retaining the smaller overlay as a generated calculation input; otherwise narrow “full audit trail” and “sources and confidence grades” to describe exactly what is committed.
+
+RECOMMENDATION: Major revisions
