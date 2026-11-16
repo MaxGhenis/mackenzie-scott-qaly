@@ -96,6 +96,19 @@ def test_published_allocations_do_not_recompute_from_current_matches(monkeypatch
     assert versions.build_v11()["allocation_share"]["global_health"] == 0.048
 
 
+def test_calibration_export_ignores_platform_roundoff(monkeypatch):
+    import msqaly.exportversions as versions
+    from msqaly.allocation import derive_shares
+
+    shares, stats = derive_shares()
+    monkeypatch.setattr(versions, "derive_shares", lambda **kwargs: (shares, stats))
+    reference = versions.build()
+    # Reproduce the CI counterexample: BLAS changes R² in its final decimals.
+    stats["elasticity_r2"] += 2e-16
+    stats["elasticity"] += 2e-16
+    assert versions.build() == reference
+
+
 def test_archetype_region_matrix_invariants():
     from msqaly.geo import archetype_region_matrix
 
