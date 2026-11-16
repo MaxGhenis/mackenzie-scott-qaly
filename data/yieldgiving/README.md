@@ -55,14 +55,14 @@ Florida's corrected EIN. Matching uses the recipient's name and link;
 
 ## match_audit.jsonl
 
-[The overlay](match_audit.jsonl) currently contains 257 replacements and 13
+[The overlay](match_audit.jsonl) currently contains 258 replacements and 13
 drops. `msqaly.allocation.load_revenue` applies the overlay before calibration
 and imputation ([implementation](../../src/msqaly/allocation.py)).
 
 The July audit retained effectful changes and omitted confirmation-only
 verdicts. Those rows cannot establish the original audit's overall error
 rate or a count of confirmed non-filers. The November 16, 2026 corrections
-replace 22 histories and drop the unrelated Abriendo Puertas match. Each
+replace 23 histories and drop the unrelated Abriendo Puertas match. Each
 correction records the recipient link, original EIN, identity evidence,
 revenue source, retrieval date, and confidence
 ([correction records](match_audit.jsonl)).
@@ -96,6 +96,42 @@ AP-OD identifies itself as a Tides Center fiscally sponsored project, so the
 overlay drops the unrelated Connecticut filer and does not substitute
 Tides-wide revenue for project revenue
 ([AP-OD donation instructions](https://ap-od.org/donate/)).
+
+## Matching and imputation diagnostics
+
+Run `uv run python -m msqaly.diagnostics` to print current sample-flow,
+filing-age, and fallback-weight diagnostics. Add `--write` to export the
+[compact web summary](../../web/matching_diagnostics.json) and
+[gift-level CSV](../../results/gift_ledger.csv). The
+[exporter](../../src/msqaly/diagnostics.py) shares the allocation pipeline's
+revenue-year selection and window-weight calculation.
+
+The CSV distinguishes disclosed amounts from model-imputed amounts and
+reports each gift's effective EIN, selected revenue year, filing lag,
+calibration inclusion, and reason for any median-weight fallback. Dollar
+amounts remain nominal across the 2019–2025 gift window. An imputed amount
+does not disclose the gift's actual size.
+
+Raw candidate names, accepted EINs, and name-similarity scores describe the
+original name search. Separate columns identify the effective EIN and legal
+name after corrections. Verification-standing fields distinguish source-linked
+corrections from legacy audit notes, automatic name matches, and unmatched
+recipients; a high similarity score does not establish identity.
+
+Exports round imputed amounts to cents with largest-remainder rounding
+within each window, so CSV amounts sum to that window's residual. Each
+exported imputation differs from its internal amount by less than one cent;
+disclosed amounts retain their source values. Summary fractions and fit
+statistics use 12 decimal places, and CSV weights use 12 significant digits.
+The exporter stages both files before replacing either output and rejects
+non-finite JSON values.
+
+The summary reports fallback shares by gift count and by imputed dollars,
+plus residual accounting for each imputation window. The
+[diagnostic tests](../../tests/test_diagnostics.py) reconcile gift-level
+amounts to allocation totals and check that selected revenue years precede
+gift years. They also enforce residual conservation and invariance to a
+common scaling of all revenue inputs within a window.
 
 ## leaf_to_archetype.yaml
 

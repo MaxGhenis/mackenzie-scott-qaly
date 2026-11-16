@@ -15,7 +15,7 @@ format:
     number-sections: true
     author: 'Max Ghenis\thanks{max@maxghenis.com. I am CEO of PolicyEngine and president of the Axiom Foundation; this paper is a personal research project and does not represent the views of either organization. Neither I nor the organizations I lead have received funding from MacKenzie Scott, Yield Giving, or GiveWell. Interactive version, code, data, and full audit trail: \url{https://maxghenis.com/mackenzie-scott-qaly} and \url{https://github.com/MaxGhenis/mackenzie-scott-qaly}.}'
 abstract: |
-  MacKenzie Scott has disclosed $26.39 billion in gifts to more than 2,500 organizations since 2019. I estimate the portfolio's health impact in quality-adjusted life-years (QALYs). I allocate dollars across 14 intervention archetypes using Scott's gift-level database and impute undisclosed amounts from recipients' pre-gift IRS Form 990 revenue. A Monte Carlo model combines published cost-per-QALY estimates with weights for the causal credibility of the evidence. Under the best-guess priors, I estimate a median of roughly 205,000 QALYs (90% probabilistic-sensitivity interval 95,000–423,000), at a blended $148,000 per QALY. Applying the HHS regulatory valuation distribution gives a median benefit–cost ratio of 5.0. The 4.9% of dollars funding health and development outside the United States, priced at global-health anchors, contributes 69% of mean estimated QALYs. Among 1,314 disclosed gifts with matched pre-gift filings, the log-log fit relates gift size to recipient revenue with slope 0.55 (R² 0.52): a 10-fold revenue difference corresponds to about a 3.5-fold gift-size difference. This descriptive fit does not establish predictive accuracy for undisclosed gifts. Evidence assumptions produce a 48-fold range in median QALYs, from about 9,000 under near-RCT-only credit to 419,000 at near face value. The repository publishes parameters, code, data snapshots, and source-linked correction overlays, and the browser implementation lets readers rerun the model under different assumptions.
+  MacKenzie Scott has disclosed $26.39 billion in gifts to more than 2,500 organizations since 2019. I estimate the portfolio's health impact in quality-adjusted life-years (QALYs). I allocate dollars across 14 intervention archetypes using Scott's gift-level database and impute undisclosed amounts from recipients' pre-gift IRS Form 990 revenue. A Monte Carlo model combines published cost-per-QALY estimates with weights for the causal credibility of the evidence. Under the best-guess priors, I estimate a median of roughly 205,000 QALYs (90% probabilistic-sensitivity interval 95,000–423,000), at a blended $148,000 per QALY. Applying the HHS regulatory valuation distribution gives a median benefit–cost ratio of 5.0. The 4.9% of dollars funding health and development outside the United States, priced at global-health anchors, contributes 69% of mean estimated QALYs. Among 1,314 disclosed gifts with matched pre-gift filings, the log-log fit relates gift size to recipient revenue with slope 0.55 (R² 0.53): a 10-fold revenue difference corresponds to about a 3.6-fold gift-size difference. This descriptive fit does not establish predictive accuracy for undisclosed gifts. Evidence assumptions produce a 48-fold range in median QALYs, from about 9,000 under near-RCT-only credit to 419,000 at near face value. The repository publishes parameters, code, data snapshots, and source-linked correction overlays, and the browser implementation lets readers rerun the model under different assumptions.
 ---
 
 ```{python}
@@ -34,6 +34,7 @@ if not (ROOT / "results").exists():
 sys.path.insert(0, str(ROOT / "src"))
 
 S = json.loads((ROOT / "results" / "summary.json").read_text())
+MATCHING = json.loads((ROOT / "web" / "matching_diagnostics.json").read_text())
 GEO = json.loads((ROOT / "web" / "geo.json").read_text())
 V10 = json.loads((ROOT / "web" / "allocation_v10.json").read_text())
 V11 = json.loads((ROOT / "web" / "allocation_v11.json").read_text())
@@ -72,6 +73,9 @@ F = dict(
     n_disclosed=f"{DIAG['n_disclosed']:,}",
     n_undisclosed=f"{DIAG['n_undisclosed']:,}",
     n_fallback=f"{DIAG['n_revenue_fallback']:,}",
+    fallback_gift_pct=f"{100 * MATCHING['gifts']['fallback_share_of_undisclosed_gifts']:.1f}%",
+    fallback_dollar_pct=f"{100 * MATCHING['nominal_usd']['fallback_share_of_imputed']:.1f}%",
+    fallback_dollars=f"${MATCHING['nominal_usd']['fallback_imputed'] / 1e9:.2f} billion",
     tenfold=f"{10 ** DIAG['elasticity']:.1f}",
     max_share_shift_pp=f"{100 * _max_share_shift:.1f}",
     disclosed_b=f"${DIAG['disclosed_usd']/1e9:,.2f}B",
@@ -138,9 +142,9 @@ Scott publishes no aggregate dollars-by-cause breakdown, but she publishes somet
 
 I distribute each period's undisclosed residual across its undisclosed gifts in proportion to recipients' pre-gift IRS Form 990 total revenue [@propublica2026], raised to an elasticity fit on the disclosed pairs. Scott's essays supply the period totals. I use the latest filing year strictly before the gift year to avoid including the gift itself in revenue.
 
-Across `{python} F["n_cal"]` disclosed gift–filing pairs, log gift size rises with log revenue with slope `{python} F["elasticity"]` (R² `{python} F["r2"]`). In this matched sample, a 10× larger organization receives about `{python} F["tenfold"]`× as much money. The fit covers `{python} F["n_cal"]` of `{python} F["n_disclosed"]` disclosed gifts and `{python} F["n_gifts"]` total gifts, treats repeated gifts to an organization as independent, and pools years. Of the `{python} F["n_undisclosed"]` undisclosed gifts, `{python} F["n_fallback"]` lack a usable filing and receive their period's median weight. This descriptive fit supplies the imputation weights; it does not establish predictive accuracy for undisclosed gifts.
+Across `{python} F["n_cal"]` disclosed gift–filing pairs, log gift size rises with log revenue with slope `{python} F["elasticity"]` (R² `{python} F["r2"]`). In this matched sample, a 10× larger organization receives about `{python} F["tenfold"]`× as much money. The fit covers `{python} F["n_cal"]` of `{python} F["n_disclosed"]` disclosed gifts and `{python} F["n_gifts"]` total gifts, treats repeated gifts to an organization as independent, and pools years. Of the `{python} F["n_undisclosed"]` undisclosed gifts, `{python} F["n_fallback"]` (`{python} F["fallback_gift_pct"]`) lack a usable filing and receive their period's median weight. Those gifts receive `{python} F["fallback_dollars"]` nominal, or `{python} F["fallback_dollar_pct"]` of imputed dollars. This descriptive fit supplies the imputation weights; it does not establish predictive accuracy for undisclosed gifts.
 
-The matching pipeline links recipients to tax filers by name, then applies corrections that cite recipient websites and filings. The November 16, 2026 review corrected 20 wrong identities and replaced three related-entity revenue proxies. The [source-linked overlay](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/data/yieldgiving/match_audit.jsonl) preserves each correction and its evidence; the review does not establish an error rate for the remaining matches. Relative to disclosed-only allocation, imputation moves each cause share by at most `{python} F["max_share_shift_pp"]` percentage points under these assumptions.
+The matching pipeline links recipients to tax filers by name, then applies corrections that cite recipient websites and filings. The November 16, 2026 review corrected 21 wrong identities and replaced three related-entity revenue proxies. The [source-linked overlay](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/data/yieldgiving/match_audit.jsonl) preserves each correction and its evidence; the review does not establish an error rate for the remaining matches. The [gift-level ledger](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/results/gift_ledger.csv) separates disclosed and model-imputed nominal amounts and records recipient identity, selected pre-gift revenue, source links and fallback reasons. The [matching summary](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/web/matching_diagnostics.json) reports filing coverage and the imputed dollars that use fallback weights. Relative to disclosed-only allocation, imputation moves each cause share by at most `{python} F["max_share_shift_pp"]` percentage points under these assumptions.
 
 ## Delivery geography
 
@@ -313,7 +317,7 @@ The model reached this state through a series of public revisions — counting a
 | Allocation replaced with the derivation from Scott's own gift database | ~87,000 → ~70,000 | author + model |
 | Health dollars had been priced at U.S. anchors regardless of delivery location | ~70,000 → ~205,000 | a reader |
 | Two-model geography audit of "global"-listed organizations (tags v2026.07.20 → v2026.07.22) | ~205,000 → ~202,000 | model audit |
-| November 16, 2026: correct 20 Form 990 identities and three related-entity revenue proxies (v1.2) | ~202,000 → `{python} F["median_k"]` | source-linked identity review |
+| November 16, 2026: correct 21 Form 990 identities and three related-entity revenue proxies (v1.2) | ~202,000 → `{python} F["median_k"]` | source-linked identity review |
 
 The repository and public tool document the corrections; the final column names who identified each issue.
 

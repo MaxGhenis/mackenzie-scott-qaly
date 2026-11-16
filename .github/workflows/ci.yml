@@ -30,11 +30,16 @@ jobs:
       - name: Test (pytest)
         run: uv run pytest
 
-      - name: Params export stays in sync
+      - name: Generated model data stay in sync
         run: |
           uv run msqaly-export-params
-          git diff --exit-code web/params.json \
-            || (echo "::error::web/params.json is stale — run 'uv run msqaly-export-params' and commit" && exit 1)
+          uv run python -m msqaly.exportversions
+          uv run python -m msqaly.geo
+          uv run python -m msqaly.diagnostics --write > /dev/null
+          git diff --exit-code -- web/params.json web/allocation_v10.json \
+            web/allocation_v11.json web/allocation_v12.json web/geo.json \
+            web/matching_diagnostics.json results/gift_ledger.csv \
+            || (echo "::error::Generated model data are stale; rerun the README reproduction commands" && exit 1)
 
       - name: Model runs end-to-end
         run: uv run msqaly --n 5000

@@ -18,12 +18,14 @@ Usage: uv run python scripts/fetch_propublica.py
 
 from __future__ import annotations
 
+import fcntl
 import json
 import re
 import threading
 import time
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -31,7 +33,15 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
-from msqaly.recipients import RecipientIndex, recipient_key
+from msqaly.recipients import (
+    RecipientIndex,
+    finite_revenue,
+    recipient_key,
+    validate_ein,
+    validate_match_record,
+    validate_revenue_history,
+    validate_tax_year,
+)
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "yieldgiving"
 OUT = DATA / "propublica_revenue.jsonl"
@@ -75,16 +85,23 @@ def get(url: str) -> dict:
 
 def fetch_revenue(ein: int) -> dict[str, float]:
     """Retrieve one identified filer's positive annual revenue history."""
+    validate_ein(ein)
     detail = get(f"{API}/organizations/{ein}.json")
-    if int(detail.get("organization", {}).get("ein", 0)) != ein:
+    actual = validate_ein(detail.get("organization", {}).get("ein"), "API organization EIN")
+    if actual != ein:
         raise ValueError(f"organization endpoint did not identify requested EIN {ein}")
     if not isinstance(detail.get("filings_with_data"), list):
         raise ValueError(f"organization endpoint lacks filing history for EIN {ein}")
     revenue = {}
     for filing in detail["filings_with_data"]:
         year, rev = filing.get("tax_prd_yr"), filing.get("totrevenue")
-        if year and rev and rev > 0:
+        if year is not None:
+            year = validate_tax_year(year, "API filing tax year")
+        if rev is not None:
+            rev = finite_revenue(rev, "API filing revenue")
+        if year is not None and rev is not None and rev > 0:
             revenue[str(year)] = max(rev, revenue.get(str(year), 0))
+    validate_revenue_history(revenue, f"API EIN {ein}")
     return revenue
 
 
@@ -100,6 +117,7 @@ def best_match(name: str) -> tuple[int | None, str | None, float]:
         if not isinstance(data.get("organizations"), list):
             raise ValueError(f"search endpoint lacks organization results for {q!r}")
         for org in data["organizations"][:10]:
+            validate_ein(org.get("ein"), "search result EIN")
             score = SequenceMatcher(None, target, norm(org["name"])).ratio()
             if score > best[2]:
                 best = (org["ein"], org["name"], score)
@@ -108,13 +126,35 @@ def best_match(name: str) -> tuple[int | None, str | None, float]:
     return best
 
 
-def main() -> None:
+@contextmanager
+def output_lock(path: Path):
+    """Exclude other fetch processes before inspecting or appending the cache.
+
+    Keep the stable sidecar file: unlinking it after release can let two
+    processes lock different inodes. The operating system releases a crashed
+    process's flock automatically.
+    """
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    with lock_path.open("a") as handle:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise RuntimeError(f"another fetch owns {path}; retry after it finishes") from exc
+        try:
+            yield
+        finally:
+            fcntl.flock(handle, fcntl.LOCK_UN)
+
+
+def _fetch_locked() -> None:
     orgs = json.loads((DATA / "organisations.json").read_text())
     index = RecipientIndex(orgs)
     done = {}
     if OUT.exists():
         rows = [json.loads(line) for line in OUT.read_text().splitlines() if line.strip()]
         done = index.records(rows, label="cached raw match")
+        for key, row in done.items():
+            validate_match_record(row, f"cached match {key!r}")
     todo = [o for o in orgs if recipient_key(o) not in done]
     print(f"{len(orgs)} orgs, {len(done)} cached, {len(todo)} to fetch", flush=True)
     lock = threading.Lock()
@@ -134,7 +174,8 @@ def main() -> None:
             rec["source_url"] = f"{API}/organizations/{ein}.json"
             rec["match_status"] = "name_candidate"  # an audit still needs to verify identity
         with lock:
-            fh.write(json.dumps(rec) + "\n")
+            validate_match_record(rec, f"new match {recipient_key(org)!r}")
+            fh.write(json.dumps(rec, allow_nan=False) + "\n")
             fh.flush()
             count[0] += 1
             if count[0] % 100 == 0:
@@ -143,6 +184,11 @@ def main() -> None:
     with OUT.open("a") as fh, ThreadPoolExecutor(max_workers=4) as pool:
         list(pool.map(fetch_one, todo))
     print("done", flush=True)
+
+
+def main() -> None:
+    with output_lock(OUT):
+        _fetch_locked()
 
 
 if __name__ == "__main__":

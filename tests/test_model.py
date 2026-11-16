@@ -18,6 +18,38 @@ from msqaly.model import _spearman, discounted_qale, driver_sensitivity, load_pa
 PARAMS = load_params()
 
 
+@pytest.mark.parametrize("n", [0, -1, True, 1.5])
+def test_run_rejects_invalid_draw_counts(n):
+    with pytest.raises(ValueError, match="positive integer"):
+        run(PARAMS, n=n)
+
+
+def test_run_revalidates_caller_mutations_before_simulating():
+    params = load_params()
+    params["meta"]["total_giving_usd"] = float("nan")
+    with pytest.raises(ValueError, match="finite"):
+        run(params, n=10)
+
+
+def test_load_params_rejects_overflow_in_derived_giving(tmp_path):
+    import yaml
+
+    params = load_params()
+    params["meta"]["giving_tranches"][0]["nominal_usd"] = 1e308
+    path = tmp_path / "parameters.yaml"
+    path.write_text(yaml.safe_dump(params))
+    with pytest.raises(ValueError, match="finite"):
+        load_params(path)
+
+
+def test_run_rejects_duplicate_labels_before_components_can_be_overwritten():
+    params = load_params()
+    archetypes = list(params["archetypes"].values())
+    archetypes[1]["label"] = archetypes[0]["label"]
+    with pytest.raises(ValueError, match="label"):
+        run(params, n=10)
+
+
 # --- parameter file integrity ------------------------------------------------
 
 def test_allocation_shares_sum_to_one():

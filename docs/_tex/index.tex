@@ -229,8 +229,8 @@ gives a median benefit--cost ratio of 5.0. The 4.9\% of dollars funding
 health and development outside the United States, priced at
 global-health anchors, contributes 69\% of mean estimated QALYs. Among
 1,314 disclosed gifts with matched pre-gift filings, the log-log fit
-relates gift size to recipient revenue with slope 0.55 (R² 0.52): a
-10-fold revenue difference corresponds to about a 3.5-fold gift-size
+relates gift size to recipient revenue with slope 0.55 (R² 0.53): a
+10-fold revenue difference corresponds to about a 3.6-fold gift-size
 difference. This descriptive fit does not establish predictive accuracy
 for undisclosed gifts. Evidence assumptions produce a 48-fold range in
 median QALYs, from about 9,000 under near-RCT-only credit to 419,000 at
@@ -288,7 +288,7 @@ assumptions: the 4.9\% of dollars funding global health and development
 delivered outside the United States accounts for 69.4\% of estimated
 health impact. It reports a new empirical regularity in the gift data
 itself: across 1,314 disclosed gift--filing pairs, gift size scales with
-recipient pre-gift revenue to the power 0.55 (R² 0.52) --- Scott's
+recipient pre-gift revenue to the power 0.55 (R² 0.53) --- Scott's
 giving is far flatter across organization size than proportional. And it
 demonstrates a working method for auditable, AI-assisted
 cost-effectiveness modeling: the model was built with a frontier
@@ -339,23 +339,31 @@ strictly before the gift year to avoid including the gift itself in
 revenue.
 
 Across 1,314 disclosed gift--filing pairs, log gift size rises with log
-revenue with slope 0.55 (R² 0.52). In this matched sample, a 10× larger
-organization receives about 3.5× as much money. The fit covers 1,314 of
+revenue with slope 0.55 (R² 0.53). In this matched sample, a 10× larger
+organization receives about 3.6× as much money. The fit covers 1,314 of
 2,035 disclosed gifts and 2,711 total gifts, treats repeated gifts to an
 organization as independent, and pools years. Of the 676 undisclosed
-gifts, 287 lack a usable filing and receive their period's median
-weight. This descriptive fit supplies the imputation weights; it does
-not establish predictive accuracy for undisclosed gifts.
+gifts, 287 (42.5\%) lack a usable filing and receive their period's
+median weight. Those gifts receive \$2.92 billion nominal, or 32.6\% of
+imputed dollars. This descriptive fit supplies the imputation weights;
+it does not establish predictive accuracy for undisclosed gifts.
 
 The matching pipeline links recipients to tax filers by name, then
 applies corrections that cite recipient websites and filings. The
-November 16, 2026 review corrected 20 wrong identities and replaced
+November 16, 2026 review corrected 21 wrong identities and replaced
 three related-entity revenue proxies. The
 \href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/data/yieldgiving/match_audit.jsonl}{source-linked
 overlay} preserves each correction and its evidence; the review does not
-establish an error rate for the remaining matches. Relative to
-disclosed-only allocation, imputation moves each cause share by at most
-1.5 percentage points under these assumptions.
+establish an error rate for the remaining matches. The
+\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/results/gift_ledger.csv}{gift-level
+ledger} separates disclosed and model-imputed nominal amounts and
+records recipient identity, selected pre-gift revenue, source links and
+fallback reasons. The
+\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/web/matching_diagnostics.json}{matching
+summary} reports filing coverage and the imputed dollars that use
+fallback weights. Relative to disclosed-only allocation, imputation
+moves each cause share by at most 1.5 percentage points under these
+assumptions.
 
 \subsection{Delivery geography}\label{delivery-geography}
 
@@ -602,9 +610,9 @@ differences: within each cause the model prices every delivery location
 identically --- the health routing to global anchors is its only
 geographic pricing --- so a cause's QALYs follow its dollars across
 regions. Under that construction, Sub-Saharan Africa receives 6\% of
-dollars and 31\% of estimated QALYs at \$26,036 per QALY;
+dollars and 31\% of estimated QALYs at \$26,020 per QALY;
 nationally-scoped U.S. giving receives 27\% of dollars and 9\% of QALYs
-at \$399,185.
+at \$399,113.
 
 \textsubscript{Source:
 \href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
@@ -648,24 +656,24 @@ QALYs
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Sub-Saharan Africa & \$1.81B & 6\% & 69,654 & 31\% & \$26,036 \\
-South Asia & \$970M & 3\% & 31,354 & 14\% & \$30,925 \\
-Global (multi-region) * & \$1.54B & 5\% & 27,680 & 12\% & \$55,710 \\
-US --- national / unspecified * & \$8.30B & 27\% & 20,799 & 9\% &
-\$399,185 \\
-Latin America \& Caribbean & \$1.08B & 4\% & 19,221 & 9\% & \$56,219 \\
-US --- South & \$5.94B & 20\% & 15,980 & 7\% & \$371,961 \\
-US --- West & \$4.00B & 13\% & 10,899 & 5\% & \$366,742 \\
-US --- Midwest & \$2.72B & 9\% & 7,772 & 3\% & \$349,926 \\
-US --- Northeast & \$2.21B & 7\% & 5,642 & 3\% & \$392,062 \\
-Europe \& Central Asia & \$293M & 1\% & 5,304 & 2\% & \$55,173 \\
-Middle East \& North Africa & \$146M & \textless1\% & 4,022 & 2\% &
-\$36,198 \\
-East Asia \& Pacific & \$324M & 1\% & 3,213 & 1\% & \$100,873 \\
-North America (unspecified) * & \$779M & 3\% & 1,756 & 1\% &
-\$443,330 \\
-Other / unmapped * & \$39M & \textless1\% & 1,422 & 1\% & \$27,198 \\
-Canada & \$141M & \textless1\% & 440 & \textless1\% & \$320,315 \\
+Sub-Saharan Africa & \$1.81B & 6\% & 69,694 & 31\% & \$26,020 \\
+South Asia & \$969M & 3\% & 31,341 & 14\% & \$30,904 \\
+Global (multi-region) * & \$1.54B & 5\% & 27,657 & 12\% & \$55,778 \\
+US --- national / unspecified * & \$8.31B & 27\% & 20,809 & 9\% &
+\$399,113 \\
+Latin America \& Caribbean & \$1.08B & 4\% & 19,228 & 9\% & \$56,119 \\
+US --- South & \$5.94B & 20\% & 15,975 & 7\% & \$372,016 \\
+US --- West & \$4.00B & 13\% & 10,898 & 5\% & \$366,765 \\
+US --- Midwest & \$2.72B & 9\% & 7,770 & 3\% & \$349,931 \\
+US --- Northeast & \$2.21B & 7\% & 5,642 & 3\% & \$392,162 \\
+Europe \& Central Asia & \$292M & 1\% & 5,299 & 2\% & \$55,187 \\
+Middle East \& North Africa & \$145M & \textless1\% & 4,017 & 2\% &
+\$36,186 \\
+East Asia \& Pacific & \$324M & 1\% & 3,209 & 1\% & \$100,871 \\
+North America (unspecified) * & \$781M & 3\% & 1,760 & 1\% &
+\$443,719 \\
+Other / unmapped * & \$39M & \textless1\% & 1,421 & 1\% & \$27,185 \\
+Canada & \$141M & \textless1\% & 440 & \textless1\% & \$320,278 \\
 
 \end{longtable}
 
@@ -809,7 +817,7 @@ location & \textasciitilde70,000 → \textasciitilde205,000 & a reader \\
 Two-model geography audit of ``global''-listed organizations (tags
 v2026.07.20 → v2026.07.22) & \textasciitilde205,000 →
 \textasciitilde202,000 & model audit \\
-November 16, 2026: correct 20 Form 990 identities and three
+November 16, 2026: correct 21 Form 990 identities and three
 related-entity revenue proxies (v1.2) & \textasciitilde202,000 → 205,000
 & source-linked identity review \\
 \end{longtable}

@@ -18,7 +18,7 @@ from msqaly.allocation import load_matches
 from msqaly.recipients import RecipientIndex, RecipientKey
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from fetch_propublica import fetch_revenue  # noqa: E402
+from fetch_propublica import API, fetch_revenue  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "yieldgiving"
@@ -29,6 +29,9 @@ PROMPT = """\
 Audit every input recipient -> EIN identity against primary evidence.
 Read items.json. BOTH name and link identify a recipient; namesakes are
 separate recipients. current.ein null means no accepted candidate.
+raw_candidate retains the original search match and similarity; it may have
+been superseded. current.match/score are null after an EIN correction.
+current.legal_name and source_url describe the effective filer when available.
 
 Use the recipient's own website, official tax documents or government records
 to bind its identity to an EIN. Compare city/state, mission, legal name and
@@ -61,12 +64,19 @@ def build(workdir: Path) -> None:
     items = []
     for key, org in sorted(index.by_key.items()):
         rec = matches.get(key, {})
+        candidate = rec.get("raw_candidate", {})
+        unchanged = rec.get("ein") == candidate.get("ein")
         items.append({
             "name": org["name"], "link": org.get("link", ""), "mission": org.get("mission"),
             "locations": org.get("locations") or [],
             "gift_years": sorted({int(g["year"]) for g in org.get("gifts") or []}),
-            "current": {"ein": rec.get("ein"), "match": rec.get("match"),
-                        "score": rec.get("score")},
+            "current": {
+                "ein": rec.get("ein"), "legal_name": rec.get("legal_name"),
+                "match": candidate.get("match") if unchanged else None,
+                "score": candidate.get("score") if unchanged else None,
+                "source_url": rec.get("source_url"),
+            },
+            "raw_candidate": candidate,
         })
     # Reusing old batches can silently mix two audit populations.
     if list(workdir.glob("batch_*")):
@@ -75,7 +85,9 @@ def build(workdir: Path) -> None:
     for i in range(0, len(items), BATCH_SIZE):
         batch = workdir / f"batch_{i // BATCH_SIZE:02d}"
         batch.mkdir()
-        (batch / "items.json").write_text(json.dumps(items[i:i + BATCH_SIZE], indent=1))
+        (batch / "items.json").write_text(
+            json.dumps(items[i:i + BATCH_SIZE], indent=1, allow_nan=False)
+        )
         (batch / "prompt.txt").write_text(PROMPT)
     print(f"{len(items)} recipients (all similarity scores) under {workdir}")
 
@@ -169,11 +181,21 @@ def apply(workdir: Path) -> None:
             overlay[key] = {
                 **identity, "action": "replace", "ein": ein, "revenue_by_year": revenue,
                 "note": verdict.get("note", ""), "audit_verdict": verdict,
+                "source_url": f"{API}/organizations/{ein}.json",
+                "identity_source_url": verdict["source_url"],
+                "confidence": verdict["confidence"],
             }
 
-    def write_rows(path: Path, rows: list[dict]) -> None:
+    def serialize(rows: list[dict]) -> str:
+        return "".join(json.dumps(row, allow_nan=False) + "\n" for row in rows)
+
+    # Validate both payloads before publishing either, including extra metadata.
+    ledger_text = serialize([verdicts[k] for k in sorted(verdicts)])
+    overlay_text = serialize([overlay[k] for k in sorted(overlay)])
+
+    def write_rows(path: Path, payload: str) -> None:
         pending = path.with_suffix(path.suffix + ".tmp")
-        pending.write_text("".join(json.dumps(row) + "\n" for row in rows))
+        pending.write_text(payload)
         pending.replace(path)
 
     if sorted(workdir.glob("batch_*")) != batches or any(
@@ -182,8 +204,8 @@ def apply(workdir: Path) -> None:
         raise ValueError(
             "audit inputs changed during apply; refusing to overwrite concurrent edits"
         )
-    write_rows(DATA / "match_verdicts.jsonl", [verdicts[k] for k in sorted(verdicts)])
-    write_rows(overlay_path, [overlay[k] for k in sorted(overlay)])
+    write_rows(DATA / "match_verdicts.jsonl", ledger_text)
+    write_rows(overlay_path, overlay_text)
     print(f"verdicts {dict(Counter(v['verdict'] for v in verdicts.values()))}; "
           f"{len(overlay)} overlay records")
 

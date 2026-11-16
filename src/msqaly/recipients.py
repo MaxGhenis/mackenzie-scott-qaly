@@ -3,9 +3,73 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from math import isfinite
 from urllib.parse import urlsplit
 
 RecipientKey = tuple[str, str]
+
+
+def validate_ein(value, path: str = "EIN", *, allow_none: bool = False) -> int | None:
+    """EINs are positive integers with at most nine digits, never booleans."""
+    if value is None and allow_none:
+        return None
+    if not isinstance(value, int) or isinstance(value, bool) or not 0 < value < 10**9:
+        raise ValueError(f"{path}: expected a positive EIN with at most nine digits")
+    return value
+
+
+def validate_tax_year(value, path: str = "tax year") -> int:
+    """Return a positive calendar year without silently rounding a fraction."""
+    if isinstance(value, str) and value.isascii() and value.isdigit():
+        number = int(value)
+        if str(number) != value:
+            raise ValueError(f"{path}: noncanonical tax year {value!r}")
+    elif isinstance(value, int) and not isinstance(value, bool):
+        number = value
+    else:
+        raise ValueError(f"{path}: expected a positive integer tax year")
+    if not 0 < number <= 9999:
+        raise ValueError(f"{path}: expected a positive calendar year")
+    return number
+
+
+def finite_revenue(value, path: str) -> int | float:
+    """Validate an API revenue number before selecting positive histories."""
+    try:
+        valid = isinstance(value, int | float) and not isinstance(value, bool) and isfinite(value)
+    except OverflowError:
+        valid = False
+    if not valid:
+        raise ValueError(f"{path}: revenue must be a finite number, not a boolean")
+    return value
+
+
+def validate_revenue_history(history, path: str) -> dict[int, float]:
+    """Validate stored positive-revenue histories and normalize calendar-year keys."""
+    if not isinstance(history, dict):
+        raise ValueError(f"{path}: expected a revenue-by-year object")
+    result = {}
+    for year, value in history.items():
+        canonical_year = validate_tax_year(year, f"{path}.{year}")
+        if canonical_year in result:
+            raise ValueError(f"{path}: duplicate normalized tax year {canonical_year}")
+        number = finite_revenue(value, f"{path}.{year}")
+        if number <= 0:
+            raise ValueError(f"{path}.{year}: stored revenue must be positive")
+        result[canonical_year] = float(number)
+    return result
+
+
+def validate_match_record(record: dict, path: str) -> None:
+    """The raw-fetch schema also applies to effective replacement records."""
+    ein = validate_ein(record.get("ein"), path, allow_none=True)
+    history = validate_revenue_history(record.get("revenue_by_year"), path)
+    if ein is None and history:
+        raise ValueError(f"{path}: unmatched recipient must have empty revenue")
+    if record.get("score") is not None:
+        score = finite_revenue(record["score"], f"{path}.score")
+        if not 0 <= score <= 1:
+            raise ValueError(f"{path}.score: similarity must be in [0, 1]")
 
 
 def recipient_key(recipient: dict) -> RecipientKey:

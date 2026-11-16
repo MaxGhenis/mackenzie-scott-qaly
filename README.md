@@ -4,7 +4,8 @@
 
 **Reproduce everything** (order matters): `uv sync --all-groups --extra dev`; then `uv run msqaly --write` →
 `uv run msqaly-export-params` → `uv run python -m msqaly.exportversions` →
-`uv run python -m msqaly.geo` → `uv run python -m pytest` (sync guards) →
+`uv run python -m msqaly.geo` → `uv run python -m msqaly.diagnostics --write` →
+`uv run python -m pytest` (sync guards) →
 render the paper per [paper/README.md](paper/README.md).
 
 [![CI](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml)
@@ -42,6 +43,11 @@ uv run pytest            # test suite
 `--write` is what regenerates the committed [`results/`](results/) artifacts
 (`summary.md`, `summary.json`, `figure.png`, `sensitivity.png`) and the README
 block below; a bare `uv run msqaly` only prints, so casual runs never dirty git.
+`uv run python -m msqaly.diagnostics --write` regenerates the
+[matching summary](web/matching_diagnostics.json) and
+[gift-level ledger](results/gift_ledger.csv). The ledger separates disclosed
+and model-imputed amounts in nominal dollars and records recipient identities,
+selected pre-gift filings, fallback reasons, and source links.
 
 ## Method
 
@@ -87,10 +93,14 @@ figure fails loudly instead of shipping.
    raised to an elasticity fit on disclosed gifts with a matched pre-gift
    filing. The [paper](paper/index.qmd) reports the fit and sample coverage.
    The pipeline applies a [source-linked correction overlay](data/yieldgiving/match_audit.jsonl)
-   to the name-to-EIN matches. The November 16, 2026 review corrected 20 wrong
+   to the name-to-EIN matches. The November 16, 2026 review corrected 21 wrong
    identities and replaced three related-entity revenue proxies; it does not
    establish an error rate for the remaining matches. An AI-proposed,
    author-reviewed concentration controls how tightly draws hold to those centers.
+
+   The [matching summary](web/matching_diagnostics.json) reports coverage by
+   gift count and imputed dollars; the [ledger](results/gift_ledger.csv) shows
+   which filing or window-median fallback supplies each imputation weight.
 
 4. **Cost-per-QALY per archetype.** Three derivation methods:
    - `cost_per_life` — a published cost-per-life-saved ÷ QALYs-per-death. Used

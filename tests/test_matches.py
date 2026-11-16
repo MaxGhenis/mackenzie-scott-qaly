@@ -405,3 +405,196 @@ def test_audit_refuses_to_overwrite_inputs_edited_during_fetch(tmp_path, monkeyp
         assert (tmp_path / "match_audit.jsonl").read_bytes() == before_overlay
     if changed != "match_verdicts.jsonl":
         assert not (tmp_path / "match_verdicts.jsonl").exists()
+
+
+@pytest.mark.parametrize("layer", ["raw", "overlay"])
+@pytest.mark.parametrize("bad_ein", [True, False, 0, -1, 10**9, 1.5, "123456789"])
+def test_every_match_layer_rejects_invalid_eins(tmp_path, layer, bad_ein):
+    org = {"name": "One", "link": "one.example"}
+    rows = [raw(org)]
+    overlay = []
+    if layer == "raw":
+        rows[0]["ein"] = bad_ein
+    else:
+        overlay = [{**org, "action": "replace", "ein": bad_ein,
+                    "revenue_by_year": {"2020": 100}}]
+    dataset(tmp_path, [org], rows, overlay)
+    with pytest.raises(ValueError, match="positive EIN"):
+        load_revenue(tmp_path)
+
+
+@given(st.sampled_from([float("nan"), float("inf"), -float("inf"), True, False, 0, -1]),
+       st.sampled_from(["raw", "overlay"]))
+def test_every_match_layer_rejects_nonpositive_or_nonfinite_revenue(bad, layer):
+    org = {"name": "One", "link": "one.example"}
+    rows = [raw(org)]
+    overlay = []
+    if layer == "raw":
+        rows[0]["revenue_by_year"] = {"2020": bad}
+    else:
+        overlay = [{**org, "action": "replace", "ein": 987654321,
+                    "revenue_by_year": {"2020": bad}}]
+    with TemporaryDirectory() as directory:
+        path = Path(directory)
+        dataset(path, [org], rows, overlay)
+        with pytest.raises(ValueError, match="finite|positive"):
+            load_revenue(path)
+
+
+@pytest.mark.parametrize("bad_year", ["0", "-2020", "2020.5", "02020", "true", "NaN", "10000"])
+def test_invalid_history_years_cannot_reach_log_calibration(tmp_path, bad_year):
+    org = {"name": "One", "link": "one.example"}
+    row = raw(org)
+    row["revenue_by_year"] = {bad_year: 100}
+    dataset(tmp_path, [org], [row])
+    with pytest.raises(ValueError, match="tax year|calendar year"):
+        load_revenue(tmp_path)
+
+
+def test_api_nonfinite_revenue_fails_instead_of_becoming_a_missing_history(monkeypatch):
+    monkeypatch.setattr(fetch, "get", lambda _: {
+        "organization": {"ein": 123456789},
+        "filings_with_data": [{"tax_prd_yr": 2020, "totrevenue": float("nan")}],
+    })
+    with pytest.raises(ValueError, match="finite"):
+        fetch.fetch_revenue(123456789)
+
+
+def test_concurrent_fetch_fails_before_cache_inspection_and_keeps_one_row(tmp_path, monkeypatch):
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+
+    org = {"name": "One", "link": "one.example"}
+    (tmp_path / "organisations.json").write_text(json.dumps([org]))
+    monkeypatch.setattr(fetch, "DATA", tmp_path)
+    monkeypatch.setattr(fetch, "OUT", tmp_path / "propublica_revenue.jsonl")
+    entered, release = threading.Event(), threading.Event()
+
+    def candidate(_):
+        entered.set()
+        assert release.wait(timeout=5)
+        return 123456789, "One", 1.0
+
+    monkeypatch.setattr(fetch, "best_match", candidate)
+    monkeypatch.setattr(fetch, "fetch_revenue", lambda _: {"2020": 100})
+    # One caller and one HTTP-stub worker; stay below the four-worker cap.
+    monkeypatch.setattr(fetch, "ThreadPoolExecutor",
+                        lambda **kwargs: ThreadPoolExecutor(max_workers=1))
+    with ThreadPoolExecutor(max_workers=1) as callers:
+        active = callers.submit(fetch.main)
+        try:
+            assert entered.wait(timeout=5)
+            with pytest.raises(RuntimeError, match="another fetch owns"):
+                fetch.main()
+        finally:
+            release.set()
+        active.result(timeout=5)
+    assert len(fetch.OUT.read_text().splitlines()) == 1
+    fetch.main()  # Released lock and cache resume should require no second fetch.
+    assert len(fetch.OUT.read_text().splitlines()) == 1
+
+
+def test_fetch_lock_is_exclusive_across_processes(tmp_path):
+    import subprocess
+    import sys
+
+    path = tmp_path / "propublica_revenue.jsonl"
+    code = """
+import importlib.util, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('fetch', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+module.OUT = Path(sys.argv[2])
+module.main()
+"""
+    with fetch.output_lock(path):
+        child = subprocess.run(
+            [sys.executable, "-c", code, str(ROOT / "scripts/fetch_propublica.py"), str(path)],
+            capture_output=True, text=True, timeout=10,
+        )
+    assert child.returncode != 0
+    assert "another fetch owns" in child.stderr
+    assert not path.exists()  # Child failed before opening or reading a raw ledger.
+
+
+def test_fetch_lock_releases_after_an_exception(tmp_path):
+    path = tmp_path / "propublica_revenue.jsonl"
+    with pytest.raises(RuntimeError, match="simulated failure"), fetch.output_lock(path):
+        raise RuntimeError("simulated failure")
+    with fetch.output_lock(path):
+        pass
+
+
+def test_audit_displays_corrected_entity_separately_from_raw_search_match(tmp_path, monkeypatch):
+    org = {"name": "One", "link": "one.example"}
+    original = {**raw(org), "source_url": "https://api.example/old",
+                "retrieved_at": "2020-01-01"}
+    correction = {**org, "action": "replace", "ein": 987654321,
+                  "legal_name": "Correct Operating Organization",
+                  "source_url": "https://api.example/correct",
+                  "revenue_by_year": {"2020": 100}}
+    dataset(tmp_path, [org], [original], [correction])
+    monkeypatch.setattr(audit, "DATA", tmp_path)
+    workdir = tmp_path / "audit"
+    audit.build(workdir)
+    item, = json.loads((workdir / "batch_00/items.json").read_text())
+    assert item["current"] == {
+        "ein": 987654321, "legal_name": "Correct Operating Organization",
+        "match": None, "score": None, "source_url": "https://api.example/correct",
+    }
+    assert item["raw_candidate"] == {
+        "ein": 123456789, "match": "One", "score": 1.0,
+        "source_url": "https://api.example/old", "retrieved_at": "2020-01-01",
+    }
+
+
+def test_strict_audit_json_fails_before_either_output_is_replaced(tmp_path, monkeypatch):
+    org = {"name": "One", "link": "one.example"}
+    correction = {**org, "action": "replace", "ein": 987654321,
+                  "revenue_by_year": {"2020": 100}, "extra_metadata": float("nan")}
+    dataset(tmp_path, [org], [raw(org)], [correction])
+    monkeypatch.setattr(audit, "DATA", tmp_path)
+    workdir = tmp_path / "audit"
+    audit.build(workdir)
+    write_rows(workdir / "batch_00/verdicts.jsonl", [
+        {**org, "verdict": "CORRECT", "ein": 987654321,
+         "source_url": "https://one.example/990", "confidence": "high"},
+    ])
+    before = (tmp_path / "match_audit.jsonl").read_bytes()
+    with pytest.raises(ValueError, match="JSON compliant"):
+        audit.apply(workdir)
+    assert (tmp_path / "match_audit.jsonl").read_bytes() == before
+    assert not (tmp_path / "match_verdicts.jsonl").exists()
+
+
+def test_sparse_replacement_does_not_inherit_old_filer_source(tmp_path):
+    org = {"name": "One", "link": "one.example"}
+    original = {**raw(org), "source_url": "https://api.example/old",
+                "legal_name": "Old Organization"}
+    correction = {**org, "action": "replace", "ein": 987654321,
+                  "revenue_by_year": {"2020": 100}}
+    dataset(tmp_path, [org], [original], [correction])
+    record = load_matches(tmp_path)[recipient_key(org)]
+    assert record["source_url"] is None
+    assert record["legal_name"] is None
+    assert record["raw_candidate"]["source_url"] == "https://api.example/old"
+
+
+def test_found_verdict_records_correct_revenue_and_identity_sources(tmp_path, monkeypatch):
+    org = {"name": "One", "link": "one.example"}
+    dataset(tmp_path, [org], [raw(org)])
+    monkeypatch.setattr(audit, "DATA", tmp_path)
+    monkeypatch.setattr(audit, "fetch_revenue", lambda _: {"2020": 100})
+    workdir = tmp_path / "audit"
+    audit.build(workdir)
+    write_rows(workdir / "batch_00/verdicts.jsonl", [
+        {**org, "verdict": "FOUND", "ein": 987654321,
+         "source_url": "https://one.example/990", "confidence": "high"},
+    ])
+    audit.apply(workdir)
+    record = load_matches(tmp_path)[recipient_key(org)]
+    assert record["source_url"] == f"{audit.API}/organizations/987654321.json"
+    assert record["identity_source_url"] == "https://one.example/990"
+    assert record["confidence"] == "high"
+    assert record["raw_candidate"]["ein"] == 123456789

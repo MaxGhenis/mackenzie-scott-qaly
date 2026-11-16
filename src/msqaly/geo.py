@@ -351,7 +351,7 @@ def main() -> None:
         "archetype_region_matrix": archetype_region_matrix(),
     }
     path = Path(__file__).resolve().parents[2] / "web" / "geo.json"
-    path.write_text(json.dumps(out, indent=1) + "\n")
+    path.write_text(json.dumps(out, indent=1, allow_nan=False) + "\n")
     fl = out["full_ledger"]
     print(f"wrote {path}: full ledger ${fl['total_usd']/1e9:.2f}B "
           f"in {len(fl['regions'])} buckets")

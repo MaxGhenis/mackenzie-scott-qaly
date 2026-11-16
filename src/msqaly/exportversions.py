@@ -53,7 +53,7 @@ def main() -> None:
     for name, out in (("allocation_v10.json", build_v10()),
                       ("allocation_v11.json", build_v11()),
                       ("allocation_v12.json", build())):
-        (web / name).write_text(json.dumps(out, indent=1) + "\n")
+        (web / name).write_text(json.dumps(out, indent=1, allow_nan=False) + "\n")
         print(f"wrote {name}: global_health {out['allocation_share']['global_health']}")
 
 

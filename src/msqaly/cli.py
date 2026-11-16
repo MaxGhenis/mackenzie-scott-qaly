@@ -311,7 +311,7 @@ def main(argv=None) -> int:
     tmp_summary.write_text(md)
     staged.append((tmp_summary, RESULTS / "summary.md"))
     tmp_json = RESULTS / "summary.tmp.json"
-    tmp_json.write_text(json.dumps(res.summary(), indent=2))
+    tmp_json.write_text(json.dumps(res.summary(), indent=2, allow_nan=False))
     staged.append((tmp_json, RESULTS / "summary.json"))
     tmp_fig = RESULTS / "figure.tmp.png"
     make_figure(res, params, tmp_fig)

@@ -42,7 +42,14 @@ from statistics import median
 import numpy as np
 import yaml
 
-from msqaly.recipients import RecipientIndex, RecipientKey, recipient_key
+from msqaly.recipients import (
+    RecipientIndex,
+    RecipientKey,
+    recipient_key,
+    validate_ein,
+    validate_match_record,
+    validate_revenue_history,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data" / "yieldgiving"
@@ -93,7 +100,10 @@ def load_matches(data_dir: str | Path | None = None) -> dict[RecipientKey, dict]
     def read_rows(path: Path) -> list[dict]:
         return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
-    out = index.records(read_rows(d / "propublica_revenue.jsonl"), label="raw match")
+    raw = index.records(read_rows(d / "propublica_revenue.jsonl"), label="raw match")
+    out = dict(raw)
+    for key, rec in out.items():
+        validate_match_record(rec, f"raw match {key!r}")
     if out.keys() != index.by_key.keys():
         raise ValueError("raw matches must cover every recipient; finish the resumable fetch first")
     audit = d / "match_audit.jsonl"
@@ -104,31 +114,66 @@ def load_matches(data_dir: str | Path | None = None) -> dict[RecipientKey, dict]
             if rec["action"] == "drop":
                 out[key] = {**out[key], **rec, "ein": None, "revenue_by_year": {}}
             elif rec["action"] == "replace":
-                ein = rec.get("ein")
-                if not isinstance(ein, int) or isinstance(ein, bool) or not 0 < ein < 10**9:
-                    raise ValueError(f"replacement needs a positive EIN: {key!r}")
-                out[key] = {**out[key], **rec}
+                validate_ein(rec.get("ein"), f"replacement {key!r}")
+                validate_revenue_history(rec.get("revenue_by_year"), f"replacement {key!r}")
+                out[key] = {
+                    **out[key], **rec,
+                    # A raw candidate's filer metadata must not describe a
+                    # different EIN substituted by an older sparse overlay.
+                    "source_url": rec.get("source_url"),
+                    "legal_name": rec.get("legal_name"),
+                }
             else:
                 raise ValueError(f"unknown audit action for {key!r}: {rec['action']!r}")
+    for key, rec in out.items():
+        rec["raw_candidate"] = {
+            field: raw[key].get(field)
+            for field in ("ein", "match", "score", "source_url", "retrieved_at")
+        }
     return out
 
 
 def load_revenue(data_dir: str | Path | None = None) -> dict[RecipientKey, dict[int, float]]:
     """Recipient identity -> {990 tax year -> total revenue} after audit overlay."""
     return {
-        key: {int(y): float(v) for y, v in rec["revenue_by_year"].items()}
+        key: validate_revenue_history(rec["revenue_by_year"], f"match {key!r}")
         for key, rec in load_matches(data_dir).items()
         if rec.get("ein")
     }
 
 
-def pre_gift_revenue(rev_by_year: dict[int, float] | None, gift_year: int) -> float | None:
-    """Latest 990 revenue strictly before the gift year (avoids the gift
-    itself inflating receipt-year revenue)."""
+def pre_gift_revenue_year(rev_by_year: dict[int, float] | None, gift_year: int) -> int | None:
+    """Tax year selected for the latest available strictly pre-gift revenue."""
     if not rev_by_year:
         return None
     years = [y for y in rev_by_year if y < gift_year]
-    return rev_by_year[max(years)] if years else None
+    return max(years) if years else None
+
+
+def pre_gift_revenue(rev_by_year: dict[int, float] | None, gift_year: int) -> float | None:
+    """Latest 990 revenue strictly before the gift year (avoids the gift
+    itself inflating receipt-year revenue)."""
+    year = pre_gift_revenue_year(rev_by_year, gift_year)
+    return rev_by_year[year] if year is not None else None
+
+
+def impute_window(
+    revenues: list[float | None], beta: float, residual: float
+) -> tuple[list[float], list[float], int]:
+    """Assign a window's residual using revenue weights and the median fallback.
+
+    Return assigned dollars, effective weights, and the fallback gift count.
+    Allocation and diagnostics share this calculation so their ledgers agree.
+    """
+    if not revenues:
+        return [], [], 0
+    weights = [r**beta if r else None for r in revenues]
+    known = [w for w in weights if w is not None]
+    fallback = median(known) if known else 1.0
+    n_fallback = sum(1 for w in weights if w is None)
+    weights = [w if w is not None else fallback for w in weights]
+    total_w = sum(weights)
+    return [residual * w / total_w for w in weights], weights, n_fallback
 
 
 def year_window(year: int) -> tuple[int, int]:
@@ -256,15 +301,10 @@ def derive_shares(
         imputed_by_window = {}
         for window, rows in by_window.items():
             residual = max(window_total[window] - disclosed_by_window[window], 0.0)
-            weights = [r**beta if r else None for _, _, r in rows]
-            known = [w for w in weights if w is not None]
-            fallback = median(known) if known else 1.0
-            n_fallback += sum(1 for w in weights if w is None)
-            weights = [w if w is not None else fallback for w in weights]
-            total_w = sum(weights)
+            amounts, _, window_fallback = impute_window([r for _, _, r in rows], beta, residual)
+            n_fallback += window_fallback
             imputed_by_window[f"{window[0]}-{window[1]}"] = residual
-            for (i, org, _), w in zip(rows, weights, strict=True):
-                amount = residual * w / total_w
+            for (i, org, _), amount in zip(rows, amounts, strict=True):
                 imputed_usd += amount
                 org_usd[i] += amount
                 credit(usd, org, amount)

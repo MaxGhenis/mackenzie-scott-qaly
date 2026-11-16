@@ -22,7 +22,7 @@ def export(out: str | Path = DEFAULT_OUT) -> Path:
     params = load_params(DEFAULT_PARAMS)
     # Stable, diff-friendly JSON. The structure mirrors parameters.yaml exactly,
     # so a TS port can read it with no transformation.
-    out.write_text(json.dumps(params, indent=2, sort_keys=False) + "\n")
+    out.write_text(json.dumps(params, indent=2, sort_keys=False, allow_nan=False) + "\n")
     return out
 
 

@@ -52,7 +52,7 @@ def load_params(path: str | Path | None = None) -> dict:
     meta["total_giving_nominal_usd"] = sum(
         float(t["nominal_usd"]) for t in meta["giving_tranches"]
     )
-    return params
+    return validate_params(params)
 
 
 def discounted_qale(years: np.ndarray, utility: np.ndarray, rate: float) -> np.ndarray:
@@ -123,6 +123,9 @@ class Results:
 
 
 def run(params: dict, n: int = 100_000, seed: int = 0) -> Results:
+    validate_params(params)
+    if not isinstance(n, int) or isinstance(n, bool) or n < 1:
+        raise ValueError("n must be a positive integer")
     rng = np.random.default_rng(seed)
     giving = float(params["meta"]["total_giving_usd"])
     rate = float(params["meta"]["discount_rate"])
