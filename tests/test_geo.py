@@ -75,13 +75,25 @@ def test_geo_overlay_loads_and_shares_still_sum():
 
 
 def test_version_exports_in_sync():
-    from msqaly.exportversions import build, build_v10
+    from msqaly.exportversions import build, build_v10, build_v11
 
-    for name, builder in (("allocation_v11.json", build),
+    for name, builder in (("allocation_v12.json", build),
+                          ("allocation_v11.json", build_v11),
                           ("allocation_v10.json", build_v10)):
         disk = json.loads((ROOT / "web" / name).read_text())
         assert disk == builder()
         assert abs(sum(disk["allocation_share"].values()) - 1.0) < 1e-9
+
+
+def test_published_allocations_do_not_recompute_from_current_matches(monkeypatch):
+    import msqaly.exportversions as versions
+
+    def fail_if_recomputed(**kwargs):
+        raise AssertionError("historical vectors must not use current revenue inputs")
+
+    monkeypatch.setattr(versions, "derive_shares", fail_if_recomputed)
+    assert versions.build_v10()["allocation_share"]["global_health"] == 0.049
+    assert versions.build_v11()["allocation_share"]["global_health"] == 0.048
 
 
 def test_archetype_region_matrix_invariants():

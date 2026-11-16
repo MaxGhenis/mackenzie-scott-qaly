@@ -64,7 +64,7 @@ def test_gift_revenue_elasticity_is_sane(derived):
     assert stats["elasticity_r2"] > 0.15
     assert stats["n_calibration"] > 800
     # Most undisclosed gifts should carry a real revenue weight, not the
-    # median fallback (non-US recipients lack 990s).
+    # median fallback for recipients without usable pre-gift histories.
     assert stats["n_revenue_fallback"] / stats["n_undisclosed"] < 0.45
 
 

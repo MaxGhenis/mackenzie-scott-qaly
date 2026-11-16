@@ -20,8 +20,8 @@ recipient's **pre-gift IRS 990 total revenue** raised to an elasticity
 calibrated on the disclosed pairs (log-log OLS of gift size on revenue).
 Pre-gift means the latest ``tax_prd_yr`` strictly before the gift year — a
 Scott gift inflates receipt-year revenue, so same-year revenue would be
-endogenous. Recipients with no matched 990 (mostly non-US organizations) get
-the window's median weight. Years 2019-2021 form one window because the
+endogenous. Recipients without a usable matched pre-gift history get the
+window's median weight. Years 2019-2021 form one window because the
 database attributes more disclosed 2021 dollars than the 2021 announcement
 total — year attribution is noisy at the boundary.
 
@@ -41,6 +41,8 @@ from statistics import median
 
 import numpy as np
 import yaml
+
+from msqaly.recipients import RecipientIndex, RecipientKey, recipient_key
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data" / "yieldgiving"
@@ -79,31 +81,45 @@ def load_inputs(data_dir: str | Path | None = None) -> tuple[list, dict, dict]:
     return orgs, leaves, mapping
 
 
-def load_revenue(data_dir: str | Path | None = None) -> dict[str, dict[int, float]]:
-    """org name -> {990 tax year -> total revenue} for matched organizations.
+def load_matches(data_dir: str | Path | None = None) -> dict[RecipientKey, dict]:
+    """Effective matches indexed by recipient name and website.
 
-    ``match_audit.jsonl``, when present, overlays the raw fetch: an LLM audit
-    of fuzzy name->EIN matches. ``{"name", "action": "drop"}`` removes a
-    false-positive match; ``{"name", "action": "replace", "ein",
-    "revenue_by_year"}`` substitutes the corrected organization's filings.
+    Legacy rows without links are accepted only for unique recipient names.
+    Each raw and overlay layer must contain at most one row per identity.
     """
     d = Path(data_dir) if data_dir else DATA_DIR
-    out: dict[str, dict[int, float]] = {}
-    for line in (d / "propublica_revenue.jsonl").read_text().splitlines():
-        rec = json.loads(line)
-        if rec.get("ein"):
-            out[rec["name"]] = {int(y): float(v) for y, v in rec["revenue_by_year"].items()}
+    index = RecipientIndex(json.loads((d / "organisations.json").read_text()))
+
+    def read_rows(path: Path) -> list[dict]:
+        return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+    out = index.records(read_rows(d / "propublica_revenue.jsonl"), label="raw match")
+    if out.keys() != index.by_key.keys():
+        raise ValueError("raw matches must cover every recipient; finish the resumable fetch first")
     audit = d / "match_audit.jsonl"
     if audit.exists():
-        for line in audit.read_text().splitlines():
-            rec = json.loads(line)
+        for key, rec in index.records(read_rows(audit), label="audit overlay").items():
+            if key not in out:
+                raise ValueError(f"audit recipient missing from raw matches: {key!r}")
             if rec["action"] == "drop":
-                out.pop(rec["name"], None)
+                out[key] = {**out[key], **rec, "ein": None, "revenue_by_year": {}}
             elif rec["action"] == "replace":
-                out[rec["name"]] = {
-                    int(y): float(v) for y, v in rec["revenue_by_year"].items()
-                }
+                ein = rec.get("ein")
+                if not isinstance(ein, int) or isinstance(ein, bool) or not 0 < ein < 10**9:
+                    raise ValueError(f"replacement needs a positive EIN: {key!r}")
+                out[key] = {**out[key], **rec}
+            else:
+                raise ValueError(f"unknown audit action for {key!r}: {rec['action']!r}")
     return out
+
+
+def load_revenue(data_dir: str | Path | None = None) -> dict[RecipientKey, dict[int, float]]:
+    """Recipient identity -> {990 tax year -> total revenue} after audit overlay."""
+    return {
+        key: {int(y): float(v) for y, v in rec["revenue_by_year"].items()}
+        for key, rec in load_matches(data_dir).items()
+        if rec.get("ein")
+    }
 
 
 def pre_gift_revenue(rev_by_year: dict[int, float] | None, gift_year: int) -> float | None:
@@ -127,7 +143,7 @@ def calibrate_elasticity(orgs: list, revenue: dict) -> tuple[float, float, int]:
     pairs. Returns (elasticity beta, R^2, n)."""
     xs, ys = [], []
     for org in orgs:
-        rev = revenue.get(org["name"])
+        rev = revenue.get(recipient_key(org))
         for gift in org.get("gifts") or []:
             amount = gift.get("amount") or 0
             if amount <= 0:
@@ -234,7 +250,7 @@ def derive_shares(
         by_window: dict[tuple, list] = defaultdict(list)
         n_fallback = 0
         for i, org, year in undisclosed:
-            r = pre_gift_revenue(revenue.get(org["name"]), year)
+            r = pre_gift_revenue(revenue.get(recipient_key(org)), year)
             by_window[year_window(year)].append((i, org, r))
         imputed_usd = 0.0
         imputed_by_window = {}

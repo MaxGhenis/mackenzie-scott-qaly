@@ -39,21 +39,63 @@ label and group.
 
 ## propublica_revenue.jsonl
 
-One record per organization: the name→EIN match against ProPublica's
-[Nonprofit Explorer API](https://projects.propublica.org/nonprofits/api/)
-(difflib similarity ≥ 0.87; fetched by `scripts/fetch_propublica.py`,
-2026-07-11) and every filing's total revenue by tax year. 1,462 of 2,545
-organizations matched; the rest are mostly non-US recipients with no 990.
+The raw fetch records name-to-EIN candidates from ProPublica's
+[Nonprofit Explorer API](https://projects.propublica.org/nonprofits/api/) and
+positive total revenue by tax year. The July 11, 2026 snapshot accepts
+1,462 recipient rows at a difflib similarity threshold of 0.87
+([raw records](propublica_revenue.jsonl), [fetch script](../../scripts/fetch_propublica.py)).
+Name similarity does not establish identity. Unmatched records can reflect
+non-US entities, sponsored projects, or unresolved U.S. legal names.
+
+Two recipients share the name Community Legal Services. The raw rows retain
+the original fetch's Arizona EIN, but each now carries its snapshot `link`:
+`clsaz.org/` for Arizona and `www.clsmf.org/` for Florida. The overlay supplies
+Florida's corrected EIN. Matching uses the recipient's name and link;
+[the Yield Giving snapshot](organisations.json) supplies both fields.
 
 ## match_audit.jsonl
 
-LLM audit overlay (gpt-5.6-terra via Codex CLI, 2026-07-11) of the fuzzy
-matches: 827 (only the 248 effectful rows — 236 replacements, 12 drops — are committed here; the remaining verdicts were confirmations with no overlay effect and are not committed) audited items (similarity < 0.95, plausible rejects, and the
-highest-revenue undisclosed-gift orgs) verified against the live API.
-Verdicts: 518 correct, 236 newly-found EINs (legal-name/DBA mismatches), 73
-confirmed non-filers, 0 false positives. `msqaly.allocation.load_revenue`
-applies these on top of the raw fetch. Built/applied by
-`scripts/audit_matches.py`.
+[The overlay](match_audit.jsonl) currently contains 257 replacements and 13
+drops. `msqaly.allocation.load_revenue` applies the overlay before calibration
+and imputation ([implementation](../../src/msqaly/allocation.py)).
+
+The July audit retained effectful changes and omitted confirmation-only
+verdicts. Those rows cannot establish the original audit's overall error
+rate or a count of confirmed non-filers. The November 16, 2026 corrections
+replace 22 histories and drop the unrelated Abriendo Puertas match. Each
+correction records the recipient link, original EIN, identity evidence,
+revenue source, retrieval date, and confidence
+([correction records](match_audit.jsonl)).
+
+The corrected histories use ProPublica's `tax_prd_yr` and positive
+`totrevenue` values through tax year 2024. For duplicate filings within a
+year, the extraction keeps the largest positive total revenue, matching the
+[original fetch convention](../../scripts/fetch_propublica.py). The
+[refresh script](../../scripts/refresh_match_corrections.py) verifies the
+returned EIN and rejects empty histories or failed requests. Run:
+
+```bash
+uv run python scripts/refresh_match_corrections.py          # preview
+uv run python scripts/refresh_match_corrections.py --write  # update histories
+```
+
+These corrections identify organizations for revenue-based size proxies;
+they do not identify the legal payee of each Scott gift. Junior Achievement
+of the Michigan Great Lakes uses its operating entity, Mercy Housing uses
+its parent, and Invest Detroit uses its charitable foundation. Their
+records cite the organizations' own financial reports or donation
+instructions; the historical gift payees remain unverified
+([source-linked records](match_audit.jsonl)).
+
+NACA retains its related foundation's revenue as a school-size proxy;
+that choice does not establish that the foundation's revenue measures the
+school's full operating size
+([school](https://www.nacaschool.org/),
+[foundation filer](https://projects.propublica.org/nonprofits/organizations/272193660)).
+AP-OD identifies itself as a Tides Center fiscally sponsored project, so the
+overlay drops the unrelated Connecticut filer and does not substitute
+Tides-wide revenue for project revenue
+([AP-OD donation instructions](https://ap-od.org/donate/)).
 
 ## leaf_to_archetype.yaml
 

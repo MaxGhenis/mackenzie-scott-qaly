@@ -1,167 +1,195 @@
-"""Build and apply an LLM audit of the fuzzy name->EIN matches.
+"""Build/apply an identity audit of all Yield Giving -> EIN candidates.
 
-The ProPublica fetch (scripts/fetch_propublica.py) matches Yield Giving
-recipient names to IRS 990 filers with difflib similarity. That is good
-enough for exact-ish names but can mis-fire on generic names and misses
-organizations whose legal name differs from their public one. This script:
-
-``build <workdir>``
-    Selects the audit-worthy strata --
-    (A) accepted matches with similarity below 0.95,
-    (B) rejected orgs whose best candidate scored at least 0.70,
-    (C) matched orgs carrying undisclosed gifts whose pre-gift revenue is in
-        the top 40 (they will carry the largest imputed dollars, so even
-        high-similarity matches deserve a look) --
-    and writes them as batches of 30 (``batch_NN/items.json`` +
-    ``batch_NN/prompt.txt``) for an agentic model (gpt-5.6-terra via the
-    Codex CLI) to verify against the live ProPublica API.
-
-``apply <workdir>``
-    Collects every ``batch_NN/verdicts.jsonl``, fetches corrected EINs'
-    filings, and writes ``data/yieldgiving/match_audit.jsonl`` — the audit
-    overlay that ``msqaly.allocation.load_revenue`` applies on top of the raw
-    fetch (verdict WRONG/NO_990 on a matched org -> drop; FOUND -> replace
-    with the corrected organization's revenue history).
+``build <workdir>`` includes every recipient, including exact-name candidates.
+``apply <workdir>`` validates complete batches, retains all reviewer evidence in
+``match_verdicts.jsonl`` and updates the effective ``match_audit.jsonl`` overlay.
+HTTP failures abort before either output is replaced; they never mean no filer.
 """
 
 from __future__ import annotations
 
 import json
 import sys
+from collections import Counter
 from pathlib import Path
+from urllib.parse import urlsplit
+
+from msqaly.allocation import load_matches
+from msqaly.recipients import RecipientIndex, RecipientKey
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from fetch_propublica import API, get  # noqa: E402
+from fetch_propublica import fetch_revenue  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "yieldgiving"
 BATCH_SIZE = 30
+VERDICTS = {"CORRECT", "WRONG", "NO_990", "FOUND"}
 
 PROMPT = """\
-You are auditing name->EIN matches between MacKenzie Scott gift recipients
-(Yield Giving) and IRS 990 filers (ProPublica Nonprofit Explorer).
+Audit every input recipient -> EIN identity against primary evidence.
+Read items.json. BOTH name and link identify a recipient; namesakes are
+separate recipients. current.ein null means no accepted candidate.
 
-Read items.json in this directory: an array of objects
-{{name, mission, locations, gift_years, current: {{ein, match, score}}}}.
-`current.ein` null means no match was accepted; `current.match` is the best
-rejected candidate.
+Use the recipient's own website, official tax documents or government records
+to bind its identity to an EIN. Compare city/state, mission, legal name and
+history. Exact names and search rank do not prove identity. Distinguish related
+foundations/subsidiaries and fiscal sponsors from an operating entity; do not
+use an entire sponsor's revenue as project size. A failed request is not
+no-filing evidence; report it and stop rather than inventing a verdict.
 
-For EACH item, decide whether `current` identifies the same real-world
-organization. Verify against the live API:
-  curl -s "https://projects.propublica.org/nonprofits/api/v2/search.json?q=NAME"
-  curl -s "https://projects.propublica.org/nonprofits/api/v2/organizations/EIN.json"
-Compare legal vs public names (DBA forms, 'the', punctuation), the filer's
-city/state against the item's locations, and mission coherence. Try name
-variants when the obvious query fails.
-
-Verdict per item:
-  CORRECT - current EIN is the same organization; keep it.
-  WRONG   - current EIN is a different organization and you found no right one.
-  NO_990  - the recipient almost certainly files no US 990 (non-US entity,
-            government body, or fiscally sponsored project).
-  FOUND   - you identified the right EIN (use this both for unmatched items
-            and for wrong matches you could correct); set "ein" to it.
-
-Append one JSON object per line to verdicts.jsonl in this directory:
-  {{"name": "<exact input name>", "verdict": "CORRECT|WRONG|NO_990|FOUND",
-    "ein": <int or null>, "note": "<= 15 words"}}
-Every input item must appear exactly once. Do not modify any other file.
+Append one JSON object per input to verdicts.jsonl, retaining exact name/link:
+{"name": "...", "link": "...", "verdict": "CORRECT|WRONG|NO_990|FOUND",
+ "ein": 123456789, "note": "reason", "source_url": "primary evidence URL",
+ "confidence": "high|medium|low"}
+CORRECT: existing EIN identifies intended recipient and revenue scope.
+WRONG: existing candidate is wrong; no replacement established.
+NO_990: primary evidence establishes no suitable independent US filer.
+FOUND: correct EIN established, including corrections of wrong candidates.
+Use null EIN for WRONG/NO_990. Every item must appear exactly once.
+Do not edit items.json or any other file.
 """
 
 
+def read_rows(path: Path) -> list[dict]:
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
 def build(workdir: Path) -> None:
-    orgs = {o["name"]: o for o in json.loads((DATA / "organisations.json").read_text())}
-    recs = [json.loads(x) for x in (DATA / "propublica_revenue.jsonl").read_text().splitlines()]
-
-    def undisclosed_years(name: str) -> list[int]:
-        return [
-            int(g["year"])
-            for g in orgs[name].get("gifts") or []
-            if not (g.get("amount") or 0)
-        ]
-
-    borderline = [r for r in recs if r["ein"] and r["score"] < 0.95]
-    rejected = [r for r in recs if not r["ein"] and r["score"] >= 0.70]
-    # High-stakes: matched orgs with undisclosed gifts, largest pre-gift revenue.
-    stakes_pool = [
-        r
-        for r in recs
-        if r["ein"] and r["score"] < 0.98 and undisclosed_years(r["name"])
-    ]
-    stakes_pool.sort(
-        key=lambda r: -max([float(v) for v in r["revenue_by_year"].values()] or [0])
-    )
-    chosen: dict[str, dict] = {}
-    for r in borderline + rejected + stakes_pool[:40]:
-        chosen.setdefault(r["name"], r)
-
+    orgs = json.loads((DATA / "organisations.json").read_text())
+    index = RecipientIndex(orgs)
+    matches = load_matches(DATA)
     items = []
-    for name, rec in sorted(chosen.items()):
-        org = orgs[name]
-        items.append(
-            {
-                "name": name,
-                "mission": (org.get("mission") or "")[:300],
-                "locations": org.get("locations") or [],
-                "gift_years": sorted({int(g["year"]) for g in org.get("gifts") or []}),
-                "current": {"ein": rec["ein"], "match": rec["match"], "score": rec["score"]},
-            }
-        )
+    for key, org in sorted(index.by_key.items()):
+        rec = matches.get(key, {})
+        items.append({
+            "name": org["name"], "link": org.get("link", ""), "mission": org.get("mission"),
+            "locations": org.get("locations") or [],
+            "gift_years": sorted({int(g["year"]) for g in org.get("gifts") or []}),
+            "current": {"ein": rec.get("ein"), "match": rec.get("match"),
+                        "score": rec.get("score")},
+        })
+    # Reusing old batches can silently mix two audit populations.
+    if list(workdir.glob("batch_*")):
+        raise ValueError(f"audit workdir already contains batches: {workdir}")
     workdir.mkdir(parents=True, exist_ok=True)
     for i in range(0, len(items), BATCH_SIZE):
-        b = workdir / f"batch_{i // BATCH_SIZE:02d}"
-        b.mkdir(exist_ok=True)
-        (b / "items.json").write_text(json.dumps(items[i : i + BATCH_SIZE], indent=1))
-        (b / "prompt.txt").write_text(PROMPT)
-    print(
-        f"{len(items)} items ({len(borderline)} borderline, {len(rejected)} rejected, "
-        f"{len(stakes_pool[:40])} high-stakes) in "
-        f"{(len(items) + BATCH_SIZE - 1) // BATCH_SIZE} batches under {workdir}"
-    )
+        batch = workdir / f"batch_{i // BATCH_SIZE:02d}"
+        batch.mkdir()
+        (batch / "items.json").write_text(json.dumps(items[i:i + BATCH_SIZE], indent=1))
+        (batch / "prompt.txt").write_text(PROMPT)
+    print(f"{len(items)} recipients (all similarity scores) under {workdir}")
+
+
+def collect_verdicts(workdir: Path, index: RecipientIndex) -> dict[RecipientKey, dict]:
+    """Reject missing, duplicate and out-of-population verdicts."""
+    expected, verdicts = {}, {}
+    batches = sorted(workdir.glob("batch_*"))
+    if not batches:
+        raise ValueError(f"no audit batches in {workdir}")
+    for batch in batches:
+        items = json.loads((batch / "items.json").read_text())
+        batch_items = index.records(items, label="batch input")
+        overlap = expected.keys() & batch_items.keys()
+        if overlap:
+            raise ValueError(f"duplicate audit input identities: {overlap!r}")
+        expected.update(batch_items)
+        batch_verdicts = index.records(read_rows(batch / "verdicts.jsonl"), label="verdict")
+        if batch_verdicts.keys() != batch_items.keys():
+            raise ValueError(f"verdicts must exactly cover inputs in {batch}")
+        for key, verdict in batch_verdicts.items():
+            if verdict.get("verdict") not in VERDICTS:
+                raise ValueError(f"unknown verdict for {key!r}: {verdict.get('verdict')!r}")
+            source = verdict.get("source_url")
+            url = urlsplit(source) if isinstance(source, str) else None
+            if url is None or url.scheme not in {"https", "http"} or not url.netloc:
+                raise ValueError(f"audit verdict needs a primary source URL for {key!r}")
+            if verdict.get("confidence") not in {"high", "medium", "low"}:
+                raise ValueError(f"audit verdict needs confidence for {key!r}")
+            if "current" not in batch_items[key]:
+                raise ValueError(f"audit input lacks its candidate snapshot: {key!r}")
+            verdicts[key] = {
+                **verdict, "link": index.by_key[key].get("link", ""),
+                "audited_ein": batch_items[key]["current"].get("ein"),
+            }
+    if expected.keys() != index.by_key.keys():
+        raise ValueError("audit inputs must cover every recipient; rebuild missing batches")
+    return verdicts
 
 
 def apply(workdir: Path) -> None:
-    recs = {
-        json.loads(x)["name"]: json.loads(x)
-        for x in (DATA / "propublica_revenue.jsonl").read_text().splitlines()
-    }
-    verdicts: dict[str, dict] = {}
-    for vf in sorted(workdir.glob("batch_*/verdicts.jsonl")):
-        for line in vf.read_text().splitlines():
-            if not line.strip():
-                continue
-            v = json.loads(line)
-            verdicts[v["name"]] = v
-    out = []
-    counts = {"CORRECT": 0, "WRONG": 0, "NO_990": 0, "FOUND": 0}
-    for name, v in sorted(verdicts.items()):
-        counts[v["verdict"]] = counts.get(v["verdict"], 0) + 1
-        had_match = bool(recs.get(name, {}).get("ein"))
-        if v["verdict"] in ("WRONG", "NO_990") and had_match:
-            out.append({"name": name, "action": "drop", "note": v.get("note", "")})
-        elif v["verdict"] == "FOUND" and v.get("ein"):
-            if recs.get(name, {}).get("ein") == v["ein"]:
-                continue  # audit agreed with the fetch after all
-            detail = get(f"{API}/organizations/{v['ein']}.json")
-            revenue = {}
-            for f in (detail or {}).get("filings_with_data", []):
-                year, rev = f.get("tax_prd_yr"), f.get("totrevenue")
-                if year and rev and rev > 0:
-                    revenue[str(year)] = max(rev, revenue.get(str(year), 0))
-            out.append(
-                {
-                    "name": name,
-                    "action": "replace",
-                    "ein": v["ein"],
-                    "revenue_by_year": revenue,
-                    "note": v.get("note", ""),
-                }
-            )
-    path = DATA / "match_audit.jsonl"
-    path.write_text("".join(json.dumps(r) + "\n" for r in out))
-    print(f"verdicts {counts} -> {len(out)} overlay records in {path}")
+    # Fetches may take minutes. Do not overwrite edits made while they run.
+    batches = sorted(workdir.glob("batch_*"))
+    input_paths = [
+        DATA / "organisations.json", DATA / "propublica_revenue.jsonl",
+        DATA / "match_audit.jsonl", DATA / "match_verdicts.jsonl",
+        *(batch / name for batch in batches for name in ("items.json", "verdicts.jsonl")),
+    ]
+
+    def contents(path: Path) -> bytes | None:
+        try:
+            return path.read_bytes()
+        except FileNotFoundError:
+            return None
+
+    original = {path: contents(path) for path in input_paths}
+    index = RecipientIndex(json.loads((DATA / "organisations.json").read_text()))
+    effective = load_matches(DATA)
+    verdicts = collect_verdicts(workdir, index)
+    overlay_path = DATA / "match_audit.jsonl"
+    overlay = (
+        index.records(read_rows(overlay_path), label="audit overlay")
+        if overlay_path.exists() else {}
+    )
+    for key, verdict in sorted(verdicts.items()):
+        current = effective.get(key, {})
+        if verdict["audited_ein"] != current.get("ein"):
+            raise ValueError(f"candidate changed since audit build for {key!r}; rebuild audit")
+        action = verdict["verdict"]
+        identity = {"name": key[0], "link": index.by_key[key].get("link", "")}
+        if action == "CORRECT":
+            if not current.get("ein"):
+                raise ValueError(f"cannot confirm an unmatched recipient: {key!r}")
+            if verdict.get("ein") not in (None, current["ein"]):
+                raise ValueError(f"CORRECT changes EIN for {key!r}; use FOUND")
+            if key in overlay:
+                overlay[key] = {**overlay[key], **identity, "audit_verdict": verdict}
+        elif action in ("WRONG", "NO_990"):
+            if verdict.get("ein") is not None:
+                raise ValueError(f"{action} cannot provide a replacement EIN: {key!r}")
+            overlay[key] = {
+                **identity, "action": "drop", "note": verdict.get("note", ""),
+                "audit_verdict": verdict,
+            }
+        elif action == "FOUND":
+            ein = verdict.get("ein")
+            if not isinstance(ein, int) or isinstance(ein, bool) or not 0 < ein < 10**9:
+                raise ValueError(f"FOUND needs a valid EIN for {key!r}")
+            # Fetch first: failures leave both output files untouched.
+            revenue = fetch_revenue(ein)
+            overlay[key] = {
+                **identity, "action": "replace", "ein": ein, "revenue_by_year": revenue,
+                "note": verdict.get("note", ""), "audit_verdict": verdict,
+            }
+
+    def write_rows(path: Path, rows: list[dict]) -> None:
+        pending = path.with_suffix(path.suffix + ".tmp")
+        pending.write_text("".join(json.dumps(row) + "\n" for row in rows))
+        pending.replace(path)
+
+    if sorted(workdir.glob("batch_*")) != batches or any(
+        contents(path) != before for path, before in original.items()
+    ):
+        raise ValueError(
+            "audit inputs changed during apply; refusing to overwrite concurrent edits"
+        )
+    write_rows(DATA / "match_verdicts.jsonl", [verdicts[k] for k in sorted(verdicts)])
+    write_rows(overlay_path, [overlay[k] for k in sorted(overlay)])
+    print(f"verdicts {dict(Counter(v['verdict'] for v in verdicts.values()))}; "
+          f"{len(overlay)} overlay records")
 
 
 if __name__ == "__main__":
-    cmd, wd = sys.argv[1], Path(sys.argv[2])
-    build(wd) if cmd == "build" else apply(wd)
+    command, directory = sys.argv[1], Path(sys.argv[2])
+    if command not in {"build", "apply"}:
+        raise SystemExit("usage: audit_matches.py build|apply <workdir>")
+    build(directory) if command == "build" else apply(directory)

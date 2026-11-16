@@ -1,9 +1,10 @@
 # Working paper
 
-Quarto manuscript. Every model-derived number in the prose is interpolated at
+Quarto manuscript. The body interpolates model-derived figures at
 render time from the frozen artifacts (`results/summary.json`, `web/geo.json`,
-the allocation exports, and a live `derive_shares()` call); hand-typed
-constants are limited to externally sourced, cited figures.
+the allocation exports, and a live `derive_shares()` call). The abstract
+rounds figures from the same regenerated outputs; check those figures after
+changing the model. Historical correction figures retain their published values.
 
 ## Render
 
@@ -31,7 +32,7 @@ Regenerating the inputs, in order, when the model changes:
 ```bash
 uv run msqaly --write            # results/
 uv run msqaly-export-params      # web/params.json
-uv run python -m msqaly.exportversions   # web/allocation_v10.json, _v11.json
+uv run python -m msqaly.exportversions   # web/allocation_v10.json, _v11.json, _v12.json
 uv run python -m msqaly.geo      # web/geo.json
 uv run python -m pytest          # sync guards
 ```

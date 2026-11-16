@@ -15,7 +15,7 @@ format:
     number-sections: true
     author: 'Max Ghenis\thanks{max@maxghenis.com. I am CEO of PolicyEngine and president of the Axiom Foundation; this paper is a personal research project and does not represent the views of either organization. Neither I nor the organizations I lead have received funding from MacKenzie Scott, Yield Giving, or GiveWell. Interactive version, code, data, and full audit trail: \url{https://maxghenis.com/mackenzie-scott-qaly} and \url{https://github.com/MaxGhenis/mackenzie-scott-qaly}.}'
 abstract: |
-  MacKenzie Scott has disclosed $26.39 billion in gifts to more than 2,500 organizations since 2019 — her 2025 giving alone was about a third of the value of that year's U.S. megagifts — yet almost none of it is denominated in outcomes. This paper prices the entire portfolio in quality-adjusted life-years. A Monte Carlo model allocates dollars across 14 intervention archetypes using Scott's own gift-level database, imputes the undisclosed third from recipients' pre-gift IRS 990 revenue, assigns each archetype a cost-per-QALY anchor from published causal estimates, and shrinks every effect toward zero in proportion to the causal credibility of its evidence. The best-guess estimate is a median of roughly 202,000 QALYs (90% interval 94,000–419,000), a blended $150,000 per QALY, and a median benefit–cost ratio of 4.9 under the valuation distribution HHS uses for regulatory analysis. Three findings follow. First, estimated impact is geographically concentrated: the 4.8% of dollars funding health and development delivered outside the United States, priced at global-health anchors, accounts for 69% of estimated health impact. Second, gift size scales with recipient size to only the 0.41 power — a 10× larger organization receives about 2.5× more money. Third, the answer is dominated by evidence philosophy rather than arithmetic: restricting credit almost entirely to randomized evidence collapses the median to ~9,000 QALYs while taking every study at near face value raises it to ~415,000 — a 45× range, larger than the spread from any single distributional parameter tested. All parameters, code, data snapshots, and an AI-audit trail are public, and the model runs interactively in the browser.
+  MacKenzie Scott has disclosed $26.39 billion in gifts to more than 2,500 organizations since 2019. I estimate the portfolio's health impact in quality-adjusted life-years (QALYs). I allocate dollars across 14 intervention archetypes using Scott's gift-level database and impute undisclosed amounts from recipients' pre-gift IRS Form 990 revenue. A Monte Carlo model combines published cost-per-QALY estimates with weights for the causal credibility of the evidence. Under the best-guess priors, I estimate a median of roughly 205,000 QALYs (90% probabilistic-sensitivity interval 95,000–423,000), at a blended $148,000 per QALY. Applying the HHS regulatory valuation distribution gives a median benefit–cost ratio of 5.0. The 4.9% of dollars funding health and development outside the United States, priced at global-health anchors, contributes 69% of mean estimated QALYs. Among 1,314 disclosed gifts with matched pre-gift filings, the log-log fit relates gift size to recipient revenue with slope 0.55 (R² 0.52): a 10-fold revenue difference corresponds to about a 3.5-fold gift-size difference. This descriptive fit does not establish predictive accuracy for undisclosed gifts. Evidence assumptions produce a 48-fold range in median QALYs, from about 9,000 under near-RCT-only credit to 419,000 at near face value. The repository publishes parameters, code, data snapshots, and source-linked correction overlays, and the browser implementation lets readers rerun the model under different assumptions.
 ---
 
 ```{python}
@@ -41,6 +41,11 @@ P = yaml.safe_load((ROOT / "data" / "parameters.yaml").read_text())
 
 from msqaly.allocation import derive_shares
 _, DIAG = derive_shares()
+_, DIAG_DISCLOSED = derive_shares(impute=False)
+_max_share_shift = max(
+    abs(DIAG["raw_shares"][key] - DIAG_DISCLOSED["raw_shares"][key])
+    for key in DIAG["raw_shares"]
+)
 
 tq = S["total_qalys"]
 def k(x): return f"{x/1000:,.0f},000" if x >= 10000 else f"{x:,.0f}"
@@ -65,6 +70,10 @@ F = dict(
     n_orgs=f"{DIAG['n_orgs']:,}",
     n_gifts=f"{DIAG['n_gifts']:,}",
     n_disclosed=f"{DIAG['n_disclosed']:,}",
+    n_undisclosed=f"{DIAG['n_undisclosed']:,}",
+    n_fallback=f"{DIAG['n_revenue_fallback']:,}",
+    tenfold=f"{10 ** DIAG['elasticity']:.1f}",
+    max_share_shift_pp=f"{100 * _max_share_shift:.1f}",
     disclosed_b=f"${DIAG['disclosed_usd']/1e9:,.2f}B",
     imputed_b=f"${DIAG['imputed_usd']/1e9:,.2f}B",
     abroad_share=f"{100*DIAG['raw_shares']['global_health']:.2f}%",
@@ -127,7 +136,11 @@ Scott's essays disclose giving in dated tranches totaling $26.39 billion nominal
 
 Scott publishes no aggregate dollars-by-cause breakdown, but she publishes something more granular: a gift-level database listing every recipient organization, its self-reported focus areas, and — for `{python} F["n_disclosed"]` of `{python} F["n_gifts"]` gifts (`{python} F["disclosed_b"]`, about two-thirds of the nominal total) — the dollar amount. Each organization's dollars are split equally across its focus areas; the database's 53 areas map onto the model's 14 intervention archetypes under a documented, sync-tested crosswalk.
 
-The undisclosed third is imputed rather than dropped. Because the essays give each year's total, the undisclosed residual per period is a known dollar amount; it is distributed across that period's undisclosed gifts in proportion to each recipient's pre-gift IRS Form 990 total revenue [@propublica2026], raised to an elasticity fit on the disclosed pairs. Pre-gift means the latest filing strictly before the gift year, since a Scott gift mechanically inflates receipt-year revenue. The fit is a finding in its own right: across `{python} F["n_cal"]` disclosed gift–filing pairs, log gift size rises with log revenue with slope `{python} F["elasticity"]` (R² `{python} F["r2"]`). A 10× larger organization receives about 2.5× more money, not 10× more. The fit is descriptive and conditional: it is estimated on disclosed gifts with a matched pre-gift filing (1,313 of 2,035 disclosed and 2,711 total gifts), treats repeated gifts to an organization as independent, and pools years; 287 of the 676 undisclosed gifts lack a usable filing and receive their period's median weight. It is a within-sample regularity used for imputation, not a validated prediction rule. Fuzzy name-to-EIN matches were audited by a third, smaller model against the live IRS API, with corrections committed as a reviewable overlay. The imputed third moves each cause share by at most about 1.5 percentage points — under the imputation model, the disclosed two-thirds is representative.
+I distribute each period's undisclosed residual across its undisclosed gifts in proportion to recipients' pre-gift IRS Form 990 total revenue [@propublica2026], raised to an elasticity fit on the disclosed pairs. Scott's essays supply the period totals. I use the latest filing year strictly before the gift year to avoid including the gift itself in revenue.
+
+Across `{python} F["n_cal"]` disclosed gift–filing pairs, log gift size rises with log revenue with slope `{python} F["elasticity"]` (R² `{python} F["r2"]`). In this matched sample, a 10× larger organization receives about `{python} F["tenfold"]`× as much money. The fit covers `{python} F["n_cal"]` of `{python} F["n_disclosed"]` disclosed gifts and `{python} F["n_gifts"]` total gifts, treats repeated gifts to an organization as independent, and pools years. Of the `{python} F["n_undisclosed"]` undisclosed gifts, `{python} F["n_fallback"]` lack a usable filing and receive their period's median weight. This descriptive fit supplies the imputation weights; it does not establish predictive accuracy for undisclosed gifts.
+
+The matching pipeline links recipients to tax filers by name, then applies corrections that cite recipient websites and filings. The November 16, 2026 review corrected 20 wrong identities and replaced three related-entity revenue proxies. The [source-linked overlay](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/data/yieldgiving/match_audit.jsonl) preserves each correction and its evidence; the review does not establish an error rate for the remaining matches. Relative to disclosed-only allocation, imputation moves each cause share by at most `{python} F["max_share_shift_pp"]` percentage points under these assumptions.
 
 ## Delivery geography
 
@@ -277,15 +290,18 @@ plt.show()
 
 F_rct = f"{meds[0]:,.0f}"
 F_face = f"{meds[-1]:,.0f}"
+F_stance_ratio = f"{meds[-1] / meds[0]:.0f}"
 ```
 
-The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-only floor — non-randomized tiers shrunk to a credibility mean of 0.01, the randomized tier kept at its drafted mean — the median collapses to `{python} F_rct` QALYs, dominated by the randomized-tier mental-health bucket; at near face value (all tier means 0.999) it rises to `{python} F_face` (@fig-stance). That 45-fold range exceeds the spread from any single distributional parameter — though structural choices can move the headline more: with no geographic repricing at all, every health dollar at U.S. anchors, the median is roughly 70,000 (the pre-correction model in the §5.3 table), so the routing assumption alone spans ~3× — and the gap between the face-value and best-guess estimates is a direct reading of how much of the estimated impact rests on evidence below randomized or strong quasi-experimental identification standards. The Spearman tornado (@fig-tornado) tells the same story within the default stance: the top three drivers are the global-health allocation share, the realization factor, and global-health credibility.
+The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-only floor — non-randomized tiers shrunk to a credibility mean of 0.01, the randomized tier kept at its drafted mean — the median collapses to `{python} F_rct` QALYs, dominated by the randomized-tier mental-health bucket; at near face value (all tier means 0.999) it rises to `{python} F_face` (@fig-stance). That `{python} F_stance_ratio`-fold range exceeds the spread from any single distributional parameter — though structural choices can move the headline more: with no geographic repricing at all, every health dollar at U.S. anchors, the median is roughly 70,000 (the pre-correction model in the §5.3 table), so the routing assumption alone spans ~3× — and the gap between the face-value and best-guess estimates is a direct reading of how much of the estimated impact rests on evidence below randomized or strong quasi-experimental identification standards. The Spearman tornado (@fig-tornado) tells the same story within the default stance: the top three drivers are the global-health allocation share, the realization factor, and global-health credibility.
 
 ![What drives the spread: Spearman rank correlations between each input draw and total QALYs at the best-guess defaults.](../results/sensitivity.png){#fig-tornado}
 
-## The audit moved the headline by less than 2%
+## Allocation corrections
 
-The geography audit is the largest data correction the model has absorbed since publication, and its effect is small: recentering the allocation on audited service geographies moved the abroad share from 4.93% to `{python} F["abroad_share"]`, the median from about 205,000 to `{python} F["median"]`, and the blended figure from about $148,000 to `{python} F["blended"]` per QALY. Both allocations ship with the model, the browser version exposes them as a version toggle, and the pre-audit parameters remain pinned at tag `v2026.07.20` (audited: `v2026.07.22`).
+The July 2026 geography audit moved the routed global-health share from 4.93% to 4.82%, the median from about 205,000 to 201,923 QALYs, and the blended figure from about $148,000 to $150,067 per QALY. The repository preserves these historical allocations as v1.0 and v1.1, with parameters at tags [`v2026.07.20`](https://github.com/MaxGhenis/mackenzie-scott-qaly/tree/v2026.07.20) and [`v2026.07.22`](https://github.com/MaxGhenis/mackenzie-scott-qaly/tree/v2026.07.22).
+
+The November 16, 2026 Form 990 corrections produce the current v1.2 allocation: `{python} F["abroad_share"]` for global health, a median of `{python} F["median"]` QALYs, and `{python} F["blended"]` per QALY. The browser version offers all three allocations for comparison.
 
 ## Corrections history
 
@@ -296,9 +312,10 @@ The model reached this state through a series of public revisions — counting a
 | Cross-model review: dollar vintages normalized, a life-year→QALY conversion made explicit, frontier benchmark re-derived, one citation re-attributed | ~98,000 → ~87,000 | second model family |
 | Allocation replaced with the derivation from Scott's own gift database | ~87,000 → ~70,000 | author + model |
 | Health dollars had been priced at U.S. anchors regardless of delivery location | ~70,000 → ~205,000 | a reader |
-| Two-model geography audit of "global"-listed organizations (tags v2026.07.20 → v2026.07.22) | ~205,000 → `{python} F["median_k"]` | model audit |
+| Two-model geography audit of "global"-listed organizations (tags v2026.07.20 → v2026.07.22) | ~205,000 → ~202,000 | model audit |
+| November 16, 2026: correct 20 Form 990 identities and three related-entity revenue proxies (v1.2) | ~202,000 → `{python} F["median_k"]` | source-linked identity review |
 
-Every correction is documented in the repository and summarized on the public tool; the detector column is the record, and none of these was caught by the author unaided.
+The repository and public tool document the corrections; the final column names who identified each issue.
 
 # Construction and auditability
 
@@ -312,7 +329,7 @@ The credibility tiers and realization distribution are judgment priors with no l
 
 # Conclusion
 
-Measured in health, MacKenzie Scott's $26 billion buys an estimated median of about `{python} F["median_k"]` quality-adjusted life-years — several times its cost under the government's own regulatory valuation — and most of that estimated health comes from the twentieth of her dollars funding health and development delivered abroad. The number is a model output under stated priors, not a fact, and the model's most important output is not the point estimate but the machinery around it: explicit evidence weights, a 45-fold stance range that any reader can traverse, versioned corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes without waiting for donors to publish outcome data — their own gift lists, recipients' tax filings, and the published causal literature suffice — and the same machinery applies to any large giver whose public disclosures carry comparable gift-level allocation and geography fields. The invitation of the interactive version is the paper's real conclusion: disagree with a parameter, move it, and watch what survives.
+Measured in health, MacKenzie Scott's $26 billion buys an estimated median of about `{python} F["median_k"]` quality-adjusted life-years — several times its cost under the government's own regulatory valuation — and most of that estimated health comes from the twentieth of her dollars funding health and development delivered abroad. The number is a model output under stated priors, not a fact, and the model's most important output is not the point estimate but the machinery around it: explicit evidence weights, a `{python} F_stance_ratio`-fold stance range that any reader can traverse, versioned corrections, and audits committed as data. Portfolio-scale philanthropy is measurable in outcomes without waiting for donors to publish outcome data — their own gift lists, recipients' tax filings, and the published causal literature suffice — and the same machinery applies to any large giver whose public disclosures carry comparable gift-level allocation and geography fields. The invitation of the interactive version is the paper's real conclusion: disagree with a parameter, move it, and watch what survives.
 
 # Acknowledgments {.unnumbered}
 

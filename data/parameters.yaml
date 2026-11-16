@@ -228,15 +228,16 @@ allocation_concentration: 60
 # (announced tranche total minus disclosed dollars) is distributed across
 # that window's undisclosed gifts in proportion to the recipient's pre-gift
 # IRS 990 total revenue (ProPublica Nonprofit Explorer snapshot in
-# data/yieldgiving/propublica_revenue.jsonl) raised to an elasticity
+# data/yieldgiving/propublica_revenue.jsonl, corrected by the source-linked
+# data/yieldgiving/match_audit.jsonl overlay) raised to an elasticity
 # calibrated on the disclosed gift~revenue pairs; recipients without a
-# matched 990 (mostly non-US) get the window's median weight.
+# usable pre-gift 990 get the window's median weight.
 # ---------------------------------------------------------------------------
 archetypes:
 
   health_coverage:
     label: "Health - insurance & access"
-    allocation_share: 0.037
+    allocation_share: 0.039
     method: cost_per_life
     causal_credibility: strong_quasi
     identification: >-
@@ -261,7 +262,7 @@ archetypes:
 
   health_chc:
     label: "Health - community health centers"
-    allocation_share: 0.037
+    allocation_share: 0.039
     method: cost_per_life_year
     causal_credibility: moderate_quasi
     identification: >-
@@ -284,7 +285,7 @@ archetypes:
 
   health_mental:
     label: "Health - mental & behavioral"
-    allocation_share: 0.022
+    allocation_share: 0.021
     method: cost_per_qaly
     causal_credibility: randomized
     identification: >-
@@ -312,7 +313,7 @@ archetypes:
 
   global_health:
     label: "Global health & development (non-US delivery)"
-    allocation_share: 0.048
+    allocation_share: 0.049
     method: cost_per_qaly
     causal_credibility: strong_quasi
     identification: >-
@@ -483,7 +484,7 @@ archetypes:
 
   equity_justice:
     label: "Equity & justice"
-    allocation_share: 0.172
+    allocation_share: 0.169
     method: cost_per_qaly
     causal_credibility: assumption
     identification: >-
@@ -501,7 +502,7 @@ archetypes:
 
   civic_democracy:
     label: "Civic / democracy / philanthropy infra"
-    allocation_share: 0.107
+    allocation_share: 0.104
     method: cost_per_qaly
     causal_credibility: assumption
     identification: "No causal health evidence; value is civic/institutional."
@@ -512,7 +513,7 @@ archetypes:
 
   arts_culture:
     label: "Arts & culture"
-    allocation_share: 0.034
+    allocation_share: 0.033
     method: cost_per_qaly
     causal_credibility: assumption
     identification: >-
@@ -528,7 +529,7 @@ archetypes:
 
   environment:
     label: "Environment / climate"
-    allocation_share: 0.082
+    allocation_share: 0.085
     method: cost_per_qaly
     causal_credibility: projection
     identification: >-
