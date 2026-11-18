@@ -22,7 +22,9 @@ a TeX distribution with `tgpagella` and `helvet` (`quarto install tinytex`
 suffices). Quarto writes the GitHub Pages webview and `index.pdf` to `docs/`.
 For the GitHub Pages mirror, rewrite figure URLs from `../results/` to
 `results/` in `docs/index.html`: Quarto copies figures into `docs/results/`
-but retains source-relative URLs.
+but retains source-relative URLs. Quarto PDF renders can link to either
+`index-preview.html` or `index.qmd.html` for the source notebook. The
+project copies a redirect for the latter into `docs/`.
 
 Regenerating the inputs, in order, when the model changes:
 
