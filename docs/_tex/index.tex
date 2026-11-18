@@ -241,7 +241,7 @@ implementation lets readers rerun the model under different assumptions.
 
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 \section{Introduction}\label{introduction}
@@ -348,22 +348,25 @@ median weight. Those gifts receive \$2.92 billion nominal, or 32.6\% of
 imputed dollars. This descriptive fit supplies the imputation weights;
 it does not establish predictive accuracy for undisclosed gifts.
 
-The matching pipeline links recipients to tax filers by name, then
-applies corrections that cite recipient websites and filings. The
-November 16, 2026 review corrected 21 wrong identities and replaced
-three related-entity revenue proxies. The
-\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/data/yieldgiving/match_audit.jsonl}{source-linked
-overlay} preserves each correction and its evidence; the review does not
-establish an error rate for the remaining matches. The
-\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/results/gift_ledger.csv}{gift-level
-ledger} separates disclosed and model-imputed nominal amounts and
-records recipient identity, selected pre-gift revenue, source links and
-fallback reasons. The
-\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/web/matching_diagnostics.json}{matching
-summary} reports filing coverage and the imputed dollars that use
-fallback weights. Relative to disclosed-only allocation, imputation
-moves each cause share by at most 1.5 percentage points under these
-assumptions.
+The model matches recipients to Form 990 filers by name and applies
+corrections backed by recipient websites and filings. To estimate
+organization size, it uses the operating chapter for Junior Achievement
+of the Michigan Great Lakes, the parent nonprofit for Mercy Housing, and
+the charitable foundation for Invest Detroit. The legal payee of Scott's
+gift remains unverified in each case.
+\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/data/yieldgiving/match_audit.jsonl}{Form
+990 match records}.
+
+The gift-level ledger separates disclosed and imputed nominal amounts
+and records identity and filing sources, selected pre-gift revenue, and
+fallback reasons. The matching summary reports how many gifts have
+usable filings and how many imputed dollars use fallback weights.
+Relative to disclosed-only allocation, imputation moves each cause share
+by at most 1.5 percentage points under these assumptions.
+\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/results/gift_ledger.csv}{Gift-level
+ledger} ·
+\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/web/matching_diagnostics.json}{Matching
+summary}.
 
 \subsection{Delivery geography}\label{delivery-geography}
 
@@ -469,11 +472,11 @@ portfolio archetypes receive their own.
 \section{Results}\label{results}
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 At the best-guess defaults (100,000 draws), the portfolio produces a
@@ -520,7 +523,7 @@ health in the world is not bought where most philanthropic dollars are
 spent.
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 {
@@ -597,11 +600,11 @@ Total & \$30.30B & 100\% & 225,159 & 100\% & \$134,581 & \\
 }
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 Table~\ref{tbl-geo} decomposes the same run by delivery geography. The
@@ -615,7 +618,7 @@ nationally-scoped U.S. giving receives 27\% of dollars and 9\% of QALYs
 at \$399,113.
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 {
@@ -680,7 +683,7 @@ Canada & \$141M & \textless1\% & 440 & \textless1\% & \$320,278 \\
 }
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 \subsection{Against the global-health
@@ -709,7 +712,7 @@ and remains large at any scale the cited benchmarks speak to.
 else}\label{evidence-philosophy-dominates-everything-else}
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 \begin{figure}[H]
@@ -731,7 +734,7 @@ fixed.}
 \end{figure}%
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 The dominant sensitivity is not a parameter but a philosophy. At the
@@ -769,13 +772,13 @@ defaults.}
 \subsection{Allocation corrections}\label{allocation-corrections}
 
 The July 2026 geography audit moved the routed global-health share from
-4.93\% to 4.82\%, the median from about 205,000 to 201,923 QALYs, and
-the blended figure from about \$148,000 to \$150,067 per QALY. The
-repository preserves these historical allocations as v1.0 and v1.1, with
-parameters at tags
-\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/tree/v2026.07.20}{\texttt{v2026.07.20}}
-and
-\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/tree/v2026.07.22}{\texttt{v2026.07.22}}.
+4.93\% to 4.82\%, the median from 203,949 to 201,923 QALYs, and the
+blended figure from \$148,577 to \$150,067 per QALY. The repository
+preserves these historical allocations as v1.0 and v1.1.
+\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/v2026.07.20/results/summary.json}{July
+20 results} ·
+\href{https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/v2026.07.22/results/summary.json}{July
+22 results}.
 
 The November 16, 2026 Form 990 corrections produce the current v1.2
 allocation: 4.91\% for global health, a median of 204,804 QALYs, and
@@ -784,10 +787,7 @@ comparison.
 
 \subsection{Corrections history}\label{corrections-history}
 
-The model reached this state through a series of public revisions ---
-counting a revision as a committed change that moved the headline ---
-and the trajectory is itself evidence about the method. As recorded in
-the repository history:
+The repository records the following changes in the median estimate.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -812,19 +812,15 @@ re-attributed & \textasciitilde98,000 → \textasciitilde87,000 & second
 model family \\
 Allocation replaced with the derivation from Scott's own gift database &
 \textasciitilde87,000 → \textasciitilde70,000 & author + model \\
-Health dollars had been priced at U.S. anchors regardless of delivery
-location & \textasciitilde70,000 → \textasciitilde205,000 & a reader \\
-Two-model geography audit of ``global''-listed organizations (tags
-v2026.07.20 → v2026.07.22) & \textasciitilde205,000 →
-\textasciitilde202,000 & model audit \\
-November 16, 2026: correct 21 Form 990 identities and three
-related-entity revenue proxies (v1.2) & \textasciitilde202,000 → 205,000
-& source-linked identity review \\
+Price internationally delivered health dollars at global-health anchors
+(v1.0) & \textasciitilde70,000 → \textasciitilde204,000 & a reader \\
+Revise the service shares of organizations listing ``global'' (v1.1) &
+\textasciitilde204,000 → \textasciitilde202,000 & model audit \\
+Correct 21 Form 990 identities and revise the revenue inputs for three
+related entities (v1.2, November 16, 2026) & \textasciitilde202,000 →
+205,000 & source-linked identity review \\
 \end{longtable}
 }
-
-The repository and public tool document the corrections; the final
-column names who identified each issue.
 
 \section{Construction and
 auditability}\label{construction-and-auditability}
@@ -929,7 +925,7 @@ Yield Giving, or GiveWell.
 \addcontentsline{toc}{section}{References}
 
 \textsubscript{Source:
-\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index.qmd.html}{Article
+\href{https://MaxGhenis.github.io/mackenzie-scott-qaly/index-preview.html}{Article
 Notebook}}
 
 \protect\phantomsection\label{refs}
@@ -983,7 +979,7 @@ Finkelstein, Amy, Sarah Taubman, Bill Wright, et al. 2012. {``The
 \bibitem[\citeproctext]{ref-givewell2024cash}
 GiveWell. 2024. \emph{Re-Evaluating the Impact of Unconditional Cash
 Transfers}.
-\href{https://blog.givewell.org/2024/11/12/re-evaluating-the-impact-of-unconditional-cash-transfers/}{Https://blog.givewell.org/2024/11/12/re-evaluating-the-impact-of-unconditional-cash-transfers/}.
+\url{https://blog.givewell.org/2024/11/12/re-evaluating-the-impact-of-unconditional-cash-transfers/}.
 
 \bibitem[\citeproctext]{ref-givewell2026impact}
 GiveWell. 2025. \emph{Impact Estimates}.

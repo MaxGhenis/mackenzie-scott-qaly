@@ -37,8 +37,7 @@ def build() -> dict:
         "allocation_share": shares,
         "abroad_share_raw": round(stats["raw_shares"]["global_health"], 6),
         "calibration": {
-            # NumPy/BLAS implementations differ at machine precision. Keep
-            # exported metadata stable without rounding the fitted model input.
+            # The deterministic fit is rounded only for display and serialization.
             "elasticity": round(stats["elasticity"], 12),
             "r_squared": round(stats["elasticity_r2"], 12),
             "n_pairs": stats["n_calibration"],

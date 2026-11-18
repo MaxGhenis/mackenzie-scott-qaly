@@ -12,29 +12,35 @@ import json
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from stat import S_IMODE
+from tempfile import NamedTemporaryFile
 from urllib.request import Request, urlopen
+
+from fetch_propublica import output_lock
+
+from msqaly.recipients import (
+    CORRECTION_MAX_TAX_YEAR,
+    extract_filing_revenue,
+    validate_ein,
+    validate_match_record,
+    validate_tax_year,
+)
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "yieldgiving" / "match_audit.jsonl"
 API = "https://projects.propublica.org/nonprofits/api/v2/organizations"
-MAX_TAX_YEAR = 2024
 
 
-def extract_revenue(detail: dict, expected_ein: int, max_tax_year: int) -> dict[str, int]:
+def extract_revenue(
+    detail: dict, expected_ein: int, max_tax_year: int, *, allow_empty: bool = False
+) -> dict[str, int | float]:
     """Validate filer identity and extract positive revenue through the audit cutoff."""
-    actual_ein = (detail.get("organization") or {}).get("ein")
-    if actual_ein != expected_ein:
-        raise ValueError(f"expected EIN {expected_ein}, received {actual_ein}")
-    if max_tax_year > MAX_TAX_YEAR:
-        raise ValueError(f"tax-year cutoff must be at most {MAX_TAX_YEAR}")
-    revenue: dict[str, int] = {}
-    for filing in detail.get("filings_with_data") or []:
-        year, value = filing.get("tax_prd_yr"), filing.get("totrevenue")
-        if year and year <= max_tax_year and value and value > 0:
-            # Match the historical fetch's duplicate/amended-row convention.
-            revenue[str(year)] = max(value, revenue.get(str(year), 0))
-    if not revenue:
-        raise ValueError(f"no positive revenue history through {max_tax_year} for {expected_ein}")
-    return dict(sorted(revenue.items(), reverse=True))
+    cutoff = validate_tax_year(max_tax_year, "tax-year cutoff")
+    if cutoff > CORRECTION_MAX_TAX_YEAR:
+        raise ValueError(f"tax-year cutoff must be at most {CORRECTION_MAX_TAX_YEAR}")
+    revenue = extract_filing_revenue(detail, expected_ein, max_tax_year=cutoff)
+    if not revenue and not allow_empty:
+        raise ValueError(f"no positive revenue history through {cutoff} for {expected_ein}")
+    return dict(sorted(revenue.items(), key=lambda entry: int(entry[0]), reverse=True))
 
 
 def refresh(rows: list[dict]) -> list[dict]:
@@ -48,27 +54,60 @@ def refresh(rows: list[dict]) -> list[dict]:
             and row.get("source_url")
             and "old_ein" in row
         ):
-            ein = row["ein"]
+            label = f"correction for {row['name']!r}"
+            validate_match_record(row, label)
+            validate_ein(row["old_ein"], f"{label} previous EIN", allow_none=True)
+            ein = validate_ein(row.get("ein"), f"{label} EIN")
             expected_url = f"{API}/{ein}.json"
             if row["source_url"] != expected_url:
                 raise ValueError(f"unexpected revenue source for {row['name']}")
             request = Request(expected_url, headers={"User-Agent": "mackenzie-scott-qaly audit"})
             with urlopen(request, timeout=30) as response:
                 detail = json.load(response)
-            cutoff = row.get("revenue_tax_year_max", MAX_TAX_YEAR)
-            updated["revenue_by_year"] = extract_revenue(detail, ein, cutoff)
-            updated["legal_name"] = detail["organization"]["name"]
+            cutoff = row.get("revenue_tax_year_max", CORRECTION_MAX_TAX_YEAR)
+            updated["revenue_by_year"] = extract_revenue(
+                detail, ein, cutoff, allow_empty=not row["revenue_by_year"]
+            )
+            legal_name = detail["organization"].get("name")
+            if not isinstance(legal_name, str) or not legal_name.strip():
+                raise ValueError(f"organization endpoint lacks a legal name for EIN {ein}")
+            updated["legal_name"] = legal_name
             updated["retrieved_at"] = datetime.now(UTC).isoformat()
             time.sleep(0.3)
         refreshed.append(updated)
     return refreshed
 
 
+def write_overlay(path: Path, original: bytes, rows: list[dict]) -> None:
+    """Replace the overlay only after serializing and checking for intervening edits."""
+    payload = "".join(json.dumps(row, allow_nan=False) + "\n" for row in rows)
+    temporary = None
+    try:
+        with NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as stream:
+            temporary = Path(stream.name)
+            stream.write(payload)
+        with output_lock(path):
+            if path.read_bytes() != original:
+                raise RuntimeError("audit file changed during refresh; refusing to overwrite it")
+            temporary.chmod(S_IMODE(path.stat().st_mode))
+            temporary.replace(path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true", help="write only after all fetches succeed")
     args = parser.parse_args()
-    original = DATA.read_text()
+    original = DATA.read_bytes()
     rows = [json.loads(line) for line in original.splitlines() if line.strip()]
     updated = refresh(rows)
     changes = [
@@ -82,11 +121,7 @@ def main() -> None:
         if before != after
     ]
     if args.write:
-        if DATA.read_text() != original:
-            raise RuntimeError("audit file changed during refresh; refusing to overwrite it")
-        temporary = DATA.with_suffix(".jsonl.tmp")
-        temporary.write_text("".join(json.dumps(row) + "\n" for row in updated))
-        temporary.replace(DATA)
+        write_overlay(DATA, original, updated)
     print(json.dumps({"written": args.write, "refreshed": changes}, indent=2))
 
 

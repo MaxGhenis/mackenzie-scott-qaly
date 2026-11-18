@@ -7,6 +7,7 @@ from math import isfinite
 from urllib.parse import urlsplit
 
 RecipientKey = tuple[str, str]
+CORRECTION_MAX_TAX_YEAR = 2024
 
 
 def validate_ein(value, path: str = "EIN", *, allow_none: bool = False) -> int | None:
@@ -70,6 +71,38 @@ def validate_match_record(record: dict, path: str) -> None:
         score = finite_revenue(record["score"], f"{path}.score")
         if not 0 <= score <= 1:
             raise ValueError(f"{path}.score: similarity must be in [0, 1]")
+
+
+def extract_filing_revenue(
+    detail: dict, expected_ein: int, *, max_tax_year: int | None = None
+) -> dict[str, int | float]:
+    """Read positive annual revenues from the requested filer's API response."""
+    validate_ein(expected_ein, "requested EIN")
+    if max_tax_year is not None:
+        max_tax_year = validate_tax_year(max_tax_year, "tax-year cutoff")
+    if not isinstance(detail, dict) or not isinstance(detail.get("organization"), dict):
+        raise ValueError(f"organization endpoint lacks a profile for EIN {expected_ein}")
+    actual_ein = validate_ein(detail["organization"].get("ein"), "API organization EIN")
+    if actual_ein != expected_ein:
+        raise ValueError(f"expected EIN {expected_ein}, received {actual_ein}")
+    filings = detail.get("filings_with_data")
+    if not isinstance(filings, list):
+        raise ValueError(f"organization endpoint lacks filing history for EIN {expected_ein}")
+    revenue: dict[str, int | float] = {}
+    for filing in filings:
+        if not isinstance(filing, dict):
+            raise ValueError(f"expected filing object for EIN {expected_ein}")
+        year, value = filing.get("tax_prd_yr"), filing.get("totrevenue")
+        if year is not None:
+            year = validate_tax_year(year, "API filing tax year")
+        if value is not None:
+            value = finite_revenue(value, "API filing revenue")
+        if year is None or value is None or value <= 0:
+            continue
+        if max_tax_year is None or year <= max_tax_year:
+            # Multiple filings for one year use the largest positive total revenue.
+            revenue[str(year)] = max(value, revenue.get(str(year), 0))
+    return revenue
 
 
 def recipient_key(recipient: dict) -> RecipientKey:

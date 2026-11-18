@@ -144,7 +144,9 @@ I distribute each period's undisclosed residual across its undisclosed gifts in 
 
 Across `{python} F["n_cal"]` disclosed gift–filing pairs, log gift size rises with log revenue with slope `{python} F["elasticity"]` (R² `{python} F["r2"]`). In this matched sample, a 10× larger organization receives about `{python} F["tenfold"]`× as much money. The fit covers `{python} F["n_cal"]` of `{python} F["n_disclosed"]` disclosed gifts and `{python} F["n_gifts"]` total gifts, treats repeated gifts to an organization as independent, and pools years. Of the `{python} F["n_undisclosed"]` undisclosed gifts, `{python} F["n_fallback"]` (`{python} F["fallback_gift_pct"]`) lack a usable filing and receive their period's median weight. Those gifts receive `{python} F["fallback_dollars"]` nominal, or `{python} F["fallback_dollar_pct"]` of imputed dollars. This descriptive fit supplies the imputation weights; it does not establish predictive accuracy for undisclosed gifts.
 
-The matching pipeline links recipients to tax filers by name, then applies corrections that cite recipient websites and filings. The November 16, 2026 review corrected 21 wrong identities and replaced three related-entity revenue proxies. The [source-linked overlay](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/data/yieldgiving/match_audit.jsonl) preserves each correction and its evidence; the review does not establish an error rate for the remaining matches. The [gift-level ledger](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/results/gift_ledger.csv) separates disclosed and model-imputed nominal amounts and records recipient identity, selected pre-gift revenue, source links and fallback reasons. The [matching summary](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/web/matching_diagnostics.json) reports filing coverage and the imputed dollars that use fallback weights. Relative to disclosed-only allocation, imputation moves each cause share by at most `{python} F["max_share_shift_pp"]` percentage points under these assumptions.
+The model matches recipients to Form 990 filers by name and applies corrections backed by recipient websites and filings. To estimate organization size, it uses the operating chapter for Junior Achievement of the Michigan Great Lakes, the parent nonprofit for Mercy Housing, and the charitable foundation for Invest Detroit. The legal payee of Scott's gift remains unverified in each case. [Form 990 match records](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/data/yieldgiving/match_audit.jsonl).
+
+The gift-level ledger separates disclosed and imputed nominal amounts and records identity and filing sources, selected pre-gift revenue, and fallback reasons. The matching summary reports how many gifts have usable filings and how many imputed dollars use fallback weights. Relative to disclosed-only allocation, imputation moves each cause share by at most `{python} F["max_share_shift_pp"]` percentage points under these assumptions. [Gift-level ledger](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/results/gift_ledger.csv) · [Matching summary](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/main/web/matching_diagnostics.json).
 
 ## Delivery geography
 
@@ -284,7 +286,7 @@ ax.plot(grid, meds, marker="o", color="#b45309", lw=2)
 ax.axvline(0.5, color="#94a3b8", ls="--", lw=1)
 ax.set_yscale("log")
 ax.set_xticks([0, 0.5, 1.0])
-ax.set_xticklabels(["RCT-only", "best guess\n(default)", "face value"])
+ax.set_xticklabels(["Near-RCT-only", "Best guess\n(default)", "Near face value"])
 ax.set_ylabel("Median QALYs (log scale)")
 for s_val, m in [(0.0, meds[0]), (0.5, meds[4]), (1.0, meds[-1])]:
     ax.annotate(f"{m:,.0f}", (s_val, m), textcoords="offset points", xytext=(6, 8), fontsize=9)
@@ -303,23 +305,21 @@ The dominant sensitivity is not a parameter but a philosophy. At the near-RCT-on
 
 ## Allocation corrections
 
-The July 2026 geography audit moved the routed global-health share from 4.93% to 4.82%, the median from about 205,000 to 201,923 QALYs, and the blended figure from about $148,000 to $150,067 per QALY. The repository preserves these historical allocations as v1.0 and v1.1, with parameters at tags [`v2026.07.20`](https://github.com/MaxGhenis/mackenzie-scott-qaly/tree/v2026.07.20) and [`v2026.07.22`](https://github.com/MaxGhenis/mackenzie-scott-qaly/tree/v2026.07.22).
+The July 2026 geography audit moved the routed global-health share from 4.93% to 4.82%, the median from 203,949 to 201,923 QALYs, and the blended figure from $148,577 to $150,067 per QALY. The repository preserves these historical allocations as v1.0 and v1.1. [July 20 results](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/v2026.07.20/results/summary.json) · [July 22 results](https://github.com/MaxGhenis/mackenzie-scott-qaly/blob/v2026.07.22/results/summary.json).
 
 The November 16, 2026 Form 990 corrections produce the current v1.2 allocation: `{python} F["abroad_share"]` for global health, a median of `{python} F["median"]` QALYs, and `{python} F["blended"]` per QALY. The browser version offers all three allocations for comparison.
 
 ## Corrections history
 
-The model reached this state through a series of public revisions — counting a revision as a committed change that moved the headline — and the trajectory is itself evidence about the method. As recorded in the repository history:
+The repository records the following changes in the median estimate.
 
 | Change | Median before → after | Caught by |
 |---|---|---|
 | Cross-model review: dollar vintages normalized, a life-year→QALY conversion made explicit, frontier benchmark re-derived, one citation re-attributed | ~98,000 → ~87,000 | second model family |
 | Allocation replaced with the derivation from Scott's own gift database | ~87,000 → ~70,000 | author + model |
-| Health dollars had been priced at U.S. anchors regardless of delivery location | ~70,000 → ~205,000 | a reader |
-| Two-model geography audit of "global"-listed organizations (tags v2026.07.20 → v2026.07.22) | ~205,000 → ~202,000 | model audit |
-| November 16, 2026: correct 21 Form 990 identities and three related-entity revenue proxies (v1.2) | ~202,000 → `{python} F["median_k"]` | source-linked identity review |
-
-The repository and public tool document the corrections; the final column names who identified each issue.
+| Price internationally delivered health dollars at global-health anchors (v1.0) | ~70,000 → ~204,000 | a reader |
+| Revise the service shares of organizations listing "global" (v1.1) | ~204,000 → ~202,000 | model audit |
+| Correct 21 Form 990 identities and revise the revenue inputs for three related entities (v1.2, November 16, 2026) | ~202,000 → `{python} F["median_k"]` | source-linked identity review |
 
 # Construction and auditability
 

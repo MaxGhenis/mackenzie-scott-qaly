@@ -96,17 +96,24 @@ def test_published_allocations_do_not_recompute_from_current_matches(monkeypatch
     assert versions.build_v11()["allocation_share"]["global_health"] == 0.048
 
 
-def test_calibration_export_ignores_platform_roundoff(monkeypatch):
-    import msqaly.exportversions as versions
-    from msqaly.allocation import derive_shares
+def test_calibration_is_reproducible_either_side_of_export_rounding_boundary():
+    from decimal import ROUND_UP, localcontext
 
-    shares, stats = derive_shares()
-    monkeypatch.setattr(versions, "derive_shares", lambda **kwargs: (shares, stats))
-    reference = versions.build()
-    # Reproduce the CI counterexample: BLAS changes R² in its final decimals.
-    stats["elasticity_r2"] += 2e-16
-    stats["elasticity"] += 2e-16
-    assert versions.build() == reference
+    from msqaly.allocation import calibrate_elasticity
+    from msqaly.recipients import recipient_key
+
+    orgs = [{"name": name, "gifts": [{"year": 2025, "amount": 1}]} for name in ("A", "B")]
+    revenues = {recipient_key(org): {2024: r} for org, r in zip(orgs, (1, 100), strict=True)}
+    # For two points the exact slope is log10(second gift) / 2.
+    for amount, expected in ((10.000000000023, 0.5), (10.0000000000231, 0.500000000001)):
+        orgs[1]["gifts"][0]["amount"] = amount
+        fit = calibrate_elasticity(orgs, revenues)
+        assert round(fit[0], 12) == expected
+        assert fit[1:] == (1, 2)
+        with localcontext() as ctx:
+            ctx.prec = 6
+            ctx.rounding = ROUND_UP
+            assert calibrate_elasticity(orgs[::-1], revenues) == fit
 
 
 def test_archetype_region_matrix_invariants():

@@ -72,7 +72,8 @@ The corrected histories use ProPublica's `tax_prd_yr` and positive
 year, the extraction keeps the largest positive total revenue, matching the
 [original fetch convention](../../scripts/fetch_propublica.py). The
 [refresh script](../../scripts/refresh_match_corrections.py) verifies the
-returned EIN and rejects empty histories or failed requests. Run:
+returned EIN and aborts if a request fails or an empty response would erase
+existing revenue history. Run the script with either mode below.
 
 ```bash
 uv run python scripts/refresh_match_corrections.py          # preview

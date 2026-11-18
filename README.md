@@ -93,10 +93,12 @@ figure fails loudly instead of shipping.
    raised to an elasticity fit on disclosed gifts with a matched pre-gift
    filing. The [paper](paper/index.qmd) reports the fit and sample coverage.
    The pipeline applies a [source-linked correction overlay](data/yieldgiving/match_audit.jsonl)
-   to the name-to-EIN matches. The November 16, 2026 review corrected 21 wrong
-   identities and replaced three related-entity revenue proxies; it does not
-   establish an error rate for the remaining matches. An AI-proposed,
-   author-reviewed concentration controls how tightly draws hold to those centers.
+   to the name-to-EIN matches. For the size estimates, it uses the operating
+   chapter for Junior Achievement of the Michigan Great Lakes, the parent
+   nonprofit for Mercy Housing, and the charitable foundation for Invest
+   Detroit. The legal payee of Scott's gift remains unverified in each case.
+   A concentration parameter controls how closely the allocation draws follow
+   the estimated shares.
 
    The [matching summary](web/matching_diagnostics.json) reports coverage by
    gift count and imputed dollars; the [ledger](results/gift_ledger.csv) shows

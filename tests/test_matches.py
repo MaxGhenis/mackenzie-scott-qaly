@@ -192,6 +192,7 @@ def test_every_snapshot_recipient_has_a_unique_key_including_missing_websites():
     ("Junior Achievement of the Michigan Great Lakes", "michigangreatlakes.ja.org/", 381557861),
     ("Mercy Housing", "www.mercyhousing.org/", 470646706),
     ("Invest Detroit", "www.InvestDetroit.com", 271927369),
+    ("STRIVE", "strive.org/", 133255679),
 ])
 def test_corrected_recipient_eins(name, link, ein):
     key = recipient_key({"name": name, "link": link})
@@ -304,7 +305,7 @@ def test_failed_audit_replacement_keeps_previous_overlay(tmp_path, monkeypatch):
     def fail(_):
         raise HTTPError("https://invalid.example", 429, "rate limited", {}, None)
 
-    monkeypatch.setattr(audit, "fetch_revenue", fail)
+    monkeypatch.setattr(audit, "get", fail)
     previous = (tmp_path / "match_audit.jsonl").read_bytes()
     with pytest.raises(HTTPError):
         audit.apply(workdir)
@@ -395,9 +396,12 @@ def test_audit_refuses_to_overwrite_inputs_edited_during_fetch(tmp_path, monkeyp
 
     def concurrent_edit(_):
         changed_path.write_bytes(edited)
-        return {"2020": 100}
+        return {
+            "organization": {"ein": 987654321, "name": "Replacement filer"},
+            "filings_with_data": [{"tax_prd_yr": 2020, "totrevenue": 100}],
+        }
 
-    monkeypatch.setattr(audit, "fetch_revenue", concurrent_edit)
+    monkeypatch.setattr(audit, "get", concurrent_edit)
     with pytest.raises(ValueError, match="inputs changed during apply"):
         audit.apply(workdir)
     assert changed_path.read_bytes() == edited
@@ -484,7 +488,7 @@ def test_concurrent_fetch_fails_before_cache_inspection_and_keeps_one_row(tmp_pa
         active = callers.submit(fetch.main)
         try:
             assert entered.wait(timeout=5)
-            with pytest.raises(RuntimeError, match="another fetch owns"):
+            with pytest.raises(RuntimeError, match="another writer owns"):
                 fetch.main()
         finally:
             release.set()
@@ -514,7 +518,7 @@ module.main()
             capture_output=True, text=True, timeout=10,
         )
     assert child.returncode != 0
-    assert "another fetch owns" in child.stderr
+    assert "another writer owns" in child.stderr
     assert not path.exists()  # Child failed before opening or reading a raw ledger.
 
 
@@ -585,7 +589,10 @@ def test_found_verdict_records_correct_revenue_and_identity_sources(tmp_path, mo
     org = {"name": "One", "link": "one.example"}
     dataset(tmp_path, [org], [raw(org)])
     monkeypatch.setattr(audit, "DATA", tmp_path)
-    monkeypatch.setattr(audit, "fetch_revenue", lambda _: {"2020": 100})
+    monkeypatch.setattr(audit, "get", lambda _: {
+        "organization": {"ein": 987654321, "name": "Replacement filer"},
+        "filings_with_data": [{"tax_prd_yr": 2020, "totrevenue": 100}],
+    })
     workdir = tmp_path / "audit"
     audit.build(workdir)
     write_rows(workdir / "batch_00/verdicts.jsonl", [

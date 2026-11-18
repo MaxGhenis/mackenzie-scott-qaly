@@ -35,12 +35,10 @@ from urllib.request import Request, urlopen
 
 from msqaly.recipients import (
     RecipientIndex,
-    finite_revenue,
+    extract_filing_revenue,
     recipient_key,
     validate_ein,
     validate_match_record,
-    validate_revenue_history,
-    validate_tax_year,
 )
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "yieldgiving"
@@ -83,26 +81,11 @@ def get(url: str) -> dict:
     raise RuntimeError(f"could not fetch {url}")  # unreachable; keeps the return contract explicit
 
 
-def fetch_revenue(ein: int) -> dict[str, float]:
+def fetch_revenue(ein: int) -> dict[str, int | float]:
     """Retrieve one identified filer's positive annual revenue history."""
     validate_ein(ein)
     detail = get(f"{API}/organizations/{ein}.json")
-    actual = validate_ein(detail.get("organization", {}).get("ein"), "API organization EIN")
-    if actual != ein:
-        raise ValueError(f"organization endpoint did not identify requested EIN {ein}")
-    if not isinstance(detail.get("filings_with_data"), list):
-        raise ValueError(f"organization endpoint lacks filing history for EIN {ein}")
-    revenue = {}
-    for filing in detail["filings_with_data"]:
-        year, rev = filing.get("tax_prd_yr"), filing.get("totrevenue")
-        if year is not None:
-            year = validate_tax_year(year, "API filing tax year")
-        if rev is not None:
-            rev = finite_revenue(rev, "API filing revenue")
-        if year is not None and rev is not None and rev > 0:
-            revenue[str(year)] = max(rev, revenue.get(str(year), 0))
-    validate_revenue_history(revenue, f"API EIN {ein}")
-    return revenue
+    return extract_filing_revenue(detail, ein)
 
 
 def best_match(name: str) -> tuple[int | None, str | None, float]:
@@ -128,7 +111,7 @@ def best_match(name: str) -> tuple[int | None, str | None, float]:
 
 @contextmanager
 def output_lock(path: Path):
-    """Exclude other fetch processes before inspecting or appending the cache.
+    """Exclude cooperating writers while inspecting or replacing a ledger.
 
     Keep the stable sidecar file: unlinking it after release can let two
     processes lock different inodes. The operating system releases a crashed
@@ -139,7 +122,7 @@ def output_lock(path: Path):
         try:
             fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as exc:
-            raise RuntimeError(f"another fetch owns {path}; retry after it finishes") from exc
+            raise RuntimeError(f"another writer owns {path}; retry after it finishes") from exc
         try:
             yield
         finally:

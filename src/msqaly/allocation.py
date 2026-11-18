@@ -4,7 +4,7 @@ Scott's Yield Giving site publishes a gift-level database
 (https://yieldgiving.com/gifts, snapshot in ``data/yieldgiving/``): every
 organization with its org-reported focus areas, and a dollar amount for about
 two-thirds of the disclosed dollars (``amount: 0`` marks undisclosed gifts).
-This module turns that into the model's 13 ``allocation_share`` centers.
+This module turns that into the model's 14 ``allocation_share`` centers.
 
 Disclosed gifts: each gift's dollars are split equally across its
 organization's listed focus areas (tags are org-level, not per-gift); vehicle
@@ -36,10 +36,10 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from decimal import ROUND_HALF_EVEN, Context, Decimal, localcontext
 from pathlib import Path
 from statistics import median
 
-import numpy as np
 import yaml
 
 from msqaly.recipients import (
@@ -111,17 +111,20 @@ def load_matches(data_dir: str | Path | None = None) -> dict[RecipientKey, dict]
         for key, rec in index.records(read_rows(audit), label="audit overlay").items():
             if key not in out:
                 raise ValueError(f"audit recipient missing from raw matches: {key!r}")
+            # The overlay owns the effective filer snapshot. Even when its EIN
+            # equals the raw candidate's, the filing retrieval may be different.
+            active = {"name": key[0], "link": index.by_key[key].get("link"), **rec}
             if rec["action"] == "drop":
-                out[key] = {**out[key], **rec, "ein": None, "revenue_by_year": {}}
+                out[key] = {
+                    **active, "ein": None, "revenue_by_year": {},
+                    "source_url": None, "legal_name": None, "retrieved_at": None,
+                }
             elif rec["action"] == "replace":
                 validate_ein(rec.get("ein"), f"replacement {key!r}")
                 validate_revenue_history(rec.get("revenue_by_year"), f"replacement {key!r}")
                 out[key] = {
-                    **out[key], **rec,
-                    # A raw candidate's filer metadata must not describe a
-                    # different EIN substituted by an older sparse overlay.
-                    "source_url": rec.get("source_url"),
-                    "legal_name": rec.get("legal_name"),
+                    "source_url": None, "legal_name": None, "retrieved_at": None,
+                    **active,
                 }
             else:
                 raise ValueError(f"unknown audit action for {key!r}: {rec['action']!r}")
@@ -186,22 +189,33 @@ def year_window(year: int) -> tuple[int, int]:
 def calibrate_elasticity(orgs: list, revenue: dict) -> tuple[float, float, int]:
     """OLS of log10(gift amount) on log10(pre-gift revenue) over disclosed
     pairs. Returns (elasticity beta, R^2, n)."""
-    xs, ys = [], []
-    for org in orgs:
-        rev = revenue.get(recipient_key(org))
-        for gift in org.get("gifts") or []:
-            amount = gift.get("amount") or 0
-            if amount <= 0:
-                continue
-            r = pre_gift_revenue(rev, int(gift["year"]))
-            if r:
-                xs.append(np.log10(r))
-                ys.append(np.log10(amount))
-    x, y = np.array(xs), np.array(ys)
-    beta, intercept = np.polyfit(x, y, 1)
-    resid = y - (beta * x + intercept)
-    r2 = 1 - resid.var() / y.var()
-    return float(beta), float(r2), len(xs)
+    # The exported fit must reproduce even at decimal rounding boundaries.
+    # Compute the same simple regression in fixed-precision decimal arithmetic,
+    # independent of the host libm, BLAS and caller's decimal context.
+    pairs = []
+    with localcontext(Context(prec=40, rounding=ROUND_HALF_EVEN)):
+        for org in orgs:
+            history = revenue.get(recipient_key(org))
+            for gift in org.get("gifts") or []:
+                amount = gift.get("amount") or 0
+                if amount <= 0:
+                    continue
+                prior = pre_gift_revenue(history, int(gift["year"]))
+                if prior:
+                    pairs.append((Decimal(str(prior)).log10(), Decimal(str(amount)).log10()))
+
+        if len(pairs) < 2:
+            raise ValueError("calibration requires at least two gift–revenue pairs")
+        pairs.sort()
+        n = len(pairs)
+        mean_x = sum(x for x, _ in pairs) / n
+        mean_y = sum(y for _, y in pairs) / n
+        xx = sum((x - mean_x) ** 2 for x, _ in pairs)
+        yy = sum((y - mean_y) ** 2 for _, y in pairs)
+        if not xx or not yy:
+            raise ValueError("calibration requires variation in both revenue and gift size")
+        xy = sum((x - mean_x) * (y - mean_y) for x, y in pairs)
+        return float(xy / xx), float(xy**2 / (xx * yy)), n
 
 
 def load_geo_overlay(data_dir: str | Path | None = None) -> dict[str, float]:

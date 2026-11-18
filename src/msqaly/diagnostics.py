@@ -67,8 +67,13 @@ def _audit_evidence(
             standing = (
                 "source_linked_confirmation" if action == "CORRECT" else "source_linked_correction"
             )
-        elif action in {"WRONG", "NO_990"} and effective.get("ein") is None:
-            if target is not None:
+        elif (
+            action in {"WRONG", "NO_990"}
+            and effective.get("action") == "drop"
+            and effective.get("ein") is None
+        ):
+            dropped_ein = effective.get("old_ein", raw.get("ein"))
+            if target is not None or candidate.get("audited_ein") != dropped_ein:
                 continue
             standing = "source_linked_drop"
         else:
