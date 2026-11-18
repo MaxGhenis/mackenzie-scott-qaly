@@ -9,7 +9,7 @@ _100,000 draws, seed 0. Total giving $30.3B (2026 base)._
 - 90% interval: 95k – 423k QALYs
 - Blended cost-effectiveness (median of giving ÷ QALYs): $148k/QALY
 - Monetized at HHS VQALY (median): $150.9B → benefit/cost ratio 5.0× (90% 2.1–11.2×)
-- Global-health frontier (median, handicapped like-for-like with the same realization + RCT-grade credibility): 105.60M QALYs ≈ 514× the estimate above
+- Using GiveWell’s 2022–2024 malaria-program averages, the model yields a median of 105.60M QALYs if those costs held across the full portfolio. Both use the same realization factor. The model draws a separate randomized-tier credibility weight for the benchmark. The median ratio of benchmark to portfolio QALYs per dollar is 514×.
 
 ## QALYs by archetype
 

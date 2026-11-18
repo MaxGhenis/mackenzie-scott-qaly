@@ -136,8 +136,9 @@ common scaling of all revenue inputs within a window.
 
 ## leaf_to_archetype.yaml
 
-The judgment layer: maps each of the 53 Yield Giving leaf areas to one of the
-model's intervention archetypes. Every rule is commented inline. To change
+The crosswalk assigns the 53 focus-area labels to 13 U.S.-anchored categories
+or to rules for health and passthrough tags. Service geography determines
+the share of eligible activities assigned to global health and development. To change
 the allocation, edit that mapping (or refresh the snapshot), run
 `uv run python -m msqaly.allocation`, and copy the printed shares into
 `data/parameters.yaml` — the sync test fails until they match.

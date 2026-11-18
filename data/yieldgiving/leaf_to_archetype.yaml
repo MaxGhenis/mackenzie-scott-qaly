@@ -7,8 +7,8 @@
 # Rules (implemented in allocation.py, tested in tests/test_allocation.py):
 # - A gift's dollars are split EQUALLY across its organization's listed areas
 #   (tags are org-level; Yield Giving does not tag individual gifts).
-# - Gifts with amount 0 (undisclosed) are excluded; shares are computed on the
-#   ~$17.5B (about two-thirds of dollars) that are disclosed.
+# - Gifts with amount 0 (undisclosed) receive their share of the period's
+#   imputed dollars before the allocation is split by focus area.
 # - PASSTHROUGH marks vehicle descriptors (funds, regrantors), not causes.
 #   They are dropped whenever the organization lists substantive areas; the
 #   rare organizations tagged ONLY as vehicles (~$0.01B) end up distributed

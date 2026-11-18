@@ -240,8 +240,9 @@ def derive_shares(
     """Compute archetype -> share (3-decimal, sums to exactly 1.0) and stats.
 
     ``geo_overlay=True`` (default since v1.1) applies the cross-checked
-    audit of 'global'-listed organizations' non-US fractions; pass False
-    to reproduce the v1.0 (July 13) allocation."""
+    audit of 'global'-listed organizations' non-US fractions; False applies
+    the earlier geographic rule to the current inputs. Published historical
+    allocations are stored in data/yieldgiving/allocation_history."""
     orgs, leaves, mapping = load_inputs(data_dir)
     overlay = load_geo_overlay(data_dir) if geo_overlay else {}
 
