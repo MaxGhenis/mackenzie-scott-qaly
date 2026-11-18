@@ -1,10 +1,11 @@
 # MacKenzie Scott giving — QALY cost-effectiveness model
 
-**Working paper:** [HTML](https://maxghenis.com/mackenzie-scott-qaly/paper/) · [PDF](https://maxghenis.com/mackenzie-scott-qaly/paper/index.pdf) · [mirror](https://maxghenis.github.io/mackenzie-scott-qaly/) — source in [paper/](paper/), rendered from the frozen results so every number in the manuscript is computed, not typed.
+**Working paper:** [HTML](https://maxghenis.com/mackenzie-scott-qaly/paper/) · [PDF](https://maxghenis.com/mackenzie-scott-qaly/paper/index.pdf) · [mirror](https://maxghenis.github.io/mackenzie-scott-qaly/) — source in [paper/](paper/), rendered from the committed results and allocation data.
 
 **Reproduce everything** (order matters): `uv sync --all-groups --extra dev`; then `uv run msqaly --write` →
 `uv run msqaly-export-params` → `uv run python -m msqaly.exportversions` →
-`uv run python -m msqaly.geo` → `uv run python -m pytest` (sync guards) →
+`uv run python -m msqaly.geo` → `uv run python -m msqaly.diagnostics --write` →
+`uv run python -m pytest` (sync guards) →
 render the paper per [paper/README.md](paper/README.md).
 
 [![CI](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxGhenis/mackenzie-scott-qaly/actions/workflows/ci.yml)
@@ -42,6 +43,11 @@ uv run pytest            # test suite
 `--write` is what regenerates the committed [`results/`](results/) artifacts
 (`summary.md`, `summary.json`, `figure.png`, `sensitivity.png`) and the README
 block below; a bare `uv run msqaly` only prints, so casual runs never dirty git.
+`uv run python -m msqaly.diagnostics --write` regenerates the
+[matching summary](web/matching_diagnostics.json) and
+[gift-level ledger](results/gift_ledger.csv). The ledger separates disclosed
+and model-imputed amounts in nominal dollars and records recipient identities,
+selected pre-gift filings, fallback reasons, and source links.
 
 ## Method
 
@@ -76,20 +82,28 @@ figure fails loudly instead of shipping.
    amounts for 2,035 of 2,711 gifts — $17.46B nominal, about two-thirds of the
    total — with org-reported focus areas on every disclosed dollar.
    [`allocation.py`](src/msqaly/allocation.py) splits each gift equally across
-   its organization's areas and maps Yield Giving's 53 areas onto the
-   archetypes ([mapping, every rule commented](data/yieldgiving/leaf_to_archetype.yaml));
-   a sync test fails if `parameters.yaml` drifts from the derivation.
+   its organization's substantive focus areas. The [crosswalk](data/yieldgiving/leaf_to_archetype.yaml)
+   assigns dollars to 13 U.S.-anchored categories. Service geography determines
+   the share of eligible activities assigned to the fourteenth, global health
+   and development. A sync test checks the derived allocation against `parameters.yaml`.
    Undisclosed gifts are imputed, not dropped: her essays give each year's
    *total*, so the undisclosed residual per year window is a known dollar
    amount, distributed across that window's undisclosed gifts in proportion
    to the recipient's **pre-gift IRS 990 revenue**
    ([ProPublica Nonprofit Explorer](https://projects.propublica.org/nonprofits/))
-   raised to an elasticity fit on the disclosed pairs (0.41 — her gifts scale
-   sub-linearly with org size; R² 0.37, n=1,313). Fuzzy name-to-EIN matches
-   were audited by a second model against the live API
-   ([`match_audit.jsonl`](data/yieldgiving/match_audit.jsonl): 518 confirmed,
-   236 recovered, 73 confirmed non-filers, 0 false positives). An AI-proposed, author-reviewed
-   concentration controls how tightly draws hold to those centers.
+   raised to an elasticity fit on disclosed gifts with a matched pre-gift
+   filing. The [paper](paper/index.qmd) reports the fit and sample coverage.
+   The pipeline applies a [source-linked correction overlay](data/yieldgiving/match_audit.jsonl)
+   to the name-to-EIN matches. For the size estimates, it uses the operating
+   chapter for Junior Achievement of the Michigan Great Lakes, the parent
+   nonprofit for Mercy Housing, and the charitable foundation for Invest
+   Detroit. The legal payee of Scott's gift remains unverified in each case.
+   A concentration parameter controls how closely the allocation draws follow
+   the estimated shares.
+
+   The [matching summary](web/matching_diagnostics.json) reports coverage by
+   gift count and imputed dollars; the [ledger](results/gift_ledger.csv) shows
+   which filing or window-median fallback supplies each imputation weight.
 
 4. **Cost-per-QALY per archetype.** Three derivation methods:
    - `cost_per_life` — a published cost-per-life-saved ÷ QALYs-per-death. Used
@@ -138,11 +152,13 @@ figure fails loudly instead of shipping.
    and rescaled (adult PV-QALY ratio and child-QALE ratio respectively) when
    the model runs at another rate. The global-health frontier is a
    QALY-equivalent cost derived from
-   [GiveWell's current program averages](https://www.givewell.org/impact-estimates)
-   ($4,000–$5,500 per under-5 life saved, 2022–2024, inflated → ÷ ~25.1
-   discounted QALYs per child death → loguniform $150–$260, central ~$197),
-   then *handicapped with the same realization and credibility* so the
-   counterfactual benchmark is like-for-like at any discount setting.
+   [GiveWell's 2022–2024 program averages](https://www.givewell.org/impact-estimates).
+   Its malaria programs cost $4,000–$5,500 per life saved. After inflating to
+   2026 dollars and dividing by about 25.1 discounted QALYs per child death
+   averted, the model uses a loguniform range of $150–$260 per QALY.
+   Each draw uses the same realization factor for the benchmark and Scott’s
+   portfolio. The benchmark draws its own credibility weight from the
+   randomized-study tier.
 
 ## Results
 
@@ -151,11 +167,11 @@ See [`results/summary.md`](results/summary.md) (regenerated by `uv run msqaly
 the README never drifts from the model. As of the committed run:
 
 <!-- RESULTS:START -->
-**Median ≈ 202k QALYs** (mean 222k; 90% interval 94k–419k), a blended **$150k/QALY**. Monetized at HHS's value per QALY that is **$148.8B** of health value — a **4.9× benefit/cost ratio**. The same $30.3B at the global-health frontier (~$197/QALY-equivalent), handicapped with the same realization and evidence discounts, would still buy ~105.54M QALYs — about **521× more health per dollar**, the price of funding a rich country's social fabric rather than the global frontier.
+**Median ≈ 205k QALYs** (mean 225k; 90% interval 95k–423k), a blended **$148k/QALY**. Monetized at HHS's value per QALY that is **$150.9B** of health value — a **5.0× benefit/cost ratio**. I use [GiveWell’s 2022–2024 malaria-program averages](https://www.givewell.org/impact-estimates) to set a benchmark with a central cost of $197 per QALY-equivalent. I apply the same realization factor to both portfolios and draw a separate credibility weight for the benchmark from the randomized-study tier. If those costs held across the full $30.3B, the model would yield a median of 105.60M QALYs. The median ratio of benchmark to portfolio QALYs per dollar is **514×**.
 
 ![Estimated QALYs](results/figure.png)
 
-The spread is driven mostly by the global realization factor, the causal-credibility weights, and the cost-per-QALY of the largest buckets (education, equity & justice):
+The chart ranks inputs by the strength of their Spearman rank correlation with total estimated QALYs.
 
 ![Sensitivity](results/sensitivity.png)
 
@@ -168,33 +184,30 @@ _Full table: [results/summary.md](results/summary.md). Regenerate with `uv run m
   not the dollar total.** Grounding the ratios in causal estimates and then
   weighting by identification quality (rather than a flat US cost-effectiveness
   threshold) is the whole point of this repo.
-- **Causal skepticism cuts the headline by roughly 65%.** Weighting each
-  effect by its study design takes the central estimate from ~200k QALYs
-  (trust every cited effect at face value) to ~70k. The buckets that survive are
-  the ones with the strongest designs
-  (collaborative-care RCTs, the Medicaid difference-in-differences); the largest
-  *dollar* buckets (education ~19%, equity & justice ~17%, workforce ~13% per
-  her own database) contribute little health because no credible study ties
-  those grants to QALYs — their value is real but largely non-health.
-- **US ≠ global-health frontier.** Preventing a death costs orders of magnitude
-  more in a rich country than via bed nets abroad; the frontier comparison
-  quantifies that gap, and is not a criticism of her choices.
+- **The evidence weights change the estimated health impact.** The
+  [paper's evidence-stance sweep](paper/index.qmd#evidence-philosophy-dominates-everything-else)
+  compares near-RCT-only credit with near face value. Stronger evidence
+  preserves more of an effect; assumption-based health pathways retain less.
+  The largest dollar allocations fund education, equity and justice, and
+  workforce development, whose intended benefits extend beyond health.
+- **The malaria comparison uses historical costs.** The benchmark uses
+  the average costs of malaria programs GiveWell funded from 2022 through
+  2024. The portfolio estimate includes gifts across all 14 categories.
 - **QALYs ≠ total value.** A WELLBY (wellbeing-year) or consumption-value frame
   would credit the economic-security and education giving far more. This model is
   deliberately scoped to health.
 
 ## Limitations
 
-- Allocation centers use disclosed dollars plus a revenue-scaled imputation of
-  the undisclosed third; ~42% of undisclosed gifts have no matched 990
-  (mostly non-US recipients) and sit on the window-median weight. A gift's
-  dollars are split equally across its organization's focus areas (tags are
-  org-level, not per-gift), and the area-to-archetype mapping embeds judgment
-  (documented line-by-line in
-  [`leaf_to_archetype.yaml`](data/yieldgiving/leaf_to_archetype.yaml)).
-  Imputation barely moves the split relative to disclosed-only (each archetype
-  within ~1.5pp), which is itself evidence the disclosed two-thirds is
-  representative.
+- Allocation centers combine disclosed dollars with a revenue-scaled
+  imputation of the undisclosed third. Gifts without a usable pre-gift 990
+  receive their window's median weight; the [paper](paper/index.qmd) reports
+  the count and the difference from disclosed-only allocation. The pipeline
+  splits each gift equally across its organization's focus areas (org-level
+  tags, rather than gift-level tags), and the area-to-archetype mapping
+  embeds judgment ([`leaf_to_archetype.yaml`](data/yieldgiving/leaf_to_archetype.yaml)).
+  Neither the fit nor the matching review establishes that recipients with
+  undisclosed amounts resemble those with disclosed amounts.
 - Several archetypes (equity & justice, civic, arts) have no clean health pathway;
   their wide distributions reflect genuine ignorance, not measured effect.
 - Causal estimates are transported across populations and time; the realization
@@ -212,19 +225,12 @@ _Full table: [results/summary.md](results/summary.md). Regenerate with `uv run m
   are the stress test.
 - Monetization uses HHS's published value per QALY; it affects only the
   benefit/cost ratio, never the QALY count.
-- **The frontier multiple is marginal, not portfolio-scale.** Redeploying the
-  full ~$30B at the frontier would exhaust frontier-priced opportunities
-  (GiveWell directed [$397M in all of 2024](https://blog.givewell.org/2025/08/13/givewells-2024-metrics-and-impact/)
-  and [moves its cost-effectiveness bar with expected funding](https://blog.givewell.org/2022/07/05/update-on-givewells-funding-projections/)
-  — down to ~6x cash when flush, back to 10x when projections fell);
-  rising marginal costs plausibly cut the ~1,500× multiple to a few hundred
-  times at portfolio scale — same direction, softer magnitude. The floor is
-  direct cash, the most scalable option, which
-  [GiveWell now scores at 3–4× its own historic benchmark](https://blog.givewell.org/2024/11/12/re-evaluating-the-impact-of-unconditional-cash-transfers/)
-  and whose measured health effects extend beyond child mortality
-  ([Richterman et al. 2023](https://www.nature.com/articles/s41586-023-06116-2);
-  [Haushofer & Shapiro 2016](https://haushofer.ne.su.se/publications/Haushofer_Shapiro_UCT_QJE_2016.pdf)):
-  in health-only terms, somewhere under ~50–100×.
+- **Funding capacity.** The model holds the malaria benchmark's cost per
+  QALY fixed as spending increases. The return on another donation depends
+  on which programs still need funding. GiveWell directed
+  [$397 million across all programs from February 2024 through January 2025](https://blog.givewell.org/2025/08/13/givewells-2024-metrics-and-impact/).
+  Its [separate evaluation of GiveDirectly](https://blog.givewell.org/2024/11/12/re-evaluating-the-impact-of-unconditional-cash-transfers/)
+  counts gains in household consumption as well as health.
 - Effects are modeled as static cost-per-QALY ratios, not a dynamic life-table
   microsimulation.
 

@@ -71,10 +71,12 @@ def summary_markdown(res, params) -> str:
         f"(90% {s['bc_ratio']['p05']:.1f}–{s['bc_ratio']['p95']:.1f}×)"
     )
     lines.append(
-        f"- Global-health frontier (median, handicapped like-for-like with the "
-        f"same realization + RCT-grade credibility): "
-        f"{_fmt(s['frontier_qalys_median'])} QALYs "
-        f"≈ {s['frontier_multiple_median']:.0f}× the estimate above\n"
+        "- Using GiveWell’s 2022–2024 malaria-program averages, the model yields a "
+        f"median of {_fmt(s['frontier_qalys_median'])} QALYs if those costs held "
+        "across the full portfolio. Both use the same realization factor. The model draws "
+        "a separate randomized-tier credibility weight for the benchmark. The median "
+        "ratio of benchmark to portfolio "
+        f"QALYs per dollar is {s['frontier_multiple_median']:.0f}×.\n"
     )
 
     tier_short = {
@@ -147,16 +149,18 @@ def readme_block(res, params) -> str:
         f"Monetized at HHS's value per QALY that is "
         f"**{_dollar(s['value_usd']['median'])}** of health value — a "
         f"**{s['bc_ratio']['median']:.1f}× benefit/cost ratio**. "
-        f"The same {giving} at the global-health frontier (~{_dollar(frontier)}/QALY-equivalent), "
-        f"handicapped with the same realization and evidence discounts, would still "
-        f"buy ~{_fmt(s['frontier_qalys_median'])} QALYs — about "
-        f"**{s['frontier_multiple_median']:.0f}× more health per dollar**, the "
-        f"price of funding a rich country's social fabric rather than the global "
-        f"frontier.\n\n"
+        "I use [GiveWell’s 2022–2024 malaria-program averages]"
+        "(https://www.givewell.org/impact-estimates) to set a benchmark "
+        f"with a central cost of {_dollar(frontier)} per QALY-equivalent. "
+        "I apply the same realization factor to both portfolios and draw a "
+        "separate credibility weight for the benchmark from the randomized-study tier. "
+        f"If those costs held across the full {giving}, the model would yield "
+        f"a median of {_fmt(s['frontier_qalys_median'])} QALYs. "
+        f"The median ratio of benchmark to portfolio QALYs per dollar "
+        f"is **{s['frontier_multiple_median']:.0f}×**.\n\n"
         f"![Estimated QALYs](results/figure.png)\n\n"
-        f"The spread is driven mostly by the global realization factor, the "
-        f"causal-credibility weights, and the cost-per-QALY of the largest buckets "
-        f"(education, equity & justice):\n\n"
+        "The chart ranks inputs by the strength of their Spearman rank "
+        "correlation with total estimated QALYs.\n\n"
         f"![Sensitivity](results/sensitivity.png)\n\n"
         f"_Full table: [results/summary.md](results/summary.md). Regenerate with "
         f"`uv run msqaly --write`._"
@@ -311,7 +315,7 @@ def main(argv=None) -> int:
     tmp_summary.write_text(md)
     staged.append((tmp_summary, RESULTS / "summary.md"))
     tmp_json = RESULTS / "summary.tmp.json"
-    tmp_json.write_text(json.dumps(res.summary(), indent=2))
+    tmp_json.write_text(json.dumps(res.summary(), indent=2, allow_nan=False))
     staged.append((tmp_json, RESULTS / "summary.json"))
     tmp_fig = RESULTS / "figure.tmp.png"
     make_figure(res, params, tmp_fig)

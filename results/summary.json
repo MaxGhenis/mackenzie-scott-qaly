@@ -1,37 +1,37 @@
 {
   "total_qalys": {
-    "mean": 222060.20788636355,
-    "median": 201922.68264785648,
-    "p05": 93844.80647583902,
-    "p95": 418851.70930203714
+    "mean": 225158.61398622787,
+    "median": 204803.55006653199,
+    "p05": 95373.3100590329,
+    "p95": 423065.25590766454
   },
-  "blended_cost_per_qaly_median": 150067.25531909696,
+  "blended_cost_per_qaly_median": 147956.33554907894,
   "value_usd": {
-    "mean": 167310490555.98257,
-    "median": 148763095765.06696
+    "mean": 169607787361.31982,
+    "median": 150850815046.02368
   },
   "bc_ratio": {
-    "median": 4.9093518694089715,
-    "p05": 2.066917668665788,
-    "p95": 11.040855305079821
+    "median": 4.978248987353816,
+    "p05": 2.108657222402627,
+    "p95": 11.179361896158536
   },
   "total_giving_usd": 30301982771.297325,
-  "frontier_qalys_median": 105535818.88537061,
-  "frontier_multiple_median": 521.1338409600089,
+  "frontier_qalys_median": 105604424.4142294,
+  "frontier_multiple_median": 513.5574613329161,
   "per_archetype_mean": {
-    "Health - insurance & access": 9976.514824152138,
-    "Health - community health centers": 4062.1552317383484,
-    "Health - mental & behavioral": 8809.56713410327,
-    "Global health & development (non-US delivery)": 153469.11165702544,
-    "Economic security - cash & financial": 2879.6220739704418,
-    "Economic security - food security": 2092.8586417436886,
-    "Economic security - housing & homelessness": 5917.683692453338,
-    "Economic security - workforce & mobility": 6632.451834598431,
-    "Education (HBCUs, comm. college, scholarships)": 18939.49369200342,
-    "Equity & justice": 1763.2873219668495,
-    "Civic / democracy / philanthropy infra": 531.2936497684184,
-    "Arts & culture": 85.08429464311537,
-    "Environment / climate": 3192.7573028405823,
-    "Other / general community": 3708.326535356073
+    "Health - insurance & access": 10503.408962043059,
+    "Health - community health centers": 4285.96199195996,
+    "Health - mental & behavioral": 8339.662038964201,
+    "Global health & development (non-US delivery)": 156183.94473064717,
+    "Economic security - cash & financial": 2893.739578149773,
+    "Economic security - food security": 2084.8749332440457,
+    "Economic security - housing & homelessness": 5915.677233059818,
+    "Economic security - workforce & mobility": 6640.820868509333,
+    "Education (HBCUs, comm. college, scholarships)": 18880.98478573224,
+    "Equity & justice": 1748.8581408821774,
+    "Civic / democracy / philanthropy infra": 515.3010607508837,
+    "Arts & culture": 82.94671191428681,
+    "Environment / climate": 3344.414219719069,
+    "Other / general community": 3738.0187306518446
   }
 }

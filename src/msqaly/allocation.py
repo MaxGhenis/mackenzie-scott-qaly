@@ -4,7 +4,7 @@ Scott's Yield Giving site publishes a gift-level database
 (https://yieldgiving.com/gifts, snapshot in ``data/yieldgiving/``): every
 organization with its org-reported focus areas, and a dollar amount for about
 two-thirds of the disclosed dollars (``amount: 0`` marks undisclosed gifts).
-This module turns that into the model's 13 ``allocation_share`` centers.
+This module turns that into the model's 14 ``allocation_share`` centers.
 
 Disclosed gifts: each gift's dollars are split equally across its
 organization's listed focus areas (tags are org-level, not per-gift); vehicle
@@ -20,8 +20,8 @@ recipient's **pre-gift IRS 990 total revenue** raised to an elasticity
 calibrated on the disclosed pairs (log-log OLS of gift size on revenue).
 Pre-gift means the latest ``tax_prd_yr`` strictly before the gift year — a
 Scott gift inflates receipt-year revenue, so same-year revenue would be
-endogenous. Recipients with no matched 990 (mostly non-US organizations) get
-the window's median weight. Years 2019-2021 form one window because the
+endogenous. Recipients without a usable matched pre-gift history get the
+window's median weight. Years 2019-2021 form one window because the
 database attributes more disclosed 2021 dollars than the 2021 announcement
 total — year attribution is noisy at the boundary.
 
@@ -36,11 +36,20 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from decimal import ROUND_HALF_EVEN, Context, Decimal, localcontext
 from pathlib import Path
 from statistics import median
 
-import numpy as np
 import yaml
+
+from msqaly.recipients import (
+    RecipientIndex,
+    RecipientKey,
+    recipient_key,
+    validate_ein,
+    validate_match_record,
+    validate_revenue_history,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data" / "yieldgiving"
@@ -79,40 +88,95 @@ def load_inputs(data_dir: str | Path | None = None) -> tuple[list, dict, dict]:
     return orgs, leaves, mapping
 
 
-def load_revenue(data_dir: str | Path | None = None) -> dict[str, dict[int, float]]:
-    """org name -> {990 tax year -> total revenue} for matched organizations.
+def load_matches(data_dir: str | Path | None = None) -> dict[RecipientKey, dict]:
+    """Effective matches indexed by recipient name and website.
 
-    ``match_audit.jsonl``, when present, overlays the raw fetch: an LLM audit
-    of fuzzy name->EIN matches. ``{"name", "action": "drop"}`` removes a
-    false-positive match; ``{"name", "action": "replace", "ein",
-    "revenue_by_year"}`` substitutes the corrected organization's filings.
+    Legacy rows without links are accepted only for unique recipient names.
+    Each raw and overlay layer must contain at most one row per identity.
     """
     d = Path(data_dir) if data_dir else DATA_DIR
-    out: dict[str, dict[int, float]] = {}
-    for line in (d / "propublica_revenue.jsonl").read_text().splitlines():
-        rec = json.loads(line)
-        if rec.get("ein"):
-            out[rec["name"]] = {int(y): float(v) for y, v in rec["revenue_by_year"].items()}
+    index = RecipientIndex(json.loads((d / "organisations.json").read_text()))
+
+    def read_rows(path: Path) -> list[dict]:
+        return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+    raw = index.records(read_rows(d / "propublica_revenue.jsonl"), label="raw match")
+    out = dict(raw)
+    for key, rec in out.items():
+        validate_match_record(rec, f"raw match {key!r}")
+    if out.keys() != index.by_key.keys():
+        raise ValueError("raw matches must cover every recipient; finish the resumable fetch first")
     audit = d / "match_audit.jsonl"
     if audit.exists():
-        for line in audit.read_text().splitlines():
-            rec = json.loads(line)
+        for key, rec in index.records(read_rows(audit), label="audit overlay").items():
+            if key not in out:
+                raise ValueError(f"audit recipient missing from raw matches: {key!r}")
+            # The overlay owns the effective filer snapshot. Even when its EIN
+            # equals the raw candidate's, the filing retrieval may be different.
+            active = {"name": key[0], "link": index.by_key[key].get("link"), **rec}
             if rec["action"] == "drop":
-                out.pop(rec["name"], None)
-            elif rec["action"] == "replace":
-                out[rec["name"]] = {
-                    int(y): float(v) for y, v in rec["revenue_by_year"].items()
+                out[key] = {
+                    **active, "ein": None, "revenue_by_year": {},
+                    "source_url": None, "legal_name": None, "retrieved_at": None,
                 }
+            elif rec["action"] == "replace":
+                validate_ein(rec.get("ein"), f"replacement {key!r}")
+                validate_revenue_history(rec.get("revenue_by_year"), f"replacement {key!r}")
+                out[key] = {
+                    "source_url": None, "legal_name": None, "retrieved_at": None,
+                    **active,
+                }
+            else:
+                raise ValueError(f"unknown audit action for {key!r}: {rec['action']!r}")
+    for key, rec in out.items():
+        rec["raw_candidate"] = {
+            field: raw[key].get(field)
+            for field in ("ein", "match", "score", "source_url", "retrieved_at")
+        }
     return out
+
+
+def load_revenue(data_dir: str | Path | None = None) -> dict[RecipientKey, dict[int, float]]:
+    """Recipient identity -> {990 tax year -> total revenue} after audit overlay."""
+    return {
+        key: validate_revenue_history(rec["revenue_by_year"], f"match {key!r}")
+        for key, rec in load_matches(data_dir).items()
+        if rec.get("ein")
+    }
+
+
+def pre_gift_revenue_year(rev_by_year: dict[int, float] | None, gift_year: int) -> int | None:
+    """Tax year selected for the latest available strictly pre-gift revenue."""
+    if not rev_by_year:
+        return None
+    years = [y for y in rev_by_year if y < gift_year]
+    return max(years) if years else None
 
 
 def pre_gift_revenue(rev_by_year: dict[int, float] | None, gift_year: int) -> float | None:
     """Latest 990 revenue strictly before the gift year (avoids the gift
     itself inflating receipt-year revenue)."""
-    if not rev_by_year:
-        return None
-    years = [y for y in rev_by_year if y < gift_year]
-    return rev_by_year[max(years)] if years else None
+    year = pre_gift_revenue_year(rev_by_year, gift_year)
+    return rev_by_year[year] if year is not None else None
+
+
+def impute_window(
+    revenues: list[float | None], beta: float, residual: float
+) -> tuple[list[float], list[float], int]:
+    """Assign a window's residual using revenue weights and the median fallback.
+
+    Return assigned dollars, effective weights, and the fallback gift count.
+    Allocation and diagnostics share this calculation so their ledgers agree.
+    """
+    if not revenues:
+        return [], [], 0
+    weights = [r**beta if r else None for r in revenues]
+    known = [w for w in weights if w is not None]
+    fallback = median(known) if known else 1.0
+    n_fallback = sum(1 for w in weights if w is None)
+    weights = [w if w is not None else fallback for w in weights]
+    total_w = sum(weights)
+    return [residual * w / total_w for w in weights], weights, n_fallback
 
 
 def year_window(year: int) -> tuple[int, int]:
@@ -125,22 +189,33 @@ def year_window(year: int) -> tuple[int, int]:
 def calibrate_elasticity(orgs: list, revenue: dict) -> tuple[float, float, int]:
     """OLS of log10(gift amount) on log10(pre-gift revenue) over disclosed
     pairs. Returns (elasticity beta, R^2, n)."""
-    xs, ys = [], []
-    for org in orgs:
-        rev = revenue.get(org["name"])
-        for gift in org.get("gifts") or []:
-            amount = gift.get("amount") or 0
-            if amount <= 0:
-                continue
-            r = pre_gift_revenue(rev, int(gift["year"]))
-            if r:
-                xs.append(np.log10(r))
-                ys.append(np.log10(amount))
-    x, y = np.array(xs), np.array(ys)
-    beta, intercept = np.polyfit(x, y, 1)
-    resid = y - (beta * x + intercept)
-    r2 = 1 - resid.var() / y.var()
-    return float(beta), float(r2), len(xs)
+    # The exported fit must reproduce even at decimal rounding boundaries.
+    # Compute the same simple regression in fixed-precision decimal arithmetic,
+    # independent of the host libm, BLAS and caller's decimal context.
+    pairs = []
+    with localcontext(Context(prec=40, rounding=ROUND_HALF_EVEN)):
+        for org in orgs:
+            history = revenue.get(recipient_key(org))
+            for gift in org.get("gifts") or []:
+                amount = gift.get("amount") or 0
+                if amount <= 0:
+                    continue
+                prior = pre_gift_revenue(history, int(gift["year"]))
+                if prior:
+                    pairs.append((Decimal(str(prior)).log10(), Decimal(str(amount)).log10()))
+
+        if len(pairs) < 2:
+            raise ValueError("calibration requires at least two gift–revenue pairs")
+        pairs.sort()
+        n = len(pairs)
+        mean_x = sum(x for x, _ in pairs) / n
+        mean_y = sum(y for _, y in pairs) / n
+        xx = sum((x - mean_x) ** 2 for x, _ in pairs)
+        yy = sum((y - mean_y) ** 2 for _, y in pairs)
+        if not xx or not yy:
+            raise ValueError("calibration requires variation in both revenue and gift size")
+        xy = sum((x - mean_x) * (y - mean_y) for x, y in pairs)
+        return float(xy / xx), float(xy**2 / (xx * yy)), n
 
 
 def load_geo_overlay(data_dir: str | Path | None = None) -> dict[str, float]:
@@ -165,8 +240,9 @@ def derive_shares(
     """Compute archetype -> share (3-decimal, sums to exactly 1.0) and stats.
 
     ``geo_overlay=True`` (default since v1.1) applies the cross-checked
-    audit of 'global'-listed organizations' non-US fractions; pass False
-    to reproduce the v1.0 (July 13) allocation."""
+    audit of 'global'-listed organizations' non-US fractions; False applies
+    the earlier geographic rule to the current inputs. Published historical
+    allocations are stored in data/yieldgiving/allocation_history."""
     orgs, leaves, mapping = load_inputs(data_dir)
     overlay = load_geo_overlay(data_dir) if geo_overlay else {}
 
@@ -234,21 +310,16 @@ def derive_shares(
         by_window: dict[tuple, list] = defaultdict(list)
         n_fallback = 0
         for i, org, year in undisclosed:
-            r = pre_gift_revenue(revenue.get(org["name"]), year)
+            r = pre_gift_revenue(revenue.get(recipient_key(org)), year)
             by_window[year_window(year)].append((i, org, r))
         imputed_usd = 0.0
         imputed_by_window = {}
         for window, rows in by_window.items():
             residual = max(window_total[window] - disclosed_by_window[window], 0.0)
-            weights = [r**beta if r else None for _, _, r in rows]
-            known = [w for w in weights if w is not None]
-            fallback = median(known) if known else 1.0
-            n_fallback += sum(1 for w in weights if w is None)
-            weights = [w if w is not None else fallback for w in weights]
-            total_w = sum(weights)
+            amounts, _, window_fallback = impute_window([r for _, _, r in rows], beta, residual)
+            n_fallback += window_fallback
             imputed_by_window[f"{window[0]}-{window[1]}"] = residual
-            for (i, org, _), w in zip(rows, weights, strict=True):
-                amount = residual * w / total_w
+            for (i, org, _), amount in zip(rows, amounts, strict=True):
                 imputed_usd += amount
                 org_usd[i] += amount
                 credit(usd, org, amount)

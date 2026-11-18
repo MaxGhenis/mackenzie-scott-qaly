@@ -10,6 +10,7 @@ dist/
 # Keep results/ committed (summary.md, summary.json, figure.png) as the
 # reproducible output of `uv run msqaly`. Ignore scratch only.
 results/*.tmp
+data/yieldgiving/*.jsonl.lock
 .DS_Store
 paper/.quarto/
 paper/_freeze/
